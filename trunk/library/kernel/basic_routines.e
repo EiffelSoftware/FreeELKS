@@ -85,4 +85,4 @@ feature -- Basic operations
 			"upintdiv"
 		end
 
-end -- class BASIC_ROUTINES
+end

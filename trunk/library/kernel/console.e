@@ -425,4 +425,4 @@ feature {NONE} -- Implementation
 			"console_file_close"
 		end
 
-end -- class CONSOLE
+end

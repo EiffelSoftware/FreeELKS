@@ -2151,4 +2151,4 @@ invariant
 	compare_character: not object_comparison
 	index_set_has_same_count: index_set.count = count
 
-end -- class STRING
+end

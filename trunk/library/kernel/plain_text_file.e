@@ -139,4 +139,4 @@ feature {NONE} -- Implementation
 invariant
 	plain_text: is_plain_text
 
-end -- class PLAIN_TEXT_FILE
+end

@@ -18,4 +18,4 @@ convert
 	make_from_reference ({POINTER_REF}),
 	to_reference: {POINTER_REF, HASHABLE, ANY}
 
-end -- class POINTER
+end

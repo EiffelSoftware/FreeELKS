@@ -19,7 +19,4 @@ convert
 	make_from_reference ({BOOLEAN_REF}),
 	to_reference: {BOOLEAN_REF, HASHABLE, ANY}
 
-end -- class BOOLEAN
-
-
-
+end

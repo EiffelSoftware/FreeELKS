@@ -129,4 +129,4 @@ feature {NONE} -- Externals
 			"tempnam"
 		end
 
-end -- class FILE_NAME
+end

@@ -42,4 +42,4 @@ feature -- Comparison
 			Result := (other < Current) or is_equal (other)
 		end
 
-end -- class PART_COMPARABLE
+end

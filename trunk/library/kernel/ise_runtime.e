@@ -137,4 +137,4 @@ feature -- Internal C routines
 			"Dftype"
 		end
 		
-end -- class ISE_RUNTIME
+end

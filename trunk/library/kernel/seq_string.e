@@ -320,4 +320,4 @@ feature {NONE} -- Inapplicable
 		do
 		end
 
-end -- class SEQ_STRING
+end

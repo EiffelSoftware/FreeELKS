@@ -43,4 +43,4 @@ feature {NONE} -- Externals
 			"C (EIF_CHARACTER *): EIF_BOOLEAN | %"eif_path_name.h%""
 		end
 
-end -- class DIRECTORY_NAME
+end

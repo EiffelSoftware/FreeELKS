@@ -477,4 +477,4 @@ feature -- Obsolete
 			Result := valid_operands (args)
 		end
 
-end -- class ROUTINE
+end

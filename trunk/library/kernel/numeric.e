@@ -109,4 +109,4 @@ invariant
 --	neutral_multiplication: equal (Current * one, Current);
 --	self_division: divisible (Current) implies equal (Current / Current, one)
 
-end -- class NUMERIC
+end

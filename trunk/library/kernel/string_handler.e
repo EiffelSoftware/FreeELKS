@@ -9,4 +9,4 @@ indexing
 class
 	STRING_HANDLER
 
-end -- class STRING_HANDLER
+end

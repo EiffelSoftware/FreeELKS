@@ -252,4 +252,4 @@ feature {NONE} -- Implementation
 			"eetrace"
 		end
 
-end -- class EXCEPTIONS
+end

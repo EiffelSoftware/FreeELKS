@@ -184,4 +184,4 @@ feature {NONE} -- Implementation
 invariant
 	not_plain_text: not is_plain_text
 
-end -- class RAW_FILE
+end

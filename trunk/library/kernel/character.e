@@ -20,4 +20,4 @@ convert
 	make_from_reference ({CHARACTER_REF}),
 	to_reference: {CHARACTER_REF, HASHABLE, COMPARABLE, PART_COMPARABLE, ANY}
 
-end -- class CHARACTER
+end

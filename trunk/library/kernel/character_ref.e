@@ -246,4 +246,4 @@ feature {NONE} -- Implementation
 			"built_in"
 		end
 
-end -- class CHARACTER_REF
+end

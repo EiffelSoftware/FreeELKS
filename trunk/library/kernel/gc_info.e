@@ -330,4 +330,4 @@ feature {NONE} -- C externals
 			"((struct gacstat *) $a_ptr)->sys_iavg"
 		end
 
-end -- class GC_INFO
+end

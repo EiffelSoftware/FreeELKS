@@ -644,4 +644,4 @@ invariant
 --	index_set_has_same_bounds: ((index_set.lower = lower) and 
 --				(index_set.upper = lower + count - 1))
 
-end -- class ARRAY
+end

@@ -207,4 +207,4 @@ feature {NONE} -- Implementation
 invariant
 	valid_count: count > 0
 	
-end -- class BIT_REF
+end

@@ -32,4 +32,4 @@ feature -- Status report
 			ok_if_not_default: Result implies (Current /= default)
 		end
 
-end -- class HASHABLE
+end

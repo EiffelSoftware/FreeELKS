@@ -222,4 +222,4 @@ feature -- Access min max values
 			meaningful: Result <= 0
 		end
 
-end -- class PLATFORM
+end

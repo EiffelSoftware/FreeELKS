@@ -347,4 +347,4 @@ feature {NONE} -- Implementation
 			"esigname"
 		end
 
-end -- class UNIX_SIGNALS
+end

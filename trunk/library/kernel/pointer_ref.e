@@ -248,4 +248,4 @@ feature {NONE} -- Implementation
 			"free"
 		end
 
-end -- class POINTER_REF
+end

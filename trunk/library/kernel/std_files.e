@@ -215,4 +215,4 @@ feature -- Input
 			input.next_line
 		end
 
-end -- class STD_FILES
+end

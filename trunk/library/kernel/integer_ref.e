@@ -500,4 +500,4 @@ feature {NONE} -- Implementation
 invariant
 	sign_times_abs: sign * abs = item
 
-end -- class INTEGER_REF
+end

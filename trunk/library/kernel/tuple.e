@@ -1142,4 +1142,4 @@ feature {NONE} -- Externals: Setting
 			"C macro use %"eif_rout_obj.h%""
 		end
 
-end -- class TUPLE
+end
