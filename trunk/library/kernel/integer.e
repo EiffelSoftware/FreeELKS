@@ -21,4 +21,4 @@ convert
 	to_double: {DOUBLE},
 	to_integer_64: {INTEGER_64}
 
-end -- class INTEGER
+end

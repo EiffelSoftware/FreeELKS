@@ -32,4 +32,4 @@ feature -- Access
 	Incremental_collector: INTEGER is 1;
 			-- Statistics for incremental collections
 
-end -- class MEM_CONST
+end

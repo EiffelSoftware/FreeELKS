@@ -105,14 +105,14 @@ feature -- Access
 			-- Otherwise, the UID
 		do
 			Result := file_owner (user_id)
-		end -- owner_name
+		end
 
 	group_name: STRING is
 			-- Name of the file group, if available from /etc/group.
 			-- Otherwise, the GID
 		do
 			Result := file_group (group_id)
-		end -- owner_name
+		end
 
 	file_name: STRING
 			-- File name to which information applies.
@@ -256,7 +256,7 @@ feature -- Element change
 				-- renamed, the name here will change accordingly and access()
 				-- based calls will continue to work properly.
 			file_name := f_name
-		end -- update
+		end
 
 feature {NONE} -- Implementation
 
@@ -302,4 +302,4 @@ feature {NONE} -- Implementation
 			"C signature (int): EIF_REFERENCE use %"eif_file.h%""
 		end
 
-end -- class UNIX_FILE_INFO
+end

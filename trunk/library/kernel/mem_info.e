@@ -151,4 +151,4 @@ feature {NONE} -- C externals
 invariant
 	consistent_memory: total = free + used + overhead
 
-end -- class MEM_INFO
+end

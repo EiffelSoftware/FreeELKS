@@ -19,4 +19,4 @@ convert
 	to_reference: {DOUBLE_REF, NUMERIC, COMPARABLE, PART_COMPARABLE, HASHABLE, ANY},
 	truncated_to_real: {REAL}
 
-end -- class DOUBLE
+end

@@ -111,4 +111,4 @@ feature -- Comparison
 invariant
 	irreflexive_comparison: not (Current < Current)
 
-end -- class COMPARABLE
+end

@@ -430,4 +430,4 @@ feature {NONE} -- Implementation
 			Result := feature {ISE_RUNTIME}.dynamic_type ($spec)
 		end
 
-end -- class MEMORY
+end

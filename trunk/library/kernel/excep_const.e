@@ -97,4 +97,4 @@ feature -- Access
 			Result := c >= 1 and c <= number_of_codes
 		end
 
-end -- class EXCEP_CONST
+end

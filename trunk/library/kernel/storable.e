@@ -159,4 +159,4 @@ feature -- Element change
 			end
 		end
 
-end -- class STORABLE
+end

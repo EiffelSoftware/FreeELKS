@@ -198,4 +198,4 @@ feature {NONE} -- Externals
 			"C (EIF_CHARACTER *): EIF_REFERENCE | %"eif_path_name.h%""
 		end
 
-end -- class PATH_NAME
+end

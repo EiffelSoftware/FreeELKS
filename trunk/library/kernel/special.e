@@ -233,4 +233,4 @@ feature {NONE} -- Implementation
 			"built_in"
 		end
 
-end -- class SPECIAL
+end

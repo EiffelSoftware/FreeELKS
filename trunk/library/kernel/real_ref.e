@@ -308,4 +308,4 @@ feature {NONE} -- Implementation
 invariant
 	sign_times_abs: sign * abs = item
 
-end -- class REAL_REF
+end

@@ -167,4 +167,4 @@ invariant
 	non_contradiction: not (Current and (not Current))
 	completeness: Current or else (not Current)
 
-end -- class BOOLEAN_REF
+end

@@ -357,4 +357,4 @@ feature {NONE} -- Implementation
 			internal_argument_array_not_void: Result /= Void
 		end
 
-end -- class ARGUMENTS
+end

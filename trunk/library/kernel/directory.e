@@ -532,4 +532,4 @@ feature {NONE} -- Implementation
 			"file_rename"
 		end
 
-end -- class DIRECTORY
+end

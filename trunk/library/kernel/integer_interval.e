@@ -443,4 +443,4 @@ invariant
 	index_set_is_range: equal (index_set, Current)
 	not_infinite: upper_defined and lower_defined
 
-end -- class INTEGER_INTERVAL
+end

@@ -66,4 +66,4 @@ feature {NONE} -- Element change
 			area := other
 		end
 
-end -- class TO_SPECIAL
+end

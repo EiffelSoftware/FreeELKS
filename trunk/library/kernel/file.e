@@ -1815,4 +1815,4 @@ invariant
 	name_exists: name /= Void
 	name_not_empty: not name.is_empty
 
-end -- class FILE
+end

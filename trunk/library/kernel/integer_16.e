@@ -22,4 +22,4 @@ convert
 	to_integer_32: {INTEGER},
 	to_integer_64: {INTEGER_64}
 
-end -- class INTEGER_16
+end

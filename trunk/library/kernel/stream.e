@@ -339,4 +339,4 @@ feature {NONE} -- Not exported
 		do
 		end
 
-end -- class STREAM
+end

@@ -348,4 +348,4 @@ invariant
 	reflexive_equality: standard_is_equal (Current)
 	reflexive_conformance: conforms_to (Current)
 
-end -- class ANY
+end

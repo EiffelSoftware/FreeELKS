@@ -325,4 +325,4 @@ feature -- Obsolete
 			Result := last_double
 		end
 
-end -- class IO_MEDIUM
+end

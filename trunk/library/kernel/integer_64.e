@@ -21,4 +21,4 @@ convert
 	to_real: {REAL},
 	to_double: {DOUBLE}
 
-end -- class INTEGER_64
+end

@@ -90,4 +90,4 @@ feature {NONE} -- Implementation
 			"rout_obj_call_agent($rout, $args, $$_result_type)"
 		end
 
-end -- class FUNCTION
+end
