@@ -145,8 +145,8 @@ feature -- Duplication
 	frozen twin: like Current is
 			-- New object equal to `Current'
 			-- `twin' calls `copy'; to change copying/twining semantics, redefine `copy'.
-		do
-			Result := standard_twin
+		external
+			"built_in"
 		ensure
 			twin_not_void: Result /= Void
 			is_equal: Result.is_equal (Current)
