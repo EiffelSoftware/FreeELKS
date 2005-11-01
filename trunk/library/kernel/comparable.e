@@ -1,8 +1,10 @@
 indexing
-	description: "Objects that may be compared according to a total order relation"
-	note: "[
-		The basic operation is `<' (less than); others are defined 
-		in terms of this operation and `is_equal'.
+
+	description: "[
+		Objects that may be compared according to a total order relation
+
+		Note: The basic operation is `<' (less than); others are defined
+			in terms of this operation and `is_equal'.
 		]"
 	library: "Free implementation of ELKS library"
 	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
@@ -109,6 +111,7 @@ feature -- Comparison
 		end
 
 invariant
+
 	irreflexive_comparison: not (Current < Current)
 
 end
