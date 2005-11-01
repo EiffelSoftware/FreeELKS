@@ -4,7 +4,7 @@ indexing
 		used to represent arrays and strings
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2005, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -12,8 +12,12 @@ indexing
 frozen class
 	SPECIAL [T]
 
+inherit
+	ABSTRACT_SPECIAL
+
 create
-	make
+	make,
+	make_from_native_array
 
 feature {NONE} -- Initialization
 
@@ -26,10 +30,18 @@ feature {NONE} -- Initialization
 		ensure
 			area_allocated: count = n
 		end
+		
+	frozen make_from_native_array (an_array: like native_array) is
+			-- Creates a special object from `an_array'.
+		require
+			is_dotnet: {PLATFORM}.is_dotnet
+			an_array_not_void: an_array /= Void
+		do
+		end
 
 feature -- Access
 
-	frozen item, frozen infix "@" (i: INTEGER): T is
+	frozen item alias "[]" (i: INTEGER): T assign put is
 			-- Item at `i'-th position
 			-- (indices begin at 0)
 		require
@@ -37,6 +49,16 @@ feature -- Access
 			index_small_enough: i < count
 		external
 			"built_in"
+		end
+
+	frozen infix "@" (i: INTEGER): T is
+			-- Item at `i'-th position
+			-- (indices begin at 0)
+		require
+			index_big_enough: i >= 0
+			index_small_enough: i < count
+		do
+			Result := item (i)
 		end
 
 	frozen index_of (v: T; start_position: INTEGER): INTEGER is
@@ -65,6 +87,7 @@ feature -- Access
 	frozen item_address (i: INTEGER): POINTER is
 			-- Address of element at position `i'.
 		require
+			not_dotnet: not {PLATFORM}.is_dotnet
 			index_big_enough: i >= 0
 			index_small_enough: i < count
 		do
@@ -76,10 +99,19 @@ feature -- Access
 
 	frozen base_address: POINTER is
 			-- Address of element at position `0'.
+		require
+			not_dotnet: not {PLATFORM}.is_dotnet
 		do
 			Result := $Current
 		ensure
 			base_address_not_null: Result /= default_pointer
+		end
+	
+	frozen native_array: NATIVE_ARRAY [T] is
+			-- Only for compatibility with .NET
+		require
+			is_dotnet: {PLATFORM}.is_dotnet
+		do
 		end
 		
 feature -- Measurement
@@ -90,19 +122,19 @@ feature -- Measurement
 	frozen upper: INTEGER is 
 			-- Maximum index of Current
 		do
-			Result := capacity
+			Result := count - 1
 		end
 
 	frozen count: INTEGER is 
 			-- Count of the special area
-		do
-			Result := capacity
+		external
+			"built_in"
 		end
 
 	frozen capacity: INTEGER is
 			-- Count of the special area
-		external
-			"built_in"
+		do
+			Result := count
 		end
 
 feature -- Status report
@@ -169,14 +201,160 @@ feature -- Element change
 		external
 			"built_in"
 		end
-
-	frozen subcopy (source: like Current; s, e, i: INTEGER) is
-			-- Copy elements of `source' within bounds `s'
-			-- and `e' to `Current' starting at index `i'.
-		external
-			"built_in"
+		
+	frozen fill_with (v: T; start_index, end_index: INTEGER) is
+			-- Set items between `start_index' and `end_index' with `v'.
+		require
+			start_index_non_negative: start_index >= 0
+			start_index_not_too_big: start_index <= end_index
+			end_index_valid: end_index < count
+		local
+			i, nb: INTEGER
+		do
+			from
+				i := start_index
+				nb := end_index + 1
+			until
+				i = nb
+			loop
+				put (v, i)
+				i := i + 1
+			end
 		end
 
+	frozen copy_data (other: like Current; source_index, destination_index, n: INTEGER) is
+			-- Copy `n' elements of `other' from `source_start' position to Current at
+			-- `destination_index'. Other elements of Current remain unchanged.
+		require
+			other_not_void: other /= Void
+			source_index_non_negative: source_index >= 0
+			destination_index_non_negative: destination_index >= 0
+			n_non_negative: n >= 0
+			n_is_small_enough_for_source: source_index + n <= other.count
+			n_is_small_enough_for_destination: destination_index + n <= count
+		local
+			i, j, nb: INTEGER
+		do
+			if other = Current then
+				move_data (source_index, destination_index, n)
+			else
+				from
+					i := source_index
+					j := destination_index
+					nb := source_index + n
+				until
+					i = nb
+				loop
+					put (other.item (i), j)
+					i := i + 1
+					j := j + 1
+				end
+			end
+		end
+
+	frozen move_data (source_index, destination_index, n: INTEGER) is
+			-- Move `n' elements of Current from `source_start' position to `destination_index'.
+			-- Other elements remain unchanged.
+		require
+			source_index_non_negative: source_index >= 0
+			destination_index_non_negative: destination_index >= 0
+			n_non_negative: n >= 0
+			n_is_small_enough_for_source: source_index + n <= count
+			n_is_small_enough_for_destination: destination_index + n <= count
+		do
+			if source_index = destination_index then
+			elseif source_index > destination_index then
+				if destination_index + n < source_index then
+					non_overlapping_move (source_index, destination_index, n)
+				else
+					overlapping_move (source_index, destination_index, n)
+				end
+			else
+				if source_index + n < destination_index then
+					non_overlapping_move (source_index, destination_index, n)
+				else
+					overlapping_move (source_index, destination_index, n)
+				end
+			end
+		end
+
+	frozen overlapping_move (source_index, destination_index, n: INTEGER) is
+			-- Move `n' elements of Current from `source_start' position to `destination_index'.
+			-- Other elements remain unchanged.
+		require
+			source_index_non_negative: source_index >= 0
+			destination_index_non_negative: destination_index >= 0
+			n_non_negative: n >= 0
+			different_source_and_target: source_index /= destination_index
+			n_is_small_enough_for_source: source_index + n <= count
+			n_is_small_enough_for_destination: destination_index + n <= count
+		local
+			i, nb: INTEGER
+			l_offset: INTEGER
+		do
+			if source_index < destination_index then
+					-- We shift from left to right starting from the end
+					-- due to possible overlapping.
+				from
+					i := source_index + n - 1
+					nb := source_index - 1
+					l_offset := destination_index - source_index
+					check
+						l_offset_positive: l_offset > 0
+					end
+				until
+					i = nb
+				loop
+					put (item (i), i + l_offset)
+					i := i - 1
+				end
+			else
+					-- We shift from right to left.
+				from
+					i := source_index
+					nb := source_index + n
+					l_offset := source_index - destination_index
+					check
+						l_offset_positive: l_offset > 0
+					end
+				until
+					i = nb
+				loop
+					put (item (i), i - l_offset)
+					i := i + 1
+				end
+			end
+		end
+
+	frozen non_overlapping_move (source_index, destination_index, n: INTEGER) is
+			-- Move `n' elements of Current from `source_start' position to `destination_index'.
+			-- Other elements remain unchanged.
+		require
+			source_index_non_negative: source_index >= 0
+			destination_index_non_negative: destination_index >= 0
+			n_non_negative: n >= 0
+			different_source_and_target: source_index /= destination_index
+			non_overlapping: 
+				(source_index < destination_index implies source_index + n < destination_index) or
+				(source_index > destination_index implies destination_index + n < source_index)
+			n_is_small_enough_for_source: source_index + n <= count
+			n_is_small_enough_for_destination: destination_index + n <= count
+		local
+			i, nb: INTEGER
+			l_offset: INTEGER
+		do
+			from
+				i := source_index
+				nb := source_index + n
+				l_offset := destination_index - source_index
+			until
+				i = nb
+			loop
+				put (item (i), i + l_offset)
+				i := i + 1
+			end
+		end
+		
 feature -- Resizing
 
 	frozen resized_area (n: INTEGER): like Current is
@@ -216,13 +394,23 @@ feature -- Resizing
 			Result_not_void: Result /= Void
 			new_count: Result.count = n
 		end
-		
+
 feature -- Removal
 
 	frozen clear_all is
 			-- Reset all items to default values.
-		external
-			"built_in"
+		local
+			i: INTEGER
+			v: T
+		do
+			from
+				i := count - 1
+			until
+				i < 0
+			loop
+				put (v, i)
+				i := i - 1
+			end
 		end
 
 feature {NONE} -- Implementation
