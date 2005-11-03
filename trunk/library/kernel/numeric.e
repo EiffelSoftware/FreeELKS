@@ -1,6 +1,8 @@
 indexing
-	description: "Objects to which numerical operations are applicable" 
-	note: "The model is that of a commutative ring."
+	description: "[
+		Objects to which numerical operations are applicable
+		Note: The model is that of a commutative ring.
+		]"
 	library: "Free implementation of ELKS library"
 	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
