@@ -1,9 +1,8 @@
 indexing
 	description: "[
 		Objects representing delayed calls to a function, with some arguments possibly still open.
-		]"
-	note: "[
-		Features are the same as those of ROUTINE, with `apply' made effective, and the addition
+	
+		Note: Features are the same as those of ROUTINE, with `apply' made effective, and the addition
 		of `last_result' and `item'.
 		]"
 	library: "Free implementation of ELKS library"
