@@ -15,8 +15,11 @@ class BOOLEAN_REF inherit
 
 feature -- Access
 
-	item: BOOLEAN
+	item: BOOLEAN is
 			-- Boolean value
+		external
+			"built_in"
+		end
 
 	hash_code: INTEGER is
 			-- Hash code value
@@ -40,9 +43,9 @@ feature {NONE} -- Initialization
 		require
 			v_not_void: v /= Void
 		do
-			item := v.item
+			set_item (v.item)
 		ensure
-			item_set: item = v.item	
+			item_set: item = v.item
 		end
 
 feature -- Conversion
@@ -72,8 +75,8 @@ feature -- Element change
 
 	set_item (b: BOOLEAN) is
 			-- Make `b' the `item' value.
-		do
-			item := b
+		external
+			"built_in"
 		end
 
 feature -- Basic operations
@@ -163,6 +166,7 @@ feature -- Output
 		end
 
 invariant
+
 	involutive_negation: is_equal (not (not Current))
 	non_contradiction: not (Current and (not Current))
 	completeness: Current or else (not Current)
