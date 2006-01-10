@@ -1,7 +1,7 @@
 indexing
 	description: "References to objects containing an integer value coded on 32 bits"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2005, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -29,8 +29,11 @@ inherit
 
 feature -- Access
 
-	item: INTEGER
+	item: INTEGER is
 			-- Integer value
+		external
+			"built_in"
+		end
 
 	hash_code: INTEGER is
 			-- Hash code value
@@ -98,8 +101,8 @@ feature -- Element change
 
 	set_item (i: INTEGER) is
 			-- Make `i' the `item' value.
-		do
-			item := i
+		external
+			"built_in"
 		ensure
 			item_set: item = i
 		end
@@ -146,7 +149,7 @@ feature -- Status report
 	is_valid_character_code: BOOLEAN is
 			-- Does current object represent a character?
 		do
-			Result := item >= feature {CHARACTER}.Min_value and item <= feature {CHARACTER}.Max_value
+			Result := item >= {CHARACTER}.Min_value and item <= {CHARACTER}.Max_value
 		end
 
 feature -- Basic operations
@@ -243,9 +246,9 @@ feature {NONE} -- Initialization
 		require
 			v_not_void: v /= Void
 		do
-			item := v.item
+			set_item (v.item)
 		ensure
-			item_set: item = v.item	
+			item_set: item = v.item
 		end
 
 feature -- Conversion
@@ -265,22 +268,104 @@ feature -- Conversion
 			Result := item /= 0
 		end
 
+	as_natural_8: NATURAL_8 is
+			-- Convert `item' into an NATURAL_8 value.
+		do
+			Result := item.as_natural_8
+		end
+
+	as_natural_16: NATURAL_16 is
+			-- Convert `item' into an NATURAL_16 value.
+		do
+			Result := item.as_natural_16
+		end
+
+	as_natural_32: NATURAL_32 is
+			-- Convert `item' into an NATURAL_32 value.
+		do
+			Result := item.as_natural_32
+		end
+	
+	as_natural_64: NATURAL_64 is
+			-- Convert `item' into an NATURAL_64 value.
+		do
+			Result := item.as_natural_64
+		end
+
+	as_integer_8: INTEGER_8 is
+			-- Convert `item' into an INTEGER_8 value.
+		do
+			Result := item.as_integer_8
+		end
+		
+	as_integer_16: INTEGER_16 is
+			-- Convert `item' into an INTEGER_16 value.
+		do
+			Result := item.as_integer_16
+		end
+
+	as_integer_32: INTEGER is
+			-- Convert `item' into an INTEGER_32 value.
+		do
+			Result := item.as_integer_32
+		end
+
+	as_integer_64: INTEGER_64 is
+			-- Convert `item' into an INTEGER_64 value.
+		do
+			Result := item.as_integer_64
+		end
+
+	frozen to_natural_8: NATURAL_8 is
+			-- Convert `item' into an NATURAL_8 value.
+		require
+			item_non_negative: item >= 0
+			not_too_big: item <= {NATURAL_8}.Max_value
+		do
+			Result := as_natural_8
+		end
+
+	frozen to_natural_16: NATURAL_16 is
+			-- Convert `item' into an NATURAL_16 value.
+		require
+			item_non_negative: item >= 0
+			not_too_big: item <= {NATURAL_16}.Max_value
+		do
+			Result := as_natural_16
+		end
+
+	frozen to_natural_32: NATURAL_32 is
+			-- Convert `item' into an NATURAL_32 value.
+		require
+			item_non_negative: item >= 0
+		do
+			Result := as_natural_32
+		end
+
+	frozen to_natural_64: NATURAL_64 is
+			-- Convert `item' into an NATURAL_64 value.
+		require
+			item_non_negative: item >= 0
+		do
+			Result := as_natural_64
+		end
+
 	frozen to_integer_8: INTEGER_8 is
 			-- Convert `item' into an INTEGER_8 value.
 		require
-			not_too_small: item >= feature {INTEGER_8}.Min_value
-			not_too_big: item <= feature {INTEGER_8}.Max_value
+			not_too_small: item >= {INTEGER_8}.Min_value
+			not_too_big: item <= {INTEGER_8}.Max_value
 		do
-			Result := item.to_integer_8
+			Result := as_integer_8
 		end
-		
+
 	frozen to_integer_16: INTEGER_16 is
 			-- Convert `item' into an INTEGER_16 value.
 		require
-			not_too_small: item >= feature {INTEGER_16}.Min_value
-			not_too_big: item <= feature {INTEGER_16}.Max_value
+			not_too_small: item >= {INTEGER_16}.Min_value
+			not_too_big: item <= {INTEGER_16}.Max_value
 		do
-			Result := item.to_integer_16
+			Result := as_integer_16
 		end
 
 	frozen to_integer, frozen to_integer_32: INTEGER is
@@ -292,16 +377,16 @@ feature -- Conversion
 	frozen to_integer_64: INTEGER_64 is
 			-- Convert `item' into an INTEGER_64 value.
 		do
-			Result := item.to_integer_64
+			Result := as_integer_64
 		end
 
-	frozen to_real: REAL is
+	to_real: REAL is
 			-- Convert `item' into a REAL
 		do
 			Result := item.to_real
 		end
 
-	frozen to_double: DOUBLE is
+	to_double: DOUBLE is
 			-- Convert `item' into a DOUBLE
 		do
 			Result := item.to_double
@@ -348,7 +433,7 @@ feature -- Conversion
 			valid_character: ("0123456789ABCDEF").has (Result)
 		end
 
-	frozen to_character: CHARACTER is
+	to_character: CHARACTER is
 			-- Returns corresponding ASCII character to `item' value.
 		require
 			valid_character: is_valid_character_code
@@ -358,29 +443,49 @@ feature -- Conversion
 
 feature -- Bit operations
 
-	frozen infix "&", frozen bit_and (i: like Current): like Current is
+	bit_and (i: like Current): like Current is
 			-- Bitwise and between Current' and `i'.
 		require
 			i_not_void: i /= Void
 		do
 			create Result
-			Result.set_item (item & i.item)
+			Result.set_item (item.bit_and (i.item))
 		ensure
 			bitwise_and_not_void: Result /= Void
 		end
 
-	frozen infix "|", frozen bit_or (i: like Current): like Current is
+	frozen infix "&" (i: like Current): like Current is
+			-- Bitwise and between Current' and `i'.
+		require
+			i_not_void: i /= Void
+		do
+			Result := bit_and (i)
+		ensure
+			bitwise_and_not_void: Result /= Void
+		end
+
+	bit_or (i: like Current): like Current is
 			-- Bitwise or between Current' and `i'.
 		require
 			i_not_void: i /= Void
 		do
 			create Result
-			Result.set_item (item | i.item)
+			Result.set_item (item.bit_or (i.item))
 		ensure
 			bitwise_or_not_void: Result /= Void
 		end
 
-	frozen bit_xor (i: like Current): like Current is
+	frozen infix "|" (i: like Current): like Current is
+			-- Bitwise or between Current' and `i'.
+		require
+			i_not_void: i /= Void
+		do
+			Result := bit_or (i)
+		ensure
+			bitwise_or_not_void: Result /= Void
+		end
+
+	bit_xor (i: like Current): like Current is
 			-- Bitwise xor between Current' and `i'.
 		require
 			i_not_void: i /= Void
@@ -391,7 +496,7 @@ feature -- Bit operations
 			bitwise_xor_not_void: Result /= Void
 		end
 
-	frozen bit_not: like Current is
+	bit_not: like Current is
 			-- One's complement of Current.
 		do
 			create Result
@@ -400,7 +505,7 @@ feature -- Bit operations
 			bit_not_not_void: Result /= Void
 		end
 
-	frozen bit_shift (n: INTEGER): like Current is
+	frozen bit_shift (n: INTEGER): INTEGER is
 			-- Shift Current from `n' position to right if `n' positive,
 			-- to left otherwise.
 		require
@@ -411,31 +516,51 @@ feature -- Bit operations
 				Result := bit_shift_right (n)
 			else
 				Result := bit_shift_left (- n)
-			end	
-		ensure
-			bit_shift_not_void: Result /= Void
+			end
 		end
 
-	frozen infix "|<<", frozen bit_shift_left (n: INTEGER): like Current is
+	bit_shift_left (n: INTEGER): like Current is
 			-- Shift Current from `n' position to left.
 		require
 			n_nonnegative: n >= 0
 			n_less_or_equal_to_32: n <= 32
 		do
 			create Result
-			Result.set_item (item |<< n)
+			Result.set_item (item.bit_shift_left (n))
 		ensure
 			bit_shift_left_not_void: Result /= Void
 		end
 
-	frozen infix "|>>", frozen bit_shift_right (n: INTEGER): like Current is
+	frozen infix "|<<" (n: INTEGER): like Current is
+			-- Shift Current from `n' position to left.
+		require
+			n_nonnegative: n >= 0
+			n_less_or_equal_to_32: n <= 32
+		do
+			Result := bit_shift_left (n)
+		ensure
+			bit_shift_left_not_void: Result /= Void
+		end
+
+	bit_shift_right (n: INTEGER): like Current is
 			-- Shift Current from `n' position to right.
 		require
 			n_nonnegative: n >= 0
 			n_less_or_equal_to_32: n <= 32
 		do
 			create Result
-			Result.set_item (item |>> n)
+			Result.set_item (item.bit_shift_right (n))
+		ensure
+			bit_shift_right_not_void: Result /= Void
+		end
+
+	frozen infix "|>>" (n: INTEGER): like Current is
+			-- Shift Current from `n' position to right.
+		require
+			n_nonnegative: n >= 0
+			n_less_or_equal_to_32: n <= 32
+		do
+			Result := bit_shift_right (n)
 		ensure
 			bit_shift_right_not_void: Result /= Void
 		end
@@ -479,7 +604,8 @@ feature -- Output
 	out: STRING is
 			-- Printable representation of integer value
 		do
-			Result := item.out
+			create Result.make (11)
+			Result.append_integer (item)
 		end
 
 feature {NONE} -- Implementation
@@ -498,6 +624,7 @@ feature {NONE} -- Implementation
 		end
 
 invariant
+
 	sign_times_abs: sign * abs = item
 
 end
