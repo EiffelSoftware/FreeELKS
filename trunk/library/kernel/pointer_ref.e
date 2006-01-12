@@ -4,7 +4,7 @@ indexing
 		meant to be exchanged with non-Eiffel software.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -13,26 +13,43 @@ class POINTER_REF inherit
 
 	HASHABLE
 		redefine
-			out, is_hashable
+			out, is_equal, is_hashable
+		end
+		
+	REFACTORING_HELPER
+		redefine
+			out, is_equal
 		end
 
 feature -- Access
 
-	item: POINTER
+	item: POINTER is
 			-- Pointer value
+		external
+			"built_in"
+		end
 
 	hash_code: INTEGER is
 			-- Hash code value
 		do
-			Result := c_hashcode (item).hash_code
+			Result := item.hash_code
 		end
 
 feature -- Element change
 
 	frozen set_item (p: POINTER) is
 			-- Make `p' the `item' value.
+		external
+			"built_in"
+		end
+
+feature -- Comparison
+
+	is_equal (other: like Current): BOOLEAN is
+			-- Is `other' attached to an object of the same type
+			-- as current object and identical to it?
 		do
-			item := p
+			Result := other.item = item
 		end
 
 feature -- Status report
@@ -49,7 +66,7 @@ feature -- Operations
 	infix "+" (offset: INTEGER): POINTER is
 			-- Pointer moved by an offset of `offset' bytes.
 		do
-			Result := c_offset_pointer (item, offset)
+			Result := item + offset
 		end
 
 feature {NONE} -- Initialization
@@ -59,9 +76,9 @@ feature {NONE} -- Initialization
 		require
 			v_not_void: v /= Void
 		do
-			item := v.item
+			set_item (v.item)
 		ensure
-			item_set: item = v.item	
+			item_set: item = v.item
 		end
 
 feature -- Conversion
@@ -73,6 +90,18 @@ feature -- Conversion
 			Result.set_item (item)
 		ensure
 			to_reference_not_void: Result /= Void
+		end
+
+	to_integer_32: INTEGER is
+			-- Convert `item' into an INTEGER_32 value.
+		require
+--			not_too_small: item >= feature {INTEGER}.Min_value
+--			not_too_big: item <= feature {INTEGER}.Max_value
+		do
+			fixme (once "Do not forget to add proper precondition to ensure we can convert pointer %
+				%value into an INTEGER")
+			fixme (once "Change return type to INTEGER_32")
+			Result := item.to_integer_32
 		end
 
 feature -- Memory copy
@@ -104,7 +133,7 @@ feature -- Memory copy
 			valid_val: val >= 0
 			valid_n: n >= 0
 		do
-			c_memset (item, val, n)	
+			c_memset (item, val, n)
 		end
 
 feature -- Allocation/free
@@ -157,37 +186,15 @@ feature -- Output
 	out: STRING is
 			-- Printable representation of pointer value
 		do
-			Result := c_outp (item)
+			Result := item.out
 		end
 
 feature {NONE} -- Implementation
 
-	c_outp (p: POINTER): STRING is
-			-- Printable representation of pointer value
-		external
-			"C | %"eif_out.h%""
-		end
-
-	c_hashcode (p: POINTER): INTEGER is
-			-- Hash code value of `p'
-		external
-			"C [macro %"eif_misc.h%"]"
-		alias
-			"conv_pi"
-		end
-
-	c_offset_pointer (p: POINTER; o: INTEGER): POINTER is
-			-- Pointer moved by an offset of `o' bytes from `p'.
-		external
-			"C [macro %"eif_macros.h%"]"
-		alias
-			"RTPOF"
-		end
-
 	c_memcpy (destination, source: POINTER; count: INTEGER) is
 			-- C memcpy
 		external
-			"C (void *, const void *, size_t) | <string.h>"
+			"C signature (void *, const void *, size_t) use <string.h>"
 		alias
 			"memcpy"
 		end
@@ -195,7 +202,7 @@ feature {NONE} -- Implementation
 	c_memmove (destination, source: POINTER; count: INTEGER) is
 			-- C memmove
 		external
-			"C (void *, const void *, size_t) | <string.h>"
+			"C signature (void *, const void *, size_t) use <string.h>"
 		alias
 			"memmove"
 		end
@@ -203,7 +210,7 @@ feature {NONE} -- Implementation
 	c_memset (source: POINTER; val: INTEGER; count: INTEGER) is
 			-- C memset
 		external
-			"C (void *, int, size_t) | <string.h>"
+			"C signature (void *, int, size_t) use <string.h>"
 		alias
 			"memset"
 		end
@@ -211,7 +218,7 @@ feature {NONE} -- Implementation
 	c_memcmp (source, other: POINTER; count: INTEGER): INTEGER is
 			-- C memcmp
 		external
-			"C (void *, void *, size_t): EIF_INTEGER | <string.h>"
+			"C signature (void *, void *, size_t): EIF_INTEGER use <string.h>"
 		alias
 			"memcmp"
 		end
@@ -219,7 +226,7 @@ feature {NONE} -- Implementation
 	c_malloc (size: INTEGER): POINTER is
 			-- C malloc
 		external
-			"C (size_t): EIF_POINTER | <stdlib.h>"
+			"C signature (size_t): EIF_POINTER use <stdlib.h>"
 		alias
 			"malloc"
 		end
@@ -227,7 +234,7 @@ feature {NONE} -- Implementation
 	c_calloc (nmemb, size: INTEGER): POINTER is
 			-- C calloc
 		external
-			"C (size_t, size_t): EIF_POINTER | <stdlib.h>"
+			"C signature (size_t, size_t): EIF_POINTER use <stdlib.h>"
 		alias
 			"calloc"
 		end
@@ -235,7 +242,7 @@ feature {NONE} -- Implementation
 	c_realloc (source: POINTER; size: INTEGER): POINTER is
 			-- C realloc
 		external
-			"C (void *, size_t): EIF_POINTER | <stdlib.h>"
+			"C signature (void *, size_t): EIF_POINTER use <stdlib.h>"
 		alias
 			"realloc"
 		end
@@ -243,7 +250,7 @@ feature {NONE} -- Implementation
 	c_free (p: POINTER) is
 			-- C free
 		external
-			"C (void *) | <stdlib.h>"
+			"C signature (void *) use <stdlib.h>"
 		alias
 			"free"
 		end
