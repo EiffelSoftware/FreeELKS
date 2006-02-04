@@ -22,8 +22,8 @@ class FIXED_LIST [G] inherit
 				fill,
 				prune, prune_all
 		undefine
-			force, prune, infix "@", is_equal, put_i_th, occurrences,
-			valid_index, prune_all, copy, has, i_th
+			force, prune, infix "@", put_i_th,
+			prune_all, copy, i_th
 		redefine
 			first,
 			last,
@@ -43,7 +43,7 @@ class FIXED_LIST [G] inherit
 		rename
 			make as array_make,
 			put as put_i_th,
-			item as i_th,
+			item as i_th alias "[]",
 			force as force_i_th,
 			bag_put as put,
 			index_set as array_index_set,
@@ -65,7 +65,8 @@ class FIXED_LIST [G] inherit
 				array_make, lower, upper, subarray
 		undefine
 			count, linear_representation, put, resizable, fill,
-			for_all, there_exists, do_all, do_if
+			for_all, there_exists, do_all, do_if, occurrences, has,
+			valid_index, is_equal
 		redefine
 			full, extend, prunable
 		end
