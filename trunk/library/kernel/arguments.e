@@ -6,7 +6,7 @@ indexing
 		]"
 
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -22,8 +22,10 @@ feature -- Access
 		require
 			index_large_enough: i >= 0
 			index_small_enough: i <= argument_count
-		do
-			Result := arg_option (i)
+		external
+			"built_in"
+		ensure
+			argument_not_void: Result /= Void
 		end
 
 	argument_array: ARRAY [STRING] is
@@ -46,7 +48,7 @@ feature -- Access
 				i > argument_count
 			loop
 				Result.append (" ")
-				Result.append (arg_option (i))
+				Result.append (argument (i))
 				i := i + 1
 			end
 		ensure
@@ -56,7 +58,7 @@ feature -- Access
 	Command_name: STRING is
 			-- Name of command that started system execution
 		once
-			Result := arg_option (0)
+			Result := argument (0)
 		ensure
 			definition: Result.is_equal (argument (0))
 		end
@@ -292,23 +294,13 @@ feature -- Measurement
 	argument_count: INTEGER is
 			-- Number of arguments given to command that started
 			-- system execution (command name does not count)
-		once
-			Result := arg_number - 1
+		external
+			"built_in"
 		ensure
-			Result >= 0
+			argument_count_positive: Result >= 0
 		end
 
 feature {NONE} -- Implementation
-
-	arg_number: INTEGER is
-		external
-			"C | %"eif_argv.h%""
-		end
-
-	arg_option (i: INTEGER): STRING is
-		external
-			"C | %"eif_argv.h%""
-		end
 
 	option_word_equal (arg, w: STRING): BOOLEAN is
 			-- Is `arg' equal to the word option `w'?
@@ -350,7 +342,7 @@ feature {NONE} -- Implementation
 			until
 				i > argument_count
 			loop
-				Result.put (arg_option (i), i)
+				Result.put (argument (i), i)
 				i := i + 1
 			end
 		ensure
