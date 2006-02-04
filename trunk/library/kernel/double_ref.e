@@ -192,6 +192,32 @@ feature -- Conversion
 			definition: Result = sign * ((abs + 0.5).floor)
 		end
 
+	ceiling_real_64: DOUBLE is
+			-- Smallest integral value no smaller than current object
+		do
+			Result := c_ceiling (item)
+		ensure
+			result_no_smaller: Result >= item
+			close_enough: Result - item < item.one
+		end
+
+	floor_real_64: DOUBLE is
+			-- Greatest integral value no greater than current object
+		do
+			Result := c_floor (item)
+		ensure
+			result_no_greater: Result <= item
+			close_enough: item - Result < Result.one
+		end
+
+	rounded_real_64: DOUBLE is
+			-- Rounded integral value
+		do
+			Result := sign * c_floor (abs_ref.item + 0.5)
+		ensure
+			definition: Result = sign * ((abs + 0.5).floor_real_64)
+		end
+
 feature -- Basic operations
 
 	abs: DOUBLE is
@@ -256,7 +282,7 @@ feature -- Output
 	out: STRING is
 			-- Printable representation of double value
 		do
-			Result := c_outd (item)
+			Result := c_outr64 (item)
 		end
 
 feature {NONE} -- Implementation
@@ -274,7 +300,7 @@ feature {NONE} -- Implementation
 			same_absolute_value: equal (Result, Current) or equal (Result, - Current)
 		end
 
-	c_outd (d: DOUBLE): STRING is
+	c_outr64 (d: DOUBLE): STRING is
 			-- Printable representation of double value
 		external
 			"built_in"

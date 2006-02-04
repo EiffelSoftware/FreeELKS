@@ -21,18 +21,24 @@ class CONSOLE inherit
 			{CONSOLE} open_read, close
 			{ANY}
 				separator, append, file_pointer, last_character, last_integer,
+				last_integer_32, last_integer_8, last_integer_16, last_integer_64,
+				last_natural_8, last_natural_16, last_natural, last_natural_32,
+				last_natural_64,
 				last_real, last_string, last_double, file_readable,
 				lastchar, lastint, lastreal, laststring, lastdouble,
 				readable, is_closed, extendible, is_open_write
 		redefine
 			make_open_stdin, make_open_stdout, count, is_empty, exists,
-			read_integer, read_real, read_double, read_character,
-			read_line, read_stream, read_word, next_line, put_integer,
+			 read_real, read_double, read_character,
+			read_line, read_stream, read_word, next_line, 
 			put_boolean, put_real, put_double, put_string, put_character,
 			put_new_line, new_line, end_of_file, file_close,
-			readint, readreal, readdouble, readchar, readline, readstream,
-			readword, putint, putbool, putreal, putdouble, putstring, putchar,
-			dispose, read_to_string
+			readreal, readdouble, readchar, readline, readstream,
+			readword, putbool, putreal, putdouble, putstring, putchar,
+			dispose, read_to_string, back,
+			read_integer_with_no_type,
+			ctoi_convertor
+			
 		end
 
 	ANY
@@ -92,14 +98,13 @@ feature -- Removal
 			-- file_close (file_pointer)
 		end
 
-feature -- Input
-
-	read_integer, readint is
-			-- Read a new integer from standard input.
-			-- Make result available in `last_integer'.
-		do
-			last_integer := console_readint (file_pointer)
+feature -- Cursor movement
+	back is
+			-- Not supported on console
+		do			
 		end
+		
+feature -- Input
 
 	read_real, readreal is
 			-- Read a new real from standard input.
@@ -271,12 +276,6 @@ feature -- Output
 			console_pd (file_pointer, d)
 		end
 
-	put_integer, putint (i: INTEGER) is
-			-- Write `i' at end of default output.
-		do
-			console_pi (file_pointer, i)
-		end
-
 	put_boolean, putbool (b: BOOLEAN) is
 			-- Write `b' at end of default output.
 		do
@@ -301,7 +300,38 @@ feature {NONE} -- Inapplicable
 			--| `empty' is false not to invalidate invariant clauses.
 
 feature {NONE} -- Implementation
-
+		
+	ctoi_convertor: STRING_TO_INTEGER_CONVERTOR is
+			-- Convertor used to parse string to integer or natural
+		once
+			create Result.make
+			Result.set_leading_separators (internal_leading_separators)
+			Result.set_leading_separators_acceptable (True)
+			Result.set_trailing_separators_acceptable (False)
+		end		
+		
+	read_integer_with_no_type is
+			-- Read a ASCII representation of number of `type'
+			-- at current position.
+		do
+			read_number_sequence (ctoi_convertor, {NUMERIC_INFORMATION}.type_no_limitation)
+				-- Consume all left characters.
+			consume_characters
+		end
+		
+	consume_characters is
+			-- Consume all characters from current position 
+			-- until we meet a new-line character.
+		do
+			from
+				
+			until
+				end_of_file or last_character = '%N' 
+			loop
+				read_character
+			end			
+		end		
+		
 	read_to_string (a_string: STRING; pos, nb: INTEGER): INTEGER is
 			-- Fill `a_string', starting at position `pos' with at
 			-- most `nb' characters read from current file.

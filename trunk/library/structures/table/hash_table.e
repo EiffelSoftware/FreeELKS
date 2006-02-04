@@ -125,7 +125,7 @@ feature -- Initialization
 		do
 			create clever
 			capacity := n.Max (Minimum_capacity)
-			capacity := (capacity * 100) // Initial_occupation + 1
+			capacity := capacity + capacity // 2 + 1
 			capacity := clever.higher_prime (capacity)
 			create l_content.make (0, capacity)
 			content := l_content.area
@@ -138,8 +138,8 @@ feature -- Initialization
 			deleted_marks := l_deleted_marks.area
 			iteration_position := capacity + 1
 		ensure
-			breathing_space: n * 100 < capacity * Initial_occupation
-			minimum_space: Minimum_capacity * 100 < capacity * Initial_occupation
+			breathing_space: n < capacity * Initial_occupation
+			minimum_space: Minimum_capacity < capacity * Initial_occupation
 			more_than_minimum: capacity >= Minimum_capacity
 			no_status: not special_status
 		end
@@ -188,7 +188,7 @@ feature -- Initialization
 		ensure
 			count_not_changed: count = old count
 			slot_count_same_as_count: used_slot_count = count
-			breathing_space: count * 100 < capacity * Initial_occupation
+			breathing_space: count < capacity * Initial_occupation
 		end
 
 
@@ -197,7 +197,7 @@ feature -- Access
 	found_item: G
 			-- Item, if any, yielded by last search operation
 
-	item, infix "@" (key: H): G is
+	item alias "[]", infix "@" (key: H): G assign put is
 			-- Item associated with `key', if present
 			-- otherwise default value of type `G'
 		local
@@ -751,6 +751,25 @@ feature -- Element change
 					((new_key = computed_default_key) or
 					((new_key /= computed_default_key) and (old has_default)))
 		end
+		
+	merge (other: HASH_TABLE [G, H]) is
+			-- Merge `other' into Current. If `other' has some elements
+			-- with same key as in `Current', replace them by one from
+			-- `other'.
+		require
+			other_not_void: other /= Void
+		do
+			from
+				other.start
+			until
+				other.after
+			loop
+				force (other.item_for_iteration, other.key_for_iteration)
+				other.forth
+			end
+		ensure
+			inserted: other.current_keys.linear_representation.for_all (agent has)
+		end
 
 feature -- Removal
 
@@ -760,8 +779,10 @@ feature -- Removal
 			-- removed (i.e. `key' was present);
 			-- if so, set `position' to index of removed element.
 			-- If not, set `not_found'.
+			-- Reset `found_item' to its default value if `removed'.
 		local
 			default_key: H
+			default_value: G
 		do
 			internal_search (key)
 			if found then
@@ -772,6 +793,7 @@ feature -- Removal
 				end
 				count := count - 1
 				set_removed
+				found_item := default_value
 			end
 		ensure
 			removed_or_not_found: removed or not_found
@@ -922,9 +944,9 @@ feature {HASH_TABLE} -- Implementation: search attributes
 			-- Is table close to being filled to current capacity?
 			-- (If so, resizing is needed to avoid performance degradation.)
 		do
-			Result := ((used_slot_count + 1) * 100 >= capacity * Max_occupation)
+			Result := ((used_slot_count + 1) >= capacity * Max_occupation)
 		ensure
-			Result = ((used_slot_count + 1) * 100 >= capacity * Max_occupation)
+			Result = ((used_slot_count + 1) >= capacity * Max_occupation)
 		end
 
 	control: INTEGER
@@ -936,14 +958,11 @@ feature {HASH_TABLE} -- Implementation: search attributes
 
 feature {NONE} -- Implementation
 
-	Max_occupation: INTEGER is 80
+	Max_occupation: REAL is 0.9
 			-- Filling percentage over which table will be resized
 
-	Initial_occupation: INTEGER is 50
-			-- Filling percentage for initial requested occupation
-
-	Extra_space: INTEGER is 50
-			-- Percentage of extra positions when resizing
+	Initial_occupation: REAL is 0.67
+			-- Filling percentage for initial requested occupation (2/3)
 
 	Impossible_position: INTEGER is - 1
 			-- Position outside the array indices
@@ -1315,13 +1334,12 @@ feature {NONE} -- Implementation
 	add_space is
 			-- Increase capacity.
 		do
-				-- Be pessimistic: plan for more growth by allocating
-				-- Extra_space percent more slots.
-			accommodate ((count * (100 + Extra_space)) // 100)
+				-- Be pessimistic: plan for more growth by allocating 1.5 more than before
+			accommodate (count + count // 2)
 		ensure
 			count_not_changed: count = old count
 			slot_count_same_as_count: used_slot_count = count
-			breathing_space: count * 100 < capacity * Initial_occupation
+			breathing_space: count < capacity * Initial_occupation
 		end
 
 	Minimum_capacity: INTEGER is 5
@@ -1351,17 +1369,15 @@ invariant
 	special_status: special_status =
 		(conflict or inserted or replaced or removed or found or not_found)
 
-	max_occupation_meaningful: (Max_occupation > 0) and (Max_occupation < 100)
-	initial_occupation_meaningful: (Initial_occupation > 0) and
-							(Initial_occupation < 100)
+	max_occupation_meaningful: (Max_occupation > 0) and (Max_occupation < 1)
+	initial_occupation_meaningful: (Initial_occupation > 0) and (Initial_occupation < 1)
 	sized_generously_enough: Initial_occupation < Max_occupation
 	count_big_enough: 0 <= count
 	count_small_enough: count <= capacity
-	breathing_space: count * 100 <= capacity * Max_occupation
+	breathing_space: count <= capacity * Max_occupation
 	count_no_more_than_slot_count: count <= used_slot_count
 	slot_count_big_enough: 0 <= count
 	slot_count_small_enough: used_slot_count <= capacity
-	extra_space_non_negative: Extra_space >= 0
 							
 indexing
 
