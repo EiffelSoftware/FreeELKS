@@ -73,13 +73,17 @@ feature -- Access
 		require
 			string_exists: entry_name /= Void
 		local
-			ext_entry_name: ANY
 			dir_temp: DIRECTORY
 		do
 			create dir_temp.make_open_read (name)
-			ext_entry_name := entry_name.to_c
-			Result := dir_temp.dir_search (dir_temp.directory_pointer,
-							$ext_entry_name) /= default_pointer
+			from
+				dir_temp.readentry
+			until
+				Result or dir_temp.lastentry = Void
+			loop
+				Result := dir_temp.lastentry.is_equal (entry_name)
+				dir_temp.readentry
+			end
 			dir_temp.close
 		end
 
@@ -446,13 +450,6 @@ feature {DIRECTORY} -- Implementation
 
 	directory_pointer: POINTER
 			-- Directory pointer as required in C
-
-	dir_search (dir_ptr: POINTER; entry: POINTER): POINTER is
-			-- Return the `DIRENTRY' structure corresponding
-			-- to the name `entry' of directory `dir_ptr'.
-		external
-			"C signature (EIF_POINTER, char *): EIF_POINTER use %"eif_dir.h%""
-		end
 
 feature {NONE} -- Implementation
 
