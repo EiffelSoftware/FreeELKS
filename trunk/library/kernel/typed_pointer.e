@@ -16,11 +16,8 @@ inherit
 		rename
 			item as pointer_item
 		export
-			{NONE} pointer_item
+			{TYPED_POINTER} pointer_item
 		end
-
-create
-	default_create
 
 convert
 	to_pointer: {POINTER},
@@ -31,7 +28,7 @@ feature -- Conversion
 	to_pointer: POINTER is
 			-- Convert to POINTER instance.
 		do
-			-- Built-in
+			Result := pointer_item
 		end
 
 end
