@@ -6,7 +6,7 @@ indexing
 		]"
 
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2005, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -19,6 +19,8 @@ class ARRAY [G] inherit
 		end
 
 	INDEXABLE [G, INTEGER]
+		rename
+			item as item alias "[]"
 		redefine
 			copy, is_equal
 		end
@@ -32,7 +34,12 @@ class ARRAY [G] inherit
 
 create
 	make,
-	make_from_array
+	make_from_array,
+	make_from_cil
+
+convert
+	to_cil: {NATIVE_ARRAY [G]},
+	make_from_cil ({NATIVE_ARRAY [G]})
 
 feature -- Initialization
 
@@ -68,9 +75,20 @@ feature -- Initialization
 			upper := a.upper
 		end
 
+	make_from_cil (na: NATIVE_ARRAY [G]) is
+			-- Initialize array from `na'.
+		require
+			is_dotnet: {PLATFORM}.is_dotnet
+			na_not_void: na /= Void
+		do
+			create area.make_from_native_array (na)
+			lower := 1
+			upper := area.count
+		end
+
 feature -- Access
 
-	item, infix "@" (i: INTEGER): G is
+	item alias "[]", infix "@" (i: INTEGER): G assign put is
 			-- Entry at index `i', if in index interval
 		do
 			Result := area.item (i - lower)
@@ -136,18 +154,16 @@ feature -- Measurement
 		local
 			i: INTEGER
 		do
-			if object_comparison then
-				if v /= Void then
-					from
-						i := lower
-					until
-						i > upper
-					loop
-						if item (i) /= Void and then v.is_equal (item (i)) then
-							Result := Result + 1
-						end
-						i := i + 1
+			if object_comparison and then v /= Void then
+				from
+					i := lower
+				until
+					i > upper
+				loop
+					if item (i) /= Void and then v.is_equal (item (i)) then
+						Result := Result + 1
 					end
+					i := i + 1
 				end
 			else
 				from
@@ -180,13 +196,16 @@ feature -- Comparison
 		local
 			i: INTEGER
 		do
-			if lower = other.lower and then upper = other.upper and then
-				object_comparison = other.object_comparison then
+			if other = Current then
+				Result := True
+			elseif lower = other.lower and then upper = other.upper and then
+				object_comparison = other.object_comparison
+			then
 				if object_comparison then
-					from 
+					from
 						Result := True
 						i := lower
-					until 
+					until
 						not Result or i > upper 
 					loop
 						Result := equal (item (i), other.item (i))
@@ -306,11 +325,8 @@ feature -- Element change
 			valid_bounds: (start_pos <= end_pos) or (start_pos = end_pos + 1)
 			valid_index_pos: valid_index (index_pos)
 			enough_space: (upper - index_pos) >= (end_pos - start_pos)
-		local
-			other_lower: INTEGER
 		do
-			other_lower := other.lower
-			area.subcopy (other.area, start_pos - other_lower, end_pos - other_lower, index_pos - lower)
+			area.copy_data (other.area, start_pos - other.lower, index_pos - lower, end_pos - start_pos + 1)
 		ensure
 			-- copied: forall `i' in 0 .. (`end_pos'-`start_pos'),
 			--     item (index_pos + i) = other.item (start_pos + i)
@@ -465,6 +481,8 @@ feature -- Resizing
 		local
 			old_size, new_size, old_count: INTEGER
 			new_lower, new_upper: INTEGER
+			offset: INTEGER
+			v: G
 		do
 			if empty_area then
 				new_lower := min_index
@@ -480,9 +498,15 @@ feature -- Resizing
 			end
 			if empty_area then
 				make_area (new_size)
-			elseif new_size > old_size or new_lower < lower then
-				area := arycpy ($area, new_size,
-					lower - new_lower, old_count)
+			else
+				if new_size > old_size then
+					area := area.aliased_resized_area (new_size)
+				end
+				if new_lower < lower then
+					offset := lower - new_lower
+					area.move_data (0, offset, old_count)
+					area.fill_with (v, 0, offset - 1)
+				end
 			end
 			lower := new_lower
 			upper := new_upper
@@ -511,8 +535,21 @@ feature -- Conversion
 	to_c: ANY is
 			-- Address of actual sequence of values,
 			-- for passing to external (non-Eiffel) routines.
+		require
+			not_is_dotnet: not {PLATFORM}.is_dotnet
 		do
 			Result := area
+		end
+		
+	to_cil: NATIVE_ARRAY [G] is
+			-- Address of actual sequence of values,
+			-- for passing to external (non-Eiffel) routines.
+		require
+			is_dotnet: {PLATFORM}.is_dotnet
+		do
+			Result := area.native_array
+		ensure
+			to_cil_not_void: Result /= Void
 		end
 
 	linear_representation: LINEAR [G] is
@@ -541,7 +578,7 @@ feature -- Duplication
 		do
 			if other /= Current then
 				standard_copy (other)
-				set_area (other.area.standard_twin)
+				set_area (other.area.twin)
 			end
 		ensure then
 			equal_areas: area.is_equal (other.area)
@@ -578,16 +615,6 @@ feature {NONE} -- Inapplicable
 		do
 		end
 
-feature {ARRAY} -- Implementation
-
-	arycpy (old_area: POINTER; newsize, s, n: INTEGER): like area is
-			-- New area of size `newsize' containing `n' items
-			-- from `oldarea'.
-			-- Old items are at position `s' in new area.
-		external
-			"built_in"
-		end
-
 feature {NONE} -- Implementation
 
 	auto_resize (min_index, max_index: INTEGER) is
@@ -601,6 +628,8 @@ feature {NONE} -- Implementation
 		local
 			old_size, new_size: INTEGER
 			new_lower, new_upper: INTEGER
+			offset: INTEGER
+			v: G
 		do
 			if empty_area then
 				new_lower := min_index
@@ -620,9 +649,15 @@ feature {NONE} -- Implementation
 			end
 			if empty_area then
 				make_area (new_size)
-			elseif new_size > old_size or new_lower < lower then
-					area := arycpy ($area, new_size,
-						lower - new_lower, capacity)
+			else
+				if new_size > old_size then
+					area := area.aliased_resized_area (new_size)
+				end
+				if new_lower < lower then
+					offset := lower - new_lower
+					area.move_data (0, offset, capacity)
+					area.fill_with (v, 0, offset - 1)
+				end
 			end
 			lower := new_lower
 			upper := new_upper
