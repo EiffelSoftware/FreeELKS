@@ -2,7 +2,7 @@ indexing
 	description: "Some useful facilities on objects of basic types"
 
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -13,11 +13,9 @@ class
 feature -- Conversion
 
 	charconv (i: INTEGER): CHARACTER is
-			-- Character corresponding to ascii code `i'
-		external
-			"C [macro %"eif_misc.h%"]"
-		alias
-			"chconv"
+			-- Character associated with integer value `i'
+		do
+			Result := (i & 0x000000FF).to_character
 		end
 
 feature -- Basic operations
@@ -70,19 +68,25 @@ feature -- Basic operations
 
 	bottom_int_div (n1, n2: INTEGER): INTEGER is
 			-- Greatest lower bound of the integer division of `n1' by `n2'
-		external
-			"C | %"eif_misc.h%""
-		alias
-			"bointdiv"
+		do
+			Result := n1 // n2
+			if n1 >= 0 xor n2 > 0 then
+				if (n1 \\ n2) /= 0 then
+					Result := Result - 1
+				end
+			end
 		end
 
 	up_int_div (n1, n2: INTEGER): INTEGER is
 			-- Least upper bound of the integer division
 			-- of `n1' by `n2'
-		external
-			"C | %"eif_misc.h%""
-		alias
-			"upintdiv"
+		do
+			Result := n1 // n2
+			if not (n1 >= 0 xor n2 > 0) then
+				if (n1 \\ n2) /= 0 then
+					Result := Result + 1
+				end
+			end
 		end
 
 end
