@@ -1,7 +1,7 @@
 indexing
 	description: "References to objects containing a double-precision real number"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -25,8 +25,11 @@ class DOUBLE_REF inherit
 
 feature -- Access
 
-	item: DOUBLE
+	item: DOUBLE is
 			-- Numeric double value
+		external
+			"built_in"
+		end
 
 	hash_code: INTEGER is
 			-- Hash code value
@@ -79,8 +82,8 @@ feature -- Element change
 
 	set_item (d: DOUBLE) is
 			-- Make `d' the `item' value.
-		do
-			item := d
+		external
+			"built_in"
 		end
 
 feature -- Status report
@@ -129,9 +132,9 @@ feature {NONE} -- Conversion
 		require
 			v_not_void: v /= Void
 		do
-			item := v.item
+			set_item (v.item)
 		ensure
-			item_set: item = v.item	
+			item_set: item = v.item
 		end
 
 feature -- Conversion
@@ -149,27 +152,27 @@ feature -- Conversion
 			-- Integer part (Same sign, largest absolute
 			-- value no greater than current object's)
 		do
-			Result := c_truncated_to_integer (item)
+			Result := item.truncated_to_integer
 		end
 
 	truncated_to_integer_64: INTEGER_64 is
 			-- Integer part (Same sign, largest absolute
 			-- value no greater than current object's)
 		do
-			Result := c_truncated_to_integer_64 (item)
+			Result := item.truncated_to_integer_64
 		end
 
 	truncated_to_real: REAL is
 			-- Real part (Same sign, largest absolute
 			-- value no greater than current object's)
 		do
-			Result := c_truncated_to_real (item)
+			Result := item.truncated_to_real
 		end
 
 	ceiling: INTEGER is
 			-- Smallest integral value no smaller than current object
 		do
-			Result := c_ceiling (item).truncated_to_integer
+			Result := ceiling_real_64.truncated_to_integer
 		ensure
 			result_no_smaller: Result >= item
 			close_enough: Result - item < item.one
@@ -178,7 +181,7 @@ feature -- Conversion
 	floor: INTEGER is
 			-- Greatest integral value no greater than current object
 		do
-			Result := c_floor (item).truncated_to_integer
+			Result := floor_real_64.truncated_to_integer
 		ensure
 			result_no_greater: Result <= item
 			close_enough: item - Result < Result.one
@@ -187,7 +190,7 @@ feature -- Conversion
 	rounded: INTEGER is
 			-- Rounded integral value
 		do
-			Result := sign * (c_floor (abs_ref.item + 0.5).truncated_to_integer)
+			Result := sign * ((abs + 0.5).floor)
 		ensure
 			definition: Result = sign * ((abs + 0.5).floor)
 		end
@@ -195,7 +198,7 @@ feature -- Conversion
 	ceiling_real_64: DOUBLE is
 			-- Smallest integral value no smaller than current object
 		do
-			Result := c_ceiling (item)
+			Result := item.ceiling_real_64
 		ensure
 			result_no_smaller: Result >= item
 			close_enough: Result - item < item.one
@@ -204,7 +207,7 @@ feature -- Conversion
 	floor_real_64: DOUBLE is
 			-- Greatest integral value no greater than current object
 		do
-			Result := c_floor (item)
+			Result := item.floor_real_64
 		ensure
 			result_no_greater: Result <= item
 			close_enough: item - Result < Result.one
@@ -213,7 +216,7 @@ feature -- Conversion
 	rounded_real_64: DOUBLE is
 			-- Rounded integral value
 		do
-			Result := sign * c_floor (abs_ref.item + 0.5)
+			Result := sign * ((abs + 0.5).floor_real_64)
 		ensure
 			definition: Result = sign * ((abs + 0.5).floor_real_64)
 		end
@@ -282,12 +285,12 @@ feature -- Output
 	out: STRING is
 			-- Printable representation of double value
 		do
-			Result := c_outr64 (item)
+			Result := item.out
 		end
 
 feature {NONE} -- Implementation
 
-	abs_ref: DOUBLE_REF is
+	abs_ref: like Current is
 			-- Absolute value
 		do
 			if item >= 0.0 then
@@ -298,45 +301,6 @@ feature {NONE} -- Implementation
 		ensure
 			result_exists: Result /= Void
 			same_absolute_value: equal (Result, Current) or equal (Result, - Current)
-		end
-
-	c_outr64 (d: DOUBLE): STRING is
-			-- Printable representation of double value
-		external
-			"built_in"
-		end
-
-	c_truncated_to_integer (d: DOUBLE): INTEGER is
-			-- Integer part of `d' (same sign, largest absolute
-			-- value no greater than `d''s)
-		external
-			"built_in"
-		end
-
-	c_truncated_to_integer_64 (d: DOUBLE): INTEGER_64 is
-			-- Integer part of `d' (same sign, largest absolute
-			-- value no greater than `d''s)
-		external
-			"built_in"
-		end
-
-	c_truncated_to_real (d: DOUBLE): REAL is
-			-- Real part of `d' (same sign, largest absolute
-			-- value no greater than `d''s)
-		external
-			"built_in"
-		end
-
-	c_ceiling (d: DOUBLE): DOUBLE is
-			-- Smallest integral value no smaller than `d'
-		external
-			"built_in"
-		end
-
-	c_floor (d: DOUBLE): DOUBLE is
-			-- Greatest integral value no greater than `d'
-		external
-			"built_in"
 		end
 
 invariant
