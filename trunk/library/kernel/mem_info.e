@@ -111,7 +111,7 @@ feature {NONE} -- C externals
 	c_ml_total (a_ptr: POINTER): INTEGER is
 			-- Access `ml_total' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct emallinfo *) $a_ptr)->ml_total"
 		end
@@ -119,7 +119,7 @@ feature {NONE} -- C externals
 	c_ml_used (a_ptr: POINTER): INTEGER is
 			-- Access `ml_used' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct emallinfo *) $a_ptr)->ml_used"
 		end
@@ -127,7 +127,7 @@ feature {NONE} -- C externals
 	c_ml_over (a_ptr: POINTER): INTEGER is
 			-- Access `ml_over' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct emallinfo *) $a_ptr)->ml_over"
 		end
@@ -135,7 +135,7 @@ feature {NONE} -- C externals
 	c_ml_chunk (a_ptr: POINTER): INTEGER is
 			-- Access `ml_chunk' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct emallinfo *) $a_ptr)->ml_chunk"
 		end
@@ -143,7 +143,7 @@ feature {NONE} -- C externals
 	c_sizeof_emallinfo: INTEGER is
 			-- Size of struct `emallinfo'.
 		external
-			"C macro use %"eif_eiffel.h%""
+			"C macro use %"eif_memory.h%""
 		alias
 			"sizeof(struct emallinfo)"
 		end
