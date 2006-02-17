@@ -197,7 +197,7 @@ feature {NONE} -- C externals
 	c_sizeof_gacstat: INTEGER is
 			-- Size of struct `gacstat'.
 		external
-			"C macro use %"eif_eiffel.h%""
+			"C macro use %"eif_memory.h%""
 		alias
 			"sizeof(struct gacstat)"
 		end
@@ -205,7 +205,7 @@ feature {NONE} -- C externals
 	c_count (a_ptr: POINTER): INTEGER is
 			-- Access `count' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->count"
 		end
@@ -213,7 +213,7 @@ feature {NONE} -- C externals
 	c_mem_used (a_ptr: POINTER): INTEGER is
 			-- Access `mem_used' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->mem_used"
 		end
@@ -221,7 +221,7 @@ feature {NONE} -- C externals
 	c_mem_collect (a_ptr: POINTER): INTEGER is
 			-- Access `mem_collect' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->mem_collect"
 		end
@@ -229,7 +229,7 @@ feature {NONE} -- C externals
 	c_mem_avg (a_ptr: POINTER): INTEGER is
 			-- Access `mem_avg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->mem_avg"
 		end
@@ -237,7 +237,7 @@ feature {NONE} -- C externals
 	c_real_time (a_ptr: POINTER): INTEGER is
 			-- Access `real_time' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->real_time"
 		end
@@ -245,7 +245,7 @@ feature {NONE} -- C externals
 	c_real_avg (a_ptr: POINTER): INTEGER is
 			-- Access `real_avg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->real_avg"
 		end
@@ -253,7 +253,7 @@ feature {NONE} -- C externals
 	c_real_itime (a_ptr: POINTER): INTEGER is
 			-- Access `real_itime' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->real_itime"
 		end
@@ -261,7 +261,7 @@ feature {NONE} -- C externals
 	c_real_iavg (a_ptr: POINTER): INTEGER is
 			-- Access `real_iavg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->real_iavg"
 		end
@@ -269,7 +269,7 @@ feature {NONE} -- C externals
 	c_cpu_time (a_ptr: POINTER): DOUBLE is
 			-- Access `cpu_time' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->cpu_time"
 		end
@@ -277,7 +277,7 @@ feature {NONE} -- C externals
 	c_cpu_avg (a_ptr: POINTER): DOUBLE is
 			-- Access `cpu_avg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->cpu_avg"
 		end
@@ -285,7 +285,7 @@ feature {NONE} -- C externals
 	c_cpu_itime (a_ptr: POINTER): DOUBLE is
 			-- Access `cpu_itime' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->cpu_itime"
 		end
@@ -293,7 +293,7 @@ feature {NONE} -- C externals
 	c_cpu_iavg (a_ptr: POINTER): DOUBLE is
 			-- Access `cpu_iavg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->cpu_iavg"
 		end
@@ -301,7 +301,7 @@ feature {NONE} -- C externals
 	c_sys_time (a_ptr: POINTER): DOUBLE is
 			-- Access `sys_time' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->sys_time"
 		end
@@ -309,7 +309,7 @@ feature {NONE} -- C externals
 	c_sys_avg (a_ptr: POINTER): DOUBLE is
 			-- Access `sys_avg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->sys_avg"
 		end
@@ -317,7 +317,7 @@ feature {NONE} -- C externals
 	c_sys_itime (a_ptr: POINTER): DOUBLE is
 			-- Access `sys_itime' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->sys_itime"
 		end
@@ -325,7 +325,7 @@ feature {NONE} -- C externals
 	c_sys_iavg (a_ptr: POINTER): DOUBLE is
 			-- Access `sys_iavg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
 			"((struct gacstat *) $a_ptr)->sys_iavg"
 		end
