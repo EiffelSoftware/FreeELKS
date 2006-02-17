@@ -1,7 +1,7 @@
 indexing
 	description: "References to objects containing a unicode character value"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -22,13 +22,22 @@ inherit
 
 feature -- Access
 
-	item: WIDE_CHARACTER
-			-- Unicde character value
+	item: WIDE_CHARACTER is
+			-- Unicode character value
+		external
+			"built_in"
+		end
 
-	hash_code, code: INTEGER is
-			-- Associated integer value and hash code value
+	code: INTEGER is
+			-- Associated integer value
 		do
-			Result := chcode (item)
+			Result := item.code
+		end
+
+	hash_code: INTEGER is
+			-- Hash code value
+		do
+			Result := code
 		end
 
 feature -- Status report
@@ -41,7 +50,9 @@ feature -- Comparison
 	infix "<" (other: like Current): BOOLEAN is
 			-- Is `other' greater than current character?
 		do
-			Result := item < other.item
+			Result := code < other.code
+		ensure then
+			definition: Result = (code < other.code)
 		end
 
 	is_equal (other: like Current): BOOLEAN is
@@ -55,8 +66,8 @@ feature -- Element change
 
 	set_item (c: WIDE_CHARACTER) is
 			-- Make `c' the `item' value.
-		do
-			item := c
+		external
+			"built_in"
 		end
 
 feature -- Output
@@ -65,9 +76,9 @@ feature -- Output
 			-- Printable representation of wide character
 		do
 			create Result.make (6)
-			Result.extend ('U')
-			Result.extend ('+')
-			Result.append (chcode (item).to_hex_string)
+			Result.append_character ('U')
+			Result.append_character ('+')
+			Result.append_string (code.to_hex_string)
 		end
 
 feature {NONE} -- Initialization
@@ -75,9 +86,9 @@ feature {NONE} -- Initialization
 	make_from_reference (v: WIDE_CHARACTER_REF) is
 			-- Initialize `Current' with `v.item'.
 		require
-			v_not_void: V /= Void
+			v_not_void: v /= Void
 		do
-			item := v.item
+			set_item (v)
 		ensure
 			item_set: item = v.item	
 		end
@@ -91,14 +102,6 @@ feature -- Conversion
 			Result.set_item (item)
 		ensure
 			to_reference_not_void: Result /= Void
-		end
-
-feature {NONE} -- Implementation
-
-	chcode (c: like item): INTEGER is
-			-- Associated integer value
-		external
-			"built_in"
 		end
 
 end
