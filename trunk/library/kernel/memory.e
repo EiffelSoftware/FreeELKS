@@ -46,7 +46,7 @@ feature -- Status report
 			-- Minimum amount of bytes to be allocated before
 			-- starting an automatic garbage collection.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"mem_tget"
 		end
@@ -58,7 +58,7 @@ feature -- Status report
 			-- value from it.
 			-- If null, no full collection is launched.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"mem_pget"
 		end
@@ -70,7 +70,7 @@ feature -- Status report
 			-- value from it.
 			-- If null, no full coalescing is launched.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_coalesce_period"
 		end
@@ -78,7 +78,7 @@ feature -- Status report
 	collecting: BOOLEAN is
 			-- Is garbage collection enabled?
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"gc_ison"
 		end
@@ -95,7 +95,7 @@ feature -- Status report
 	max_mem: INTEGER is
 			-- Maximum amount of bytes the run-time can allocate.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_get_max_mem"
 		end
@@ -107,7 +107,7 @@ feature -- Status report
 			-- is defined, it is set to the closest reasonable 
 			-- value from it.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_get_chunk_size"
 		end
@@ -120,7 +120,7 @@ feature -- Status report
 			-- is defined, it is set to the closest reasonable 
 			-- value from it.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_tenure"
 		end
@@ -131,7 +131,7 @@ feature -- Status report
 			-- is defined, it is set to the closest reasonable 
 			-- value from it.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_generation_object_limit"
 		end
@@ -143,7 +143,7 @@ feature -- Status report
 			-- value from it.
 
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_scavenge_zone_size"
 		end
@@ -159,7 +159,7 @@ feature -- Status report
 	objects_instance_of (an_object: ANY): SPECIAL [ANY] is
 			-- Objects that have same dynamic type as `an_object'.
 		do
-			Result := find_instance_of (feature {ISE_RUNTIME}.dynamic_type ($an_object),
+			Result := find_instance_of ({ISE_RUNTIME}.dynamic_type ($an_object),
 				special_any_dynamic_type)
 		end
 
@@ -171,10 +171,38 @@ feature -- Status report
 			l_spec: SPECIAL [ANY]
 			l_item: ANY
 			l_list: ARRAYED_LIST [ANY]
+			l_memory_count_map: HASH_TABLE [INTEGER, INTEGER]
 		do
 				-- First get all object instances in runtime.
 			l_spec := find_all_instances (special_any_dynamic_type)
 			
+				-- Now create a memory count map of all objects. There are two reasons
+				-- why we do not simply query `memory_count_map':
+				-- 1. This would cause two calls to `find_all_instances'.
+				-- 2. The new objects created by the first call would be included in the
+				-- second list so they would not match exactly.
+				
+				-- The reason why we prepass and create a memory count map is
+				-- to enable us to create the arrayed lists in `Result' with
+				-- the exact size required for their contents. Even though we now have to
+				-- perform the prepass, `memory_map' is approx 15-20% faster as
+				-- resizing the arrayed lists each time an item was addded is slow.
+				
+			create l_memory_count_map.make (100)
+			from
+				i := 0
+				nb := l_spec.count
+			until
+				i >= nb
+			loop
+				l_item := l_spec.item (i)
+				if l_item /= Void then
+					dtype := {ISE_RUNTIME}.dynamic_type ($l_item)
+					l_memory_count_map.force (l_memory_count_map.item (dtype) + 1, dtype)
+				end
+				i := i + 1
+			end
+
 				-- Now create table indexed by dynamic type. For a given
 				-- dynamic type, we will have a list of all objects of
 				-- this type.
@@ -187,15 +215,17 @@ feature -- Status report
 			loop
 				l_item := l_spec.item (i)
 				if l_item /= Void then
-					dtype := feature {ISE_RUNTIME}.dynamic_type ($l_item)
+					dtype := {ISE_RUNTIME}.dynamic_type ($l_item)
 					Result.search (dtype)
 					if Result.found then
 						l_list := Result.found_item
 					else
-						create l_list.make (5)
+						create l_list.make_filled (l_memory_count_map.item (dtype))
+						l_list.start
 						Result.put (l_list, dtype)
 					end
-					l_list.extend (l_item)
+					l_list.put_i_th (l_item, l_list.index)
+					l_list.forth
 				end
 				i := i + 1
 			end
@@ -224,7 +254,7 @@ feature -- Status report
 			loop
 				l_item := l_spec.item (i)
 				if l_item /= Void then
-					dtype := feature {ISE_RUNTIME}.dynamic_type ($l_item)
+					dtype := {ISE_RUNTIME}.dynamic_type ($l_item)
 					Result.search (dtype)
 					if Result.found then
 						Result.force (Result.found_item + 1, dtype)
@@ -241,7 +271,7 @@ feature -- Status setting
 	collection_off is
 			-- Disable garbage collection.
 		external
-			"C | %"eif_garcol.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"gc_stop"
 		end
@@ -249,7 +279,7 @@ feature -- Status setting
 	collection_on is
 			-- Enable garbage collection.
 		external
-			"C | %"eif_garcol.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"gc_run"
 		end
@@ -258,7 +288,7 @@ feature -- Status setting
 			-- Enter ``speed'' mode: will optimize speed of memory
 			-- allocation rather than memory usage.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"mem_speed"
 		end
@@ -267,7 +297,7 @@ feature -- Status setting
 			-- Enter ``memory'' mode: will try to compact memory
 			-- before requesting more from the operating system.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"mem_slow"
 		end
@@ -276,7 +306,7 @@ feature -- Status setting
 			-- Enter ``tiny'' mode: will enter ``memory'' mode
 			-- after having freed as much memory as possible.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"mem_tiny"
 		end
@@ -300,7 +330,7 @@ feature -- Status setting
 		require
 			positive_value: value > 0
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"mem_tset"
 		end
@@ -313,7 +343,7 @@ feature -- Status setting
 		require
 			positive_value: value >= 0
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"mem_pset"
 		end
@@ -325,7 +355,7 @@ feature -- Status setting
 		require
 			positive_value: value >= 0
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_set_coalesce_period"
 		end
@@ -335,7 +365,7 @@ feature -- Status setting
 		require
 			positive_value: value > 0
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_set_max_mem"
 		end
@@ -382,14 +412,14 @@ feature -- Removal
 			-- Force a partial collection cycle if garbage
 			-- collection is enabled; do nothing otherwise.
 		external
-			"C | %"eif_eiffel.h%""
+			"C use %"eif_memory.h%""
 		end
 
 	full_collect is
 			-- Force a full collection cycle if garbage
 			-- collection is enabled; do nothing otherwise.
 		external
-			"C | %"eif_garcol.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"plsc"
 		end
@@ -399,7 +429,7 @@ feature {NONE} -- Implementation
 	gc_monitoring (flag: BOOLEAN) is
 			-- Set up GC monitoring according to `flag'
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"gc_mon"
 		end
@@ -427,7 +457,7 @@ feature {NONE} -- Implementation
 		once
 			create a.make (0, 0)
 			spec := a.area
-			Result := feature {ISE_RUNTIME}.dynamic_type ($spec)
+			Result := {ISE_RUNTIME}.dynamic_type ($spec)
 		end
 
 end
