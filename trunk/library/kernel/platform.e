@@ -1,7 +1,7 @@
 indexing
 	description: "Platform-dependent properties."
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -10,214 +10,199 @@ class PLATFORM
 
 feature -- Platform
 
-	is_dotnet: BOOLEAN is False
+	is_dotnet: BOOLEAN is
 			-- Are we targetting .NET?
-			
+		external
+			"built_in"
+		end
+
 	is_windows: BOOLEAN is
 			-- Are we running on Windows platform?
 		external
-			"C macro use %"eif_eiffel.h%""
-		alias
-			"EIF_IS_WINDOWS"
+			"built_in"
 		end
 
 	is_unix: BOOLEAN is
 			-- Are we running on a Unix like platform?
-		once
-			Result := not (is_vms or is_windows)
+		external
+			"built_in"
 		end
 
 	is_vms: BOOLEAN is
 			-- Are we running on VMS?
 		external
-			"C macro use %"eif_eiffel.h%""
-		alias
-			"EIF_IS_VMS"
+			"built_in"
+		end
+
+	is_little_endian: BOOLEAN is
+			-- Is current platform a little endian one?
+		local
+			l_pointer: MANAGED_POINTER
+			l_int16: INTEGER_16
+		once
+			l_int16 := 1
+			create l_pointer.make (2)
+			l_pointer.put_integer_16 (l_int16, 0)
+			Result := l_pointer.read_integer_16_le (0) = l_int16
 		end
 
 feature -- Access bytes size
 
-	Boolean_bytes: INTEGER is
+	boolean_bytes: INTEGER is
 			-- Number of bytes in a value of type `BOOLEAN'
 		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"sizeof(EIF_BOOLEAN)"
+			"built_in"
 		end
 
-	Character_bytes: INTEGER is
+	character_bytes: INTEGER is
 			-- Number of bytes in a value of type `CHARACTER'
 		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"sizeof(EIF_CHARACTER)"
+			"built_in"
 		end
 
-	Wide_character_bytes: INTEGER is
+	wide_character_bytes: INTEGER is 4
 			-- Number of bytes in a value of type `WIDE_CHARACTER'
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"sizeof(EIF_WIDE_CHAR)"
-		end
 
-	Integer_8_bytes: INTEGER is
+	natural_8_bytes: INTEGER is 1
 			-- Number of bytes in a value of type `INTEGER_8'
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"sizeof(EIF_INTEGER_8)"
-		end
 
-	Integer_16_bytes: INTEGER is
+	natural_16_bytes: INTEGER is 2
 			-- Number of bytes in a value of type `INTEGER_16'
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"sizeof(EIF_INTEGER_16)"
-		end
 
-	Integer_32_bytes, Integer_bytes: INTEGER is
+	natural_32_bytes: INTEGER is 4
+			-- Number of bytes in a value of type `INTEGER'
+
+	natural_64_bytes: INTEGER is 8
+			-- Number of bytes in a value of type `INTEGER_64'
+
+	integer_bytes: INTEGER is
 			-- Number of bytes in a value of type `INTEGER'
 		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"sizeof(EIF_INTEGER)"
+			"built_in"
 		end
 
-	Integer_64_bytes: INTEGER is
+	integer_8_bytes: INTEGER is 1
+			-- Number of bytes in a value of type `INTEGER_8'
+
+	integer_16_bytes: INTEGER is 2
+			-- Number of bytes in a value of type `INTEGER_16'
+
+	integer_32_bytes: INTEGER is 4
+			-- Number of bytes in a value of type `INTEGER_32'
+
+	integer_64_bytes: INTEGER is 8
 			-- Number of bytes in a value of type `INTEGER_64'
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"sizeof(EIF_INTEGER_64)"
-		end
 
-	Real_bytes: INTEGER is
+	real_bytes: INTEGER is
 			-- Number of bytes in a value of type `REAL'
 		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"sizeof(EIF_REAL)"
+			"built_in"
 		end
 
-	Double_bytes: INTEGER is
-			-- Number of bytes in a value of type `DOUBLE'
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"sizeof(EIF_DOUBLE)"
-		end
+	real_32_bytes: INTEGER is 4
+			-- Number of bytes in a value of type `REAL_32'
 
-	Pointer_bytes: INTEGER is
+	real_64_bytes, double_bytes: INTEGER is 8
+			-- Number of bytes in a value of type `REAL_64'
+
+	pointer_bytes: INTEGER is
 			-- Number of bytes in a value of type `POINTER'
 		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"sizeof(EIF_POINTER)"
+			"built_in"
 		end
 
 feature -- Access bits size
 
-	Boolean_bits: INTEGER is
+	boolean_bits: INTEGER is
 			-- Number of bits in a value of type `BOOLEAN'
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"esbool_size"
+		once
+			Result := boolean_bytes * 8
 		end
 
-	Character_bits: INTEGER is
+	character_bits: INTEGER is
 			-- Number of bits in a value of type `CHARACTER'
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"eschar_size"
+		once
+			Result := character_bytes * 8
 		end
 
-	Integer_8_bits: INTEGER is
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"esint8_size"
-		end
+	natural_8_bits: INTEGER is 8
+			-- Number of bits in a value of type `NATURAL_8'
 
-	Integer_16_bits: INTEGER is
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"esint16_size"
-		end
+	natural_16_bits: INTEGER is 16
+			-- Number of bits in a value of type `NATURAL_16'
 
-	Integer_32_bits, Integer_bits: INTEGER is
+	natural_32_bits: INTEGER is 32
+			-- Number of bits in a value of type `NATURAL_32'
+
+	natural_64_bits: INTEGER is 64
+			-- Number of bits in a value of type `NATURAL_64'
+
+	integer_bits: INTEGER is
 			-- Number of bits in a value of type `INTEGER'
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"esint_size"
+		once
+			Result := integer_bytes * 8
 		end
 
-	Integer_64_bits: INTEGER is
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"esint64_size"
-		end
+	integer_8_bits: INTEGER is 8
+			-- Number of bits in a value of type `INTEGER_8'
 
-	Real_bits: INTEGER is
+	integer_16_bits: INTEGER is 16
+			-- Number of bits in a value of type `INTEGER_16'
+
+	integer_32_bits: INTEGER is 32
+			-- Number of bits in a value of type `INTEGER_32'
+
+	integer_64_bits: INTEGER is 64
+			-- Number of bits in a value of type `INTEGER_64'
+
+	real_bits: INTEGER is
 			-- Number of bits in a value of type `REAL'
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"esreal_size"
+		once
+			Result := real_bytes * 8
 		end
 
-	Double_bits: INTEGER is
-			-- Number of bits in a value of type `DOUBLE'
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"esdouble_size"
-		end
+	real_32_bits: INTEGER is 32
+			-- Number of bits in a value of type `REAL_32'
 
-	Pointer_bits: INTEGER is
+	real_64_bits, double_bits: INTEGER is 64
+			-- Number of bits in a value of type `REAL_64'
+
+	pointer_bits: INTEGER is
 			-- Number of bits in a value of type `POINTER'
-		external
-			"C macro use %"eif_misc.h%""
-		alias
-			"esptr_size"
+		once
+			Result := pointer_bytes * 8
 		end
 
 feature -- Access min max values
 
-	Maximum_character_code: INTEGER is
+	maximum_character_code: INTEGER is
 			-- Largest supported code for CHARACTER values
 		do
-			Result := feature {CHARACTER}.Max_value
+			Result := {CHARACTER}.max_value
 		ensure
 			meaningful: Result >= 127
 		end
 
-	Maximum_integer: INTEGER is 
+	maximum_integer: INTEGER is 
 			-- Largest supported value of type INTEGER.
 		do
-			Result := feature {INTEGER}.Max_value
+			Result := {INTEGER}.max_value
 		ensure
 			meaningful: Result >= 0
 		end
 
-	Minimum_character_code: INTEGER is
+	minimum_character_code: INTEGER is
 			-- Smallest supported code for CHARACTER values
 		do
-			Result := feature {CHARACTER}.Min_value
+			Result := {CHARACTER}.min_value
 		ensure
 			meaningful: Result <= 0
 		end
 
-	Minimum_integer: INTEGER is
+	minimum_integer: INTEGER is
 			-- Smallest supported value of type INTEGER
 		do
-			Result := feature {INTEGER}.Min_value
+			Result := {INTEGER}.min_value
 		ensure
 			meaningful: Result <= 0
 		end
