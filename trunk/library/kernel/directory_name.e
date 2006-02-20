@@ -40,7 +40,7 @@ feature {NONE} -- Externals
 
 	eif_is_directory_valid (p: POINTER): BOOLEAN is
 		external
-			"C (EIF_CHARACTER *): EIF_BOOLEAN | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *): EIF_BOOLEAN use %"eif_path_name.h%""
 		end
 
 end

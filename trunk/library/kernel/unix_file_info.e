@@ -1,7 +1,7 @@
 indexing
 	description: "Internal file information"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -263,31 +263,31 @@ feature {NONE} -- Implementation
 	stat_size: INTEGER is
 			-- Get size of 'struct stat' (in bytes)
 		external
-			"C | %"eif_file.h%""
+			"C use %"eif_file.h%""
 		end
 
 	file_stat (name, stat_buf: POINTER) is
 			-- Get information from file `name' into `stat_buf'
 		external
-			"C (char *, struct stat *) | %"eif_file.h%""
+			"C signature (char *, struct stat *) use %"eif_file.h%""
 		end
 
 	file_access (f_name: POINTER; which: INTEGER): BOOLEAN is
 			-- Perform access test `which' on `f_name' using real ID.
 		external
-			"C (char *, EIF_INTEGER): EIF_BOOLEAN | %"eif_file.h%""
+			"C signature (char *, EIF_INTEGER): EIF_BOOLEAN use %"eif_file.h%""
 		end
 
 	file_eaccess (stat_buf: POINTER; which: INTEGER): BOOLEAN is
 			-- Perform access tests using effective ID.
 		external
-			"C (struct stat *, int): EIF_BOOLEAN | %"eif_file.h%""
+			"C signature (struct stat *, int): EIF_BOOLEAN use %"eif_file.h%""
 		end
 
 	file_info (stat_buf: POINTER; which: INTEGER): INTEGER is
 			-- Extract information `which' from information buffer
 		external
-			"C (struct stat *, int): EIF_INTEGER | %"eif_file.h%""
+			"C signature (struct stat *, int): EIF_INTEGER use %"eif_file.h%""
 		end
 
 	file_owner (uid: INTEGER): STRING is

@@ -4,7 +4,7 @@ indexing
 		This class may be used as ancestor by classes needing its facilities.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -344,54 +344,54 @@ feature {NONE} -- Implementation
 			-- Convert `number' to the corresponding
 			-- file descriptor.
 		external
-			"C | %"eif_console.h%""
+			"C use %"eif_console.h%""
 		end
 
 	console_eof (file: POINTER): BOOLEAN is
 		external
-			"C (FILE *): EIF_BOOLEAN | %"eif_console.h%""
+			"C signature (FILE *): EIF_BOOLEAN use %"eif_console.h%""
 		end
 
 	console_separator (file: POINTER): CHARACTER is
 			-- ASCII code of character following last word read
 		external
-			"C (FILE *): EIF_CHARACTER | %"eif_console.h%""
+			"C signature (FILE *): EIF_CHARACTER use %"eif_console.h%""
 		end
 
 	console_ps (file: POINTER; s_name: POINTER; length: INTEGER) is
 			-- Write string `s' at end of `file'
 		external
-			"C (FILE *, char *, EIF_INTEGER) | %"eif_console.h%""
+			"C signature (FILE *, char *, EIF_INTEGER) use %"eif_console.h%""
 		end
 
 	console_pr (file: POINTER; r: REAL) is
 			-- Write real `r' at end of `file'
 		external
-			"C (FILE *, EIF_REAL) | %"eif_console.h%""
+			"C signature (FILE *, EIF_REAL) use %"eif_console.h%""
 		end
 
 	console_pc (file: POINTER; c: CHARACTER) is
 			-- Write character `c' at end of `file'
 		external
-			"C (FILE *, EIF_CHARACTER) | %"eif_console.h%""
+			"C signature (FILE *, EIF_CHARACTER) use %"eif_console.h%""
 		end
 
 	console_pd (file: POINTER; d: DOUBLE) is
 			-- Write double `d' at end of `file'
 		external
-			"C (FILE *, EIF_DOUBLE) | %"eif_console.h%""
+			"C signature (FILE *, EIF_DOUBLE) use %"eif_console.h%""
 		end
 
 	console_pi (file: POINTER; i: INTEGER) is
 			-- Write integer `i' at end of `file'
 		external
-			"C (FILE *, EIF_INTEGER) | %"eif_console.h%""
+			"C signature (FILE *, EIF_INTEGER) use %"eif_console.h%""
 		end
 
 	console_tnwl (file: POINTER) is
 			-- Write a new_line to `file'
 		external
-			"C (FILE *) | %"eif_console.h%""
+			"C signature (FILE *) use %"eif_console.h%""
 		end
 
 	console_readreal (file: POINTER): REAL is
@@ -450,7 +450,7 @@ feature {NONE} -- Implementation
 	file_close (file: POINTER) is
 			-- Close `file'
 		external
-			"C (FILE *) | %"eif_console.h%""
+			"C signature (FILE *) use %"eif_console.h%""
 		alias
 			"console_file_close"
 		end
