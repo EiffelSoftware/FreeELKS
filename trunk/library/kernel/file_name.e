@@ -1,7 +1,7 @@
 indexing
 	description: "File name abstraction"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -77,6 +77,7 @@ feature -- Status setting
 			str1 := to_c
 			str2 := file_name.to_c
 			eif_append_file_name ($Current, $str1, $str2)
+			set_count (c_strlen ($str1))
 		ensure
 			valid_file_name: is_valid
 		end
@@ -104,27 +105,27 @@ feature {NONE} -- Externals
 
 	eif_append_file_name (s, p, v: POINTER) is
 		external
-			"C (EIF_REFERENCE, EIF_CHARACTER *, EIF_CHARACTER *) | %"eif_path_name.h%""
+			"C signature (EIF_REFERENCE, EIF_CHARACTER *, EIF_CHARACTER *) use %"eif_path_name.h%""
 		end
 
 	eif_is_file_name_valid (p: POINTER): BOOLEAN is
 		external
-			"C (EIF_CHARACTER *): EIF_BOOLEAN | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *): EIF_BOOLEAN use %"eif_path_name.h%""
 		end
 
 	eif_is_extension_valid (p: POINTER): BOOLEAN is
 		external
-			"C (EIF_CHARACTER *): EIF_BOOLEAN | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *): EIF_BOOLEAN use %"eif_path_name.h%""
 		end
 
 	eif_is_file_valid (p: POINTER): BOOLEAN is
 		external
-			"C (EIF_CHARACTER *): EIF_BOOLEAN | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *): EIF_BOOLEAN use %"eif_path_name.h%""
 		end
 
 	c_tempnam (d, n: POINTER): POINTER is
 		external
-			"C (char *, char *): EIF_POINTER | <stdio.h>"
+			"C signature (char *, char *): EIF_POINTER use <stdio.h>"
 		alias
 			"tempnam"
 		end

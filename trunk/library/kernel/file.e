@@ -2,7 +2,7 @@ indexing
 	description:
 		"Sequential files, viewed as persistent sequences of characters"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -169,7 +169,7 @@ feature -- Access
 	descriptor_available: BOOLEAN
 
 	separator: CHARACTER
-				-- ASCII code of character following last word read
+			-- ASCII code of character following last word read
 
 	file_pointer: POINTER
 			-- File pointer as required in C
@@ -1011,6 +1011,13 @@ feature -- Element change
 			end
 		end
 
+	put_managed_pointer (p: MANAGED_POINTER; start_pos, nb_bytes: INTEGER) is
+			-- Put data of length `nb_bytes' pointed by `start_pos' index in `p' at
+			-- current position.
+		do
+			file_ps (file_pointer, p.item + start_pos, nb_bytes)
+		end
+
 	put_character, putchar (c: CHARACTER) is
 			-- Write `c' at current position.
 		do
@@ -1350,6 +1357,19 @@ feature -- Input
 			last_string.set_count (new_count)
 		end
 
+	read_to_managed_pointer (p: MANAGED_POINTER; start_pos, nb_bytes: INTEGER) is
+			-- Read at most `nb_bytes' bound bytes and make result
+			-- available in `p' at position `start_pos'.
+		require else
+			p_not_void: p /= Void
+			p_large_enough: p.count >= nb_bytes + start_pos
+			is_readable: file_readable
+		local
+			l_read: INTEGER
+		do
+			l_read := file_gss (file_pointer, p.item + start_pos, nb_bytes)
+		end
+
 	read_word, readword is
 			-- Read a string, excluding white space and stripping
 			-- leading white space.
@@ -1498,7 +1518,7 @@ feature {NONE} -- Implementation
 	file_link (from_name, to_name: POINTER) is
 			-- Link `to_name' to `from_name'
 		external
-			"C (char *, char *) | %"eif_file.h%""
+			"C signature (char *, char *) use %"eif_file.h%""
 		end
 
 	file_unlink (fname: POINTER) is
@@ -1524,31 +1544,31 @@ feature {NONE} -- Implementation
 			-- File pointer to `file', reopened to have new name `f_name'
 			-- in a mode specified by `how'.
 		external
-			"C (char *, int, FILE *): EIF_POINTER | %"eif_file.h%""
+			"C signature (char *, int, FILE *): EIF_POINTER use %"eif_file.h%""
 		end
 
 	file_close (file: POINTER) is
 			-- Close `file'.
 		external
-			"C (FILE *) | %"eif_file.h%""
+			"C signature (FILE *) use %"eif_file.h%""
 		end
 
 	file_flush (file: POINTER) is
 			-- Flush `file'.
 		external
-			"C (FILE *) | %"eif_file.h%""
+			"C signature (FILE *) use %"eif_file.h%""
 		end
 
 	file_fd (file: POINTER): INTEGER is
 			-- Operating system's file descriptor
 		external
-			"C (FILE *): EIF_INTEGER | %"eif_file.h%""
+			"C signature (FILE *): EIF_INTEGER use %"eif_file.h%""
 		end
 
 	file_gc (file: POINTER): CHARACTER is
 			-- Access the next character
 		external
-			"C (FILE *): EIF_CHARACTER | %"eif_file.h%""
+			"C signature (FILE *): EIF_CHARACTER use %"eif_file.h%""
 		end
 
 	file_gs (file: POINTER; a_string: POINTER; length, begin: INTEGER): INTEGER is
@@ -1557,7 +1577,7 @@ feature {NONE} -- Implementation
 			-- If it does not fit, result is `length' - `begin' + 1.
 			-- If it fits, result is number of characters read.
 		external
-			"C (FILE *, char *, EIF_INTEGER, EIF_INTEGER): EIF_INTEGER | %"eif_file.h%""
+			"C signature (FILE *, char *, EIF_INTEGER, EIF_INTEGER): EIF_INTEGER use %"eif_file.h%""
 		end
 
 	file_gss (file: POINTER; a_string: POINTER; length: INTEGER): INTEGER is
@@ -1565,7 +1585,7 @@ feature {NONE} -- Implementation
 			-- into `a_string'. If it does not fit, result is `length' + 1.
 			-- Otherwise, result is the number of characters read.
 		external
-			"C (FILE *, char *, EIF_INTEGER): EIF_INTEGER | %"eif_file.h%""
+			"C signature (FILE *, char *, EIF_INTEGER): EIF_INTEGER use %"eif_file.h%""
 		end
 
 	file_gw (file: POINTER; a_string: POINTER; length, begin: INTEGER): INTEGER is
@@ -1576,32 +1596,34 @@ feature {NONE} -- Implementation
 			-- If it does not fit, result is `length' - `begin' + 1,
 			-- otherwise result is number of characters read.
 		external
-			"C (FILE *, char *, EIF_INTEGER, EIF_INTEGER): EIF_INTEGER | %"eif_file.h%""
+			"C signature (FILE *, char *, EIF_INTEGER, EIF_INTEGER): EIF_INTEGER use %"eif_file.h%""
 		end
 
 	file_lh (file: POINTER): CHARACTER is
 			-- Look ahead in `file' and find out the value of the next
 			-- character. Do not read over character.
 		external
-			"C (FILE *): EIF_CHARACTER | %"eif_file.h%""
+			"C signature (FILE *): EIF_CHARACTER use %"eif_file.h%""
 		end
 
 	file_size (file: POINTER): INTEGER is
 			-- Size of `file'
 		external
-			"C (FILE *): EIF_INTEGER | %"eif_file.h%""
+			"C signature (FILE *): EIF_INTEGER use %"eif_file.h%""
+		alias
+			"eif_file_size"
 		end
 
 	file_tnil (file: POINTER) is
 			-- Read upto next input line.
 		external
-			"C (FILE *) | %"eif_file.h%""
+			"C signature (FILE *) use %"eif_file.h%""
 		end
 
 	file_tell (file: POINTER): INTEGER is
 			-- Current cursor position in file.
 		external
-			"C (FILE *): EIF_INTEGER | %"eif_file.h%""
+			"C signature (FILE *): EIF_INTEGER use %"eif_file.h%""
 		end
 
 	file_touch (f_name: POINTER) is
@@ -1652,49 +1674,49 @@ feature {NONE} -- Implementation
 	file_tnwl (file: POINTER) is
 			-- Print a new-line to `file'.
 		external
-			"C (FILE *) | %"eif_file.h%""
+			"C signature (FILE *) use %"eif_file.h%""
 		end
 
 	file_append (file, from_file: POINTER; length: INTEGER) is
 			-- Append a copy of `from_file' to `file'
 		external
-			"C (FILE *, FILE *, EIF_INTEGER) | %"eif_file.h%""
+			"C signature (FILE *, FILE *, EIF_INTEGER) use %"eif_file.h%""
 		end
 
 	file_ps (file: POINTER; a_string: POINTER; length: INTEGER) is
 			-- Print `a_string' to `file'.
 		external
-			"C (FILE *, char *, EIF_INTEGER) | %"eif_file.h%""
+			"C signature (FILE *, char *, EIF_INTEGER) use %"eif_file.h%""
 		end
 
 	file_pc (file: POINTER; c: CHARACTER) is
 			-- Put `c' to end of `file'.
 		external
-			"C (FILE *, EIF_CHARACTER) | %"eif_file.h%""
+			"C signature (FILE *, EIF_CHARACTER) use %"eif_file.h%""
 		end
 
 	file_go (file: POINTER; abs_position: INTEGER) is
 			-- Go to absolute `position', originated from start.
 		external
-			"C (FILE *, EIF_INTEGER) | %"eif_file.h%""
+			"C signature (FILE *, EIF_INTEGER) use %"eif_file.h%""
 		end
 
 	file_recede (file: POINTER; abs_position: INTEGER) is
 			-- Go to absolute `position', originated from end.
 		external
-			"C (FILE *, EIF_INTEGER) | %"eif_file.h%""
+			"C signature (FILE *, EIF_INTEGER) use %"eif_file.h%""
 		end
 
 	file_move (file: POINTER; offset: INTEGER) is
 			-- Move file pointer by `offset'.
 		external
-			"C (FILE *, EIF_INTEGER) | %"eif_file.h%""
+			"C signature (FILE *, EIF_INTEGER) use %"eif_file.h%""
 		end
 
 	file_feof (file: POINTER): BOOLEAN is
 			-- End of file?
 		external
-			"C (FILE *): EIF_BOOLEAN | %"eif_file.h%""
+			"C signature (FILE *): EIF_BOOLEAN use %"eif_file.h%""
 		end
 
 	file_exists (f_name: POINTER): BOOLEAN is
@@ -1725,7 +1747,7 @@ feature {NONE} -- Implementation
 			-- Object structured retrieved from file of pointer
 			-- `file_ptr'
 		external
-			"C | %"eif_retrieve.h%""
+			"C use %"eif_retrieve.h%""
 		alias
 			"eretrieve"
 		end
@@ -1809,8 +1831,15 @@ feature {FILE} -- Implementation
 		do
 			mode := Write_file
 		end
+		
+	platform_indicator: PLATFORM is
+			-- Platform indicator
+		once
+			create Result
+		end
 
 invariant
+
 	valid_mode: Closed_file <= mode and mode <= Append_read_file
 	name_exists: name /= Void
 	name_not_empty: not name.is_empty

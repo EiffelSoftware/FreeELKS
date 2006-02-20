@@ -125,7 +125,7 @@ feature -- Element change
 			-- Set `new_size' to BUFFER_SIZE, internal value used to
 			-- increment `buffer_size' during storable operations.
 		external
-			"C | %"eif_store.h%""
+			"C use %"eif_store.h%""
 		alias
 			"set_buffer_size"
 		end
@@ -183,7 +183,7 @@ feature {NONE} -- Implementation
 	
 	c_malloc (size: INTEGER): POINTER is
 		external
-			"C | %"eif_store.h%""
+			"C use %"eif_store.h%""
 		alias
 			"stream_malloc"
 		end
@@ -266,11 +266,46 @@ feature -- Output
 		do
 		end
 
-	put_integer, putint (i: INTEGER) is
+	put_integer, putint, put_integer_32 (i: INTEGER) is
 			-- Write `i' to medium.
 		do
 		end
+		
+	put_integer_8 (i: INTEGER_8) is
+			-- Write `i' to medium.
+		do
+		end		
+	
+	put_integer_16 (i: INTEGER_16) is
+			-- Write `i' to medium.
+		do
+		end	
 
+	put_integer_64 (i: INTEGER_64) is
+			-- Write `i' to medium.
+		do
+		end	
+		
+	put_natural_8 (i: NATURAL_8) is				
+			-- Write `i' to medium.
+		do
+		end	
+		 
+	put_natural_16 (i: NATURAL_16) is				
+			-- Write `i' to medium.
+		do
+		end	
+	
+	put_natural, put_natural_32 (i: NATURAL_32) is				
+			-- Write `i' to medium.
+		do
+		end	
+
+	put_natural_64 (i: NATURAL_64) is				
+			-- Write `i' to medium.
+		do
+		end	
+		
 	put_boolean, putbool (b: BOOLEAN) is
 			-- Write `b' to medium.
 		do
@@ -278,6 +313,12 @@ feature -- Output
 
 	put_double, putdouble (d: DOUBLE) is
 			-- Write `d' to medium.
+		do
+		end
+
+	put_managed_pointer (p: MANAGED_POINTER; start_pos, nb_bytes: INTEGER) is
+			-- Put data of length `nb_bytes' pointed by `start_pos' index in `p' at
+			-- current position.
 		do
 		end
 
@@ -301,11 +342,53 @@ feature -- Input
 		do
 		end
 
-	read_integer, readint is
+	read_integer, readint, read_integer_32 is
 			-- Read a new integer.
 			-- Make result available in `last_integer'.
 		do
 		end
+		
+	read_integer_8 is
+			-- Read a new integer.
+			-- Make result available in `last_integer_8'.
+		do
+		end
+		
+	read_integer_16 is
+			-- Read a new integer.
+			-- Make result available in `last_integer_16'.
+		do
+		end
+		
+	read_integer_64 is
+			-- Read a new integer.
+			-- Make result available in `last_integer_64'.
+		do
+		end
+		
+	read_natural_8 is
+			-- Read a new natural.
+			-- Make result available in `last_natural_8'.
+		do
+		end		
+		
+	read_natural_16 is
+			-- Read a new natural.
+			-- Make result available in `last_natural_16'.
+		do
+		end			
+
+	read_natural, read_natural_32 is
+			-- Read a new natural.
+			-- Make result available in `last_natural'.
+		do
+		end	
+		
+	read_natural_64 is
+			-- Read a new natural.
+			-- Make result available in `last_natural_64'.
+		do
+		end					
 
 	read_stream, readstream (nb_char: INTEGER) is
 			-- Read a string of at most `nb_char' bound characters
@@ -318,6 +401,12 @@ feature -- Input
 			-- Read characters until a new line or
 			-- end of medium.
 			-- Make result available in `last_string'.
+		do
+		end
+
+	read_to_managed_pointer (p: MANAGED_POINTER; start_pos, nb_bytes: INTEGER) is
+			-- Read at most `nb_bytes' bound bytes and make result
+			-- available in `p' at position `start_pos'.
 		do
 		end
 

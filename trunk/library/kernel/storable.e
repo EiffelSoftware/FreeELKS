@@ -65,7 +65,7 @@ feature -- Setting
 			-- If `v' it will discard POINTER values and replace them by
 			-- the `default_pointer' pointer. Otherwise it keeps the original value.
 		external
-			"C macro signature (EIF_BOOLEAN) use %"eif_retrieve.h%""
+			"C signature (EIF_BOOLEAN) use %"eif_retrieve.h%""
 		alias
 			"eif_set_discard_pointer_values"
 		end
@@ -74,7 +74,7 @@ feature -- Setting
 			-- If `v' it will use ISE Eiffel 5.0 storable format for
 			-- storing.
 		external
-			"C macro signature (EIF_BOOLEAN) use %"eif_store.h%""
+			"C signature (EIF_BOOLEAN) use %"eif_store.h%""
 		alias
 			"eif_set_new_independent_format"
 		end
@@ -83,7 +83,7 @@ feature -- Setting
 			-- If `v' it will use ISE Eiffel 5.3 storable format for
 			-- storing with ability to recover when there is a type mismatch.
 		external
-			"C macro signature (EIF_BOOLEAN) use %"eif_store.h%""
+			"C signature (EIF_BOOLEAN) use %"eif_store.h%""
 		alias
 			"eif_set_new_recoverable_format"
 		end

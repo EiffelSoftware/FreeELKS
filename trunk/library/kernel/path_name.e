@@ -1,7 +1,7 @@
 indexing
 	description: "Path name abstraction"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -117,6 +117,7 @@ feature -- Status setting
 			str1 := to_c
 			str2 := directory_name.to_c
 			eif_append_directory ($Current, $str1, $str2)
+			set_count (c_strlen ($str1))
 		ensure
 			valid_file_name: is_valid
 		end
@@ -137,6 +138,7 @@ feature -- Status setting
 			str1 := to_c
 			str2 := directory_name.to_c
 			eif_set_directory ($Current, $str1, $str2)
+			set_count (c_strlen ($str1))
 		ensure
 			valid_file_name: is_valid
 		end
@@ -165,37 +167,44 @@ feature {NONE} -- Externals
 
 	eif_is_volume_name_valid (p: POINTER): BOOLEAN is
 		external
-			"C (EIF_CHARACTER *): EIF_BOOLEAN | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *): EIF_BOOLEAN use %"eif_path_name.h%""
 		end
 
 	eif_is_directory_name_valid (p: POINTER): BOOLEAN is
 		external
-			"C (EIF_CHARACTER *): EIF_BOOLEAN | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *): EIF_BOOLEAN use %"eif_path_name.h%""
 		end
 
 	eif_append_directory (s, p, v: POINTER) is
 		external
-			"C (EIF_REFERENCE, EIF_CHARACTER *, EIF_CHARACTER *) | %"eif_path_name.h%""
+			"C signature (EIF_REFERENCE, EIF_CHARACTER *, EIF_CHARACTER *) use %"eif_path_name.h%""
 		end
 
 	eif_set_directory (s, p, v: POINTER) is
 		external
-			"C (EIF_REFERENCE, EIF_CHARACTER *, EIF_CHARACTER *) | %"eif_path_name.h%""
+			"C signature (EIF_REFERENCE, EIF_CHARACTER *, EIF_CHARACTER *) use %"eif_path_name.h%""
 		end
 
 	eif_path_name_compare (s, t: POINTER; length: INTEGER): BOOLEAN is
 		external
-			"C (EIF_CHARACTER *, EIF_CHARACTER *, EIF_INTEGER): EIF_BOOLEAN | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *, EIF_CHARACTER *, EIF_INTEGER): EIF_BOOLEAN use %"eif_path_name.h%""
 		end
 
 	eif_volume_name (s: POINTER): STRING is
 		external
-			"C (EIF_CHARACTER *): EIF_REFERENCE | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *): EIF_REFERENCE use %"eif_path_name.h%""
 		end
 
 	eif_extracted_paths (s: POINTER): ARRAY [STRING] is
 		external
-			"C (EIF_CHARACTER *): EIF_REFERENCE | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *): EIF_REFERENCE use %"eif_path_name.h%""
+		end
+
+	c_strlen (ptr: POINTER): INTEGER is
+		external
+			"C signature (char *): EIF_INTEGER use <string.h>"
+		alias
+			"strlen"
 		end
 
 end
