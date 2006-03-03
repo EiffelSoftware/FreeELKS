@@ -32,8 +32,8 @@ feature -- Access
 			callable: callable
 		do
 			set_operands (args)
+			clear_last_result
 			Result := rout_obj_call_function (rout_disp, $internal_operands)
-			last_result := Result
 			if is_cleanup_needed then
 				remove_gc_reference
 			end
@@ -79,6 +79,16 @@ feature -- Obsolete
 			Result := item (args)
 		end
 
+feature -- Removal
+
+	clear_last_result is
+			-- Reset content of `last_result' to its default value
+		local
+			l_result: RESULT_TYPE
+		do
+			last_result := l_result
+		end
+		
 feature {NONE} -- Implementation
 
 	rout_obj_call_function (rout, args: POINTER): RESULT_TYPE is
