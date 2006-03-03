@@ -44,6 +44,7 @@ feature -- Access
 		local
 			i, nb: INTEGER
 			l_open_map: like open_map
+			l_internal: like internal_operands
 		do
 			l_open_map := open_map
 			if l_open_map /= Void then
@@ -51,10 +52,11 @@ feature -- Access
 					create Result
 					i := 0
 					nb := l_open_map.count - 1
+					l_internal := internal_operands
 				until
 					i > nb
 				loop
-					Result.put (internal_operands.item (l_open_map.item (i)), i + 1)
+					Result.put (l_internal.item (l_open_map.item (i)), i + 1)
 					i := i + 1
 				end
 			end
@@ -88,6 +90,14 @@ feature -- Access
 			--| FIXME compiler support needed!
 		end
 
+	empty_operands: OPEN_ARGS is
+			-- Empty tuple matching open operands
+		do
+			create Result
+		ensure
+			empty_operands_not_void: Result /= Void
+		end
+		
 feature -- Status report
 
 	callable: BOOLEAN is
@@ -113,115 +123,33 @@ feature -- Status report
 	valid_operands (args: OPEN_ARGS): BOOLEAN is
 			-- Are `args' valid operands for this routine?
 		local
-			i: INTEGER
-			mismatch: BOOLEAN
+			i, arg_type_code: INTEGER
 			arg: ANY
-			arg_type_code: INTEGER_8
-			open_arg_type_code: INTEGER
-			a_boolean_ref: BOOLEAN_REF
-			a_character_ref: CHARACTER_REF
-			a_double_ref: DOUBLE_REF
-			an_integer_ref: INTEGER_REF
-			an_integer_8_ref: INTEGER_8_REF
-			an_integer_16_ref: INTEGER_16_REF
-			an_integer_64_ref: INTEGER_64_REF
-			a_pointer_ref: POINTER_REF
-			a_real_ref: REAL_REF
 			int: INTERNAL
 			open_type_codes: STRING
 		do
 			create int
-			open_type_codes := eif_gen_typecode_str ($Current)
 			if args = Void or open_map = Void then
-				-- Void operands are only allowed
-				-- if object has no open operands.
+					-- Void operands are only allowed
+					-- if object has no open operands.
 				Result := (open_map = Void)
 			elseif open_map /= Void and then int.generic_count (args) >= open_map.count then
 				from
+					Result := True
+					open_type_codes := eif_gen_typecode_str ($Current)
 					i := 1
 				until
-					i > open_map.count or mismatch
+					i > open_map.count or not Result
 				loop
-					arg := args.item (i)
-					arg_type_code := args.arg_item_code (i)
-					open_arg_type_code := open_type_codes.item (i + 1).code
-					if arg_type_code = feature {TUPLE}.reference_code then				
-						inspect	open_arg_type_code
-						when feature {TUPLE}.boolean_code then
-							a_boolean_ref ?= arg
-							mismatch := a_boolean_ref = Void
-						when feature {TUPLE}.character_code then
-							a_character_ref ?= arg
-							mismatch := a_character_ref = Void
-						when feature {TUPLE}.double_code then
-							a_double_ref ?= arg
-							mismatch := a_double_ref = Void
-						when feature {TUPLE}.integer_64_code then
-							an_integer_64_ref ?= arg
-							an_integer_ref ?= arg
-							an_integer_16_ref ?= arg
-							an_integer_8_ref ?= arg
-							mismatch := an_integer_64_ref = Void and then an_integer_ref = Void
-								and then an_integer_16_ref = Void and then an_integer_8_ref = Void
-						when feature {TUPLE}.integer_32_code then
-							an_integer_ref ?= arg
-							an_integer_16_ref ?= arg
-							an_integer_8_ref ?= arg
-							mismatch := an_integer_ref = Void and then
-								an_integer_16_ref = Void and then an_integer_8_ref = Void
-						when feature {TUPLE}.integer_16_code then
-							an_integer_16_ref ?= arg
-							an_integer_8_ref ?= arg
-							mismatch := an_integer_16_ref = Void and then an_integer_8_ref = Void
-						when feature {TUPLE}.integer_8_code then
-							an_integer_8_ref ?= arg
-							mismatch := an_integer_8_ref = Void
-						when feature {TUPLE}.pointer_code then
-							a_pointer_ref ?= arg
-							mismatch := a_pointer_ref = Void
-						when feature {TUPLE}.real_code then
-							a_real_ref ?= arg
-							mismatch := a_real_ref = Void
-						when feature {TUPLE}.reference_code then
-							if arg /= Void and then not int.type_conforms_to (
-								int.dynamic_type (arg),
-								open_operand_type (i))
-							then
-								mismatch := True
-							end
-						else
-								-- Must be NONE open type
-							mismatch := arg /= Void
-						end
-					else
-						if arg_type_code /= open_arg_type_code then
-							inspect
-								open_arg_type_code
-							when feature {TUPLE}.integer_64_code then
-								mismatch :=
-									arg_type_code /= feature {TUPLE}.integer_32_code and then
-									arg_type_code /= feature {TUPLE}.integer_16_code and then
-									arg_type_code /= feature {TUPLE}.integer_8_code
-							when feature {TUPLE}.integer_32_code then
-								mismatch :=
-									arg_type_code /= feature {TUPLE}.integer_16_code and then
-									arg_type_code /= feature {TUPLE}.integer_8_code
-							when feature {TUPLE}.integer_16_code then
-								mismatch := arg_type_code /= feature {TUPLE}.integer_8_code
-							when feature {TUPLE}.integer_8_code then
-									-- As seen in above if statement, `arg_type_code' is not
-									-- equal to `open_arg_type_code'.
-								mismatch := True
-							else
-								mismatch :=
-									(open_arg_type_code = feature {TUPLE}.reference_code implies
-									open_operand_type (i) > 0)
-							end
-						end
+					arg_type_code := args.item_code (i)
+					Result := arg_type_code = open_type_codes.item (i + 1).code
+					if Result and then arg_type_code = {TUPLE}.reference_code then
+						arg := args.item (i)
+						Result := arg = Void or else
+							int.type_conforms_to (int.dynamic_type (arg), open_operand_type (i))
 					end
 					i := i + 1
 				end
-				Result := not mismatch
 			end
 		end
 
