@@ -28,50 +28,40 @@ feature -- Initialization
 			other_exists: other /= Void
 			conforming: conforms_to (other)
 		do
-			internal_operands := other.internal_operands
-			open_map := other.open_map
 			rout_disp := other.rout_disp
-			eiffel_rout_disp := other.eiffel_rout_disp
-			is_cleanup_needed := other.is_cleanup_needed
-		ensure
-			same_call_status: other.callable implies callable
+			encaps_rout_disp := other.encaps_rout_disp
+			calc_rout_addr := other.calc_rout_addr
+			closed_operands := other.closed_operands
+			operands := other.operands
+			class_id := other.class_id
+			feature_id := other.feature_id
+			is_precompiled := other.is_precompiled
+			is_basic := other.is_basic
+			is_target_closed := other.is_target_closed
+			is_inline_agent := other.is_inline_agent
+			open_count := other.open_count
 		end
 
 feature -- Access
 
-	operands: OPEN_ARGS is
-			-- Open operands.
-		local
-			i, nb: INTEGER
-			l_open_map: like open_map
-			l_internal: like internal_operands
-		do
-			l_open_map := open_map
-			if l_open_map /= Void then
-				from
-					create Result
-					i := 0
-					nb := l_open_map.count - 1
-					l_internal := internal_operands
-				until
-					i > nb
-				loop
-					Result.put (l_internal.item (l_open_map.item (i)), i + 1)
-					i := i + 1
-				end
-			end
-		end
+	frozen operands: OPEN_ARGS
 
 	target: ANY is
 			-- Target of call.
 		do
-			Result := internal_operands.item (1)
+			if is_target_closed then
+				Result := closed_operands.item (1)
+			elseif operands /= Void and then operands.count > 0 then
+				Result := operands.item (1)
+			end
 		end
 
 	hash_code: INTEGER is
 			-- Hash code value.
 		do
-			Result := rout_disp.hash_code
+			Result := rout_disp.hash_code.bit_xor (
+				class_id.hash_code).bit_xor (
+					feature_id.hash_code)
 		end
 
 	precondition (args: like operands): BOOLEAN is
@@ -97,27 +87,25 @@ feature -- Access
 		ensure
 			empty_operands_not_void: Result /= Void
 		end
-		
+
 feature -- Status report
 
-	callable: BOOLEAN is
+	callable: BOOLEAN is True
 			-- Can routine be called on current object?
-		local
-			null_ptr: POINTER
-		do
-			Result := (rout_disp /= null_ptr)
-		end
 
 	is_equal (other: like Current): BOOLEAN is
 			-- Is associated routine the same as the one
 			-- associated with `other'.
 		do
 			--| Do not compare implementation data
-			Result := equal (internal_operands, other.internal_operands)
+			Result := equal (closed_operands, other.closed_operands)
+				and then equal (operands, other.operands)
 				and then equal (open_map, other.open_map)
 				and then (rout_disp = other.rout_disp)
-				and then (eiffel_rout_disp = other.eiffel_rout_disp)
-				and then (is_cleanup_needed = other.is_cleanup_needed)
+				and then (class_id = other.class_id)
+				and then (feature_id = other.feature_id)
+				and then (encaps_rout_disp = other.encaps_rout_disp)
+				and then (calc_rout_addr = other.calc_rout_addr)
 		end
 
 	valid_operands (args: OPEN_ARGS): BOOLEAN is
@@ -129,17 +117,17 @@ feature -- Status report
 			open_type_codes: STRING
 		do
 			create int
-			if args = Void or open_map = Void then
+			if args = Void then
 					-- Void operands are only allowed
 					-- if object has no open operands.
-				Result := (open_map = Void)
-			elseif open_map /= Void and then int.generic_count (args) >= open_map.count then
+				Result := (open_count = 0)
+			elseif int.generic_count (args) >= open_count then
 				from
 					Result := True
 					open_type_codes := eif_gen_typecode_str ($Current)
 					i := 1
 				until
-					i > open_map.count or not Result
+					i > open_count or not Result
 				loop
 					arg_type_code := args.item_code (i)
 					Result := arg_type_code = open_type_codes.item (i + 1).code
@@ -151,17 +139,27 @@ feature -- Status report
 					i := i + 1
 				end
 			end
+			if Result and then not is_target_closed then
+				Result := args.item (1) /= Void
+			end
+		end
+
+	valid_target (args: TUPLE): BOOLEAN is
+			-- Is the first element of tuple `args' a valid target
+		do
+			if args /= Void and then args.count > 0 then
+				if args.is_reference_item (1) then
+					Result := args.reference_item (1) /= Void
+				else
+					Result := True
+				end
+			end
 		end
 
 feature -- Measurement
 
-	open_count: INTEGER is
+	open_count: INTEGER
 			-- Number of open operands.
-		do
-			if open_map /= Void then
-				Result := open_map.count
-			end
-		end
 
 feature -- Settings
 
@@ -169,24 +167,8 @@ feature -- Settings
 			-- Use `args' as operands for next call.
 		require
 			valid_operands: valid_operands (args)
-		local
-			i, nb: INTEGER
-			l_open_map: like open_map
-			l_internal: like internal_operands
 		do
-			l_open_map := open_map
-			if l_open_map /= Void then
-				from
-					i := 0
-					nb := l_open_map.count - 1
-					l_internal := internal_operands
-				until
-					i > nb
-				loop
-					rout_tuple_item_copy ($l_internal, l_open_map.item (i), $args, i + 1)
-					i := i + 1
-				end
-			end
+			operands := args
 		ensure
 			operands_set: (operands /= Void implies equal (operands, args)) or
 				(operands = Void implies (args = Void or else args.is_empty))
@@ -197,11 +179,18 @@ feature -- Duplication
 	copy (other: like Current) is
 			-- Use same routine as `other'.
 		do
-			internal_operands := other.internal_operands
 			open_map := other.open_map
 			rout_disp := other.rout_disp
-			eiffel_rout_disp := other.eiffel_rout_disp
-			is_cleanup_needed := other.is_cleanup_needed
+			calc_rout_addr := other.calc_rout_addr
+			encaps_rout_disp := other.encaps_rout_disp
+			class_id := other.class_id
+			feature_id := other.feature_id
+			is_precompiled := other.is_precompiled
+			is_basic := other.is_basic
+			is_target_closed := other.is_target_closed
+			is_inline_agent := other.is_inline_agent
+			closed_operands := other.closed_operands
+			open_count := other.open_count
 		ensure then
 			same_call_status: other.callable implies callable
 		end
@@ -209,23 +198,16 @@ feature -- Duplication
 feature -- Basic operations
 
 	call (args: OPEN_ARGS) is
-			-- Call routine with operands `args'.
+			-- Call routine with `args'.
 		require
 			valid_operands: valid_operands (args)
-			callable: callable
-		do
-			set_operands (args)
-			apply
-			if is_cleanup_needed then
-				remove_gc_reference
-			end
+		deferred
 		end
 
 	apply is
-			-- Call routine with `args' as last set.
+			-- Call routine with `operands' as last set.
 		require
 			valid_operands: valid_operands (operands)
-			callable: callable
 		deferred
 		end
 
@@ -240,112 +222,110 @@ feature -- Obsolete
 			conforming: conforms_to (other)
 		do
 			adapt (other)
-		ensure
-			same_call_status: other.callable implies callable
 		end
 
-feature {ROUTINE, E_FEATURE} -- Implementation
+feature {ROUTINE} -- Implementation
 
-	frozen internal_operands: TUPLE
-			-- All open and closed arguments provided at creation time
+	frozen closed_operands: TUPLE
+			-- All closed arguments provided at creation time
 
-	frozen open_map: SPECIAL [INTEGER]
-			-- Index map for open arguments
+	closed_count: INTEGER is
+			-- The number of closed operands (including the target if it is closed)
+		do
+			if closed_operands /= Void then
+				Result := closed_operands.count
+			end
+		end
 
 	frozen rout_disp: POINTER
 			-- Routine dispatcher
 
-	frozen eiffel_rout_disp: POINTER
+	frozen calc_rout_addr: POINTER
+			-- Address of the final routine
+
+	frozen open_map: SPECIAL [INTEGER]
+			-- Index map for open arguments
+
+	frozen encaps_rout_disp: POINTER
 			-- Eiffel routine dispatcher
 
-	frozen is_cleanup_needed: BOOLEAN
-			-- If open arguments contain some references, we need
-			-- to clean them up after call.
+	frozen class_id: INTEGER
 
-	frozen set_rout_disp (p: POINTER; tp: POINTER; args: TUPLE; 
-						 omap: ARRAY [INTEGER]) is
-			-- Initialize object. 
+	frozen feature_id: INTEGER
+
+	frozen is_precompiled: BOOLEAN
+
+	frozen is_basic: BOOLEAN
+
+	frozen is_target_closed: BOOLEAN
+
+	frozen is_inline_agent: BOOLEAN
+
+	frozen set_rout_disp (a_rout_disp, a_encaps_rout_disp, a_calc_rout_addr: POINTER
+						  a_class_id, a_feature_id: INTEGER; a_open_map: SPECIAL [INTEGER]
+						  a_is_precompiled, a_is_basic, a_is_target_closed, a_is_inline_agent: BOOLEAN
+						  a_closed_operands: TUPLE; a_open_count: INTEGER) is
+			-- Initialize object.
 		require
-			p_not_void: p /= Default_pointer
-			tp_not_void: tp /= Default_pointer
-			args_not_void: args /= Void
+			target_valid: a_is_target_closed implies valid_target (a_closed_operands)
 		do
-			rout_disp := p
-			eiffel_rout_disp := tp
-			internal_operands := args
-			if omap /= Void then
-				open_map := omap.area
-			else
-				open_map := Void
-			end
-			compute_is_cleanup_needed
+			set_rout_disp_int (a_rout_disp, a_encaps_rout_disp, a_calc_rout_addr, a_class_id, a_feature_id,
+							   a_open_map, a_is_precompiled, a_is_basic, a_is_target_closed,
+							   a_is_inline_agent, a_closed_operands, a_open_count)
+		end
+
+	frozen set_rout_disp_final (a_rout_disp, a_encaps_rout_disp, a_calc_rout_addr: POINTER
+						  		a_closed_operands: TUPLE; a_is_target_closed: BOOLEAN; a_open_count: INTEGER) is
+			-- Initialize object.
+		do
+			rout_disp := a_rout_disp
+			encaps_rout_disp := a_encaps_rout_disp
+			calc_rout_addr := a_calc_rout_addr
+			closed_operands := a_closed_operands
+			is_target_closed := a_is_target_closed
+			open_count := a_open_count
+		end
+
+	frozen set_rout_disp_int (a_rout_disp, a_encaps_rout_disp, a_calc_rout_addr: POINTER
+						  	  a_class_id, a_feature_id: INTEGER; a_open_map: SPECIAL [INTEGER]
+	 						  a_is_precompiled, a_is_basic, a_is_target_closed, a_is_inline_agent: BOOLEAN
+							  a_closed_operands: TUPLE; a_open_count: INTEGER) is
+			-- Initialize object.
+		require
+			a_class_id_valid: a_class_id > -1
+			a_feature_id_valid: a_feature_id > -1
+		do
+			rout_disp := a_rout_disp
+			encaps_rout_disp := a_encaps_rout_disp
+			calc_rout_addr := a_calc_rout_addr
+			class_id := a_class_id
+			feature_id := a_feature_id
+			open_map := a_open_map
+			is_precompiled := a_is_precompiled
+			is_basic := a_is_basic
+			is_target_closed := a_is_target_closed
+			is_inline_agent := a_is_inline_agent
+			closed_operands := a_closed_operands
+			open_count := a_open_count
 		ensure
-			rout_disp_set: rout_disp = p
-			eiffel_rout_disp_set: eiffel_rout_disp = tp
-			internal_operands_set: internal_operands = args
-			open_map_set: (omap = Void and open_map = Void) or
-				(omap /= Void and then open_map = omap.area)
+			rout_disp_set: rout_disp = a_rout_disp
+			encaps_rout_disp_set: encaps_rout_disp = a_encaps_rout_disp
+			calc_rout_addr_set: calc_rout_addr = a_calc_rout_addr
+			class_id_set: class_id = a_class_id
+			feature_id_set: feature_id = a_feature_id
+			open_map_set: open_map = a_open_map
+			is_target_closed_set: is_target_closed = a_is_target_closed
+			is_precompiled_set: is_precompiled = a_is_precompiled
+			is_basic_set: is_basic = a_is_basic
+			is_inline_agent_set: is_inline_agent = a_is_inline_agent
+			closed_operands_set: closed_operands = a_closed_operands
+			open_count_set: open_count = a_open_count
 		end
 
 feature {NONE} -- Implementation
 
 	frozen open_types: ARRAY [INTEGER]
 			-- Types of open operands
-			
-	frozen remove_gc_reference is
-			-- Remove all references from `internal_operands' so that GC
-			-- can collect them if necessary.
-		require
-			is_cleanup_needed: is_cleanup_needed
-			has_open_operands: open_map /= Void
-		local
-			l_open_map: like open_map
-			i, nb, l_pos: INTEGER
-			l_internal: like internal_operands
-		do
-			l_open_map := open_map
-			from
-				i := 0
-				nb := l_open_map.count - 1
-				l_internal := internal_operands
-			until
-				i > nb
-			loop
-				l_pos := l_open_map.item (i)
-					-- We only need to clean up references so that GC
-					-- can collect them if necessary.
-				if l_internal.is_reference_item (l_pos) then
-					l_internal.put_reference (Void, l_pos)
-				end
-				i := i + 1
-			end
-		end
-		
-	frozen compute_is_cleanup_needed is
-			-- Set `is_cleanup_needed' to True if some open arguments are references.
-		local
-			l_open_map: like open_map
-			i, nb, l_pos: INTEGER
-			l_internal: like internal_operands
-		do
-			is_cleanup_needed := False
-			l_open_map := open_map
-			if l_open_map /= Void then
-				from
-					i := 0
-					nb := l_open_map.count - 1
-					l_internal := internal_operands
-				until
-					i > nb or is_cleanup_needed
-				loop
-					l_pos := l_open_map.item (i)
-						-- We only need to clean up references so that GC
-						-- can collect them if necessary.
-					is_cleanup_needed := l_internal.is_reference_item (l_pos)
-					i := i + 1
-				end
-			end
-		end
 
 	open_operand_type (i: INTEGER): INTEGER is
 			-- Type of `i'th open operand.
@@ -356,7 +336,7 @@ feature {NONE} -- Implementation
 			l_internal: INTERNAL
 		do
 			if open_types = Void then
-				create open_types.make (1, open_map.count)
+				create open_types.make (1, open_count)
 			end
 			Result := open_types.item (i)
 			if Result = 0 then
@@ -368,13 +348,6 @@ feature {NONE} -- Implementation
 		end
 
 feature {NONE} -- Externals
-
-	rout_tuple_item_copy (a_target: POINTER; a_target_pos: INTEGER; a_source: POINTER; a_source_pos: INTEGER) is
-			-- Copy tuple element at position `a_source_pos' in `a_source' to position
-			-- `a_target_pos' in `a_target'.
-		external
-			"C macro use %"eif_rout_obj.h%""
-		end
 
 	eif_gen_typecode_str (obj: POINTER): STRING is
 			-- Code name for generic parameter `pos' in `obj'.
