@@ -10,21 +10,40 @@ class BIT_REF inherit
 
 	ANY
 		redefine
-			out
+			out,
+			generator,
+			conforms_to
 		end
-	
-convert
-	to_reference: {BIT_REF, ANY}
 	
 feature -- Access
 
-	item, infix "@" (i: INTEGER): BOOLEAN is
+	item alias "[]", infix "@" (i: INTEGER): BOOLEAN assign put is
 			-- `i'-th bit
 		require
 			index_large_enough: i >= 1
 			index_small_enough: i <= count
 		do
 			Result := b_item ($Current, i)
+		end
+
+	generator: STRING is
+			-- Name of the current object's generating class.
+		do
+			create Result.make (10)
+			Result.append ("BIT ")
+			Result.append_integer (count)
+		end
+
+	conforms_to (other: ANY): BOOLEAN is
+			-- Is dynamic type of current object a descendant of
+			-- dynamic type of `other'?
+		local
+			b: BIT_REF
+		do
+			b ?= other
+			if b /= Void then
+				Result := count <= b.count
+			end
 		end
 
 feature -- Measurement

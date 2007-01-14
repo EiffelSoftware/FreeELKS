@@ -1,9 +1,11 @@
 indexing
 	description: "[
-		Objects representing delayed calls to a function, with some arguments possibly still open.
-	
-		Note: Features are the same as those of ROUTINE, with `apply' made effective, and the addition
-		of `last_result' and `item'.
+		Objects representing delayed calls to a function,
+		with some arguments possibly still open.
+		
+		Note: Features are the same as those of ROUTINE,
+			with `apply' made effective, and the addition
+			of `last_result' and `item'.
 		]"
 	library: "Free implementation of ELKS library"
 	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
@@ -21,22 +23,39 @@ inherit
 		end
 
 feature -- Access
-	
+
 	last_result: RESULT_TYPE
 			-- Result of last call, if any.
+
+	call (args: OPEN_ARGS) is
+		local
+			l_closed_count: INTEGER
+		do
+			l_closed_count :=  closed_operands.count
+			last_result := fast_item (encaps_rout_disp, calc_rout_addr, $closed_operands, $args, class_id, feature_id,
+				is_precompiled, is_basic, is_inline_agent, l_closed_count, open_count, $open_map)
+		end
 
 	item (args: OPEN_ARGS): RESULT_TYPE is
 			-- Result of calling function with `args' as operands.
 		require
 			valid_operands: valid_operands (args)
-			callable: callable
+		local
+			l_closed_count: INTEGER
 		do
-			set_operands (args)
-			clear_last_result
-			Result := rout_obj_call_function (rout_disp, $internal_operands)
-			if is_cleanup_needed then
-				remove_gc_reference
-			end
+			l_closed_count :=  closed_operands.count
+			Result := fast_item (encaps_rout_disp, calc_rout_addr, $closed_operands, $args, class_id, feature_id,
+				is_precompiled, is_basic, is_inline_agent, l_closed_count, open_count, $open_map)
+		end
+
+	apply is
+			-- Call function with `operands' as last set.
+		local
+			l_closed_count: INTEGER
+		do
+			l_closed_count :=  closed_operands.count
+			last_result := fast_item (encaps_rout_disp, calc_rout_addr, $closed_operands, $operands, class_id, feature_id,
+				is_precompiled, is_basic, is_inline_agent, l_closed_count, open_count, $open_map)
 		end
 
 feature -- Comparison
@@ -58,14 +77,6 @@ feature -- Duplication
 			last_result := other.last_result
 		end
 
-feature -- Basic operations
-
-	apply is
-			-- Call function with `operands' as last set.
-		do
-			last_result := rout_obj_call_function (rout_disp, $internal_operands)
-		end
-
 feature -- Obsolete
 
 	eval (args: OPEN_ARGS): RESULT_TYPE is
@@ -74,7 +85,6 @@ feature -- Obsolete
 			"Please use `item' instead"
 		require
 			valid_operands: valid_operands (args)
-			callable: callable
 		do
 			Result := item (args)
 		end
@@ -88,15 +98,42 @@ feature -- Removal
 		do
 			last_result := l_result
 		end
-		
+
 feature {NONE} -- Implementation
 
-	rout_obj_call_function (rout, args: POINTER): RESULT_TYPE is
-			-- Perform call to `rout' with `args' as operands.
+	fast_item (a_rout_disp, a_calc_rout_addr: POINTER
+		       a_closed_operands: POINTER; a_operands: POINTER
+			   a_class_id, a_feature_id: INTEGER; a_is_precompiled, a_is_basic, a_is_inline_agent: BOOLEAN
+			   a_closed_count, a_open_count: INTEGER; a_open_map: POINTER): RESULT_TYPE
 		external
 			"C inline use %"eif_rout_obj.h%""
 		alias
-			"rout_obj_call_agent($rout, $args, $$_result_type)"
+			"[
+			#ifdef WORKBENCH
+				$$_result_type result;
+				if ($a_rout_disp != 0) {
+					return (FUNCTION_CAST($$_result_type, (EIF_POINTER, EIF_REFERENCE, EIF_REFERENCE)) $a_rout_disp)(
+						$a_calc_rout_addr, $a_closed_operands, $a_operands);
+				} else {
+					rout_obj_call_function_dynamic (
+						$a_class_id,
+						$a_feature_id,
+						$a_is_precompiled,
+						$a_is_basic,
+						$a_is_inline_agent,
+						$a_closed_operands,
+						$a_closed_count,
+						$a_operands,
+						$a_open_count,
+						$a_open_map, 
+						&result);
+					return result;
+				}
+			#else
+				return (FUNCTION_CAST($$_result_type, (EIF_POINTER, EIF_REFERENCE, EIF_REFERENCE)) $a_rout_disp)(
+					$a_calc_rout_addr, $a_closed_operands, $a_operands);
+			#endif
+			]"
 		end
 
 end

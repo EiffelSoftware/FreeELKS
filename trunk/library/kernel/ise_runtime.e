@@ -119,6 +119,17 @@ feature -- Feature specific to ISE runtime.
 			"C signature (EIF_REFERENCE): EIF_INTEGER use %"eif_plug.h%""
 		end
 
+	frozen in_assertion: BOOLEAN is
+			-- Are we currently checking some assertions?
+		external
+			"C inline use %"eif_eiffel.h%""
+		alias
+			"[
+				GTCX;	/* Needed in multithreaded mode as `in_assertion' is a per-thread data. */
+				return EIF_TEST(in_assertion!=0);
+			]"
+		end
+
 feature -- Internal C routines
 
 	frozen type_id_from_name (s: POINTER): INTEGER is
@@ -136,5 +147,21 @@ feature -- Internal C routines
 		alias
 			"Dftype"
 		end
-		
+
+	frozen pre_ecma_mapping_status: BOOLEAN is
+			-- Do we map old name to new name by default?
+		external
+			"C inline use %"eif_cecil.h%""
+		alias
+			"return eif_pre_ecma_mapping();"
+		end
+
+	frozen set_pre_ecma_mapping (v: BOOLEAN) is
+			-- Set `pre_ecma_mapping_status' with `v'.
+		external
+			"C inline use %"eif_cecil.h%""
+		alias
+			"eif_set_pre_ecma_mapping($v)"
+		end
+
 end
