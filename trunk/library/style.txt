@@ -1,2 +1,2 @@
-Style for writing Eiffel code:
+Style for writing Eiffel code in FreeELKS:
 - No comments after `end' keyword.
