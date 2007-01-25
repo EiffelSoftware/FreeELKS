@@ -15,20 +15,10 @@ frozen expanded class TYPED_POINTER [G]
 inherit
 	POINTER_REF
 		rename
-			item as pointer_item
-		export
-			{TYPED_POINTER} pointer_item
+			item as to_pointer
 		end
 
 convert
 	to_pointer: {POINTER}
-
-feature -- Conversion
-
-	to_pointer: POINTER is
-			-- Convert to POINTER instance.
-		do
-			Result := pointer_item
-		end
 
 end
