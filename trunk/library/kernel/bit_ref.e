@@ -14,7 +14,7 @@ class BIT_REF inherit
 			generator,
 			conforms_to
 		end
-	
+
 feature -- Access
 
 	item alias "[]", infix "@" (i: INTEGER): BOOLEAN assign put is
@@ -144,7 +144,7 @@ feature -- Conversion
 			l_out := out.to_c
 			Result := b_makebit_from ($l_out, count)
 		end
-		
+
 feature {NONE} -- Implementation
 
 	b_item (a_bit: POINTER; index: INTEGER): BOOLEAN is
@@ -222,8 +222,8 @@ feature {NONE} -- Implementation
 		alias
 			"RTMB"
 		end
-		
+
 invariant
 	valid_count: count > 0
-	
+
 end
