@@ -610,7 +610,7 @@ feature -- Access: Little-endian format
 			Result := read_natural_64_le (pos).as_integer_64
 		end
 
-	read_real_32_le (pos: INTEGER): DOUBLE is
+	read_real_32_le (pos: INTEGER): REAL is
 			-- Read REAL_32 at position `pos'.
 		require
 			pos_nonnegative: pos >= 0
@@ -747,7 +747,7 @@ feature -- Element change: Little-endian format
 			inserted: i = read_integer_64_le (pos)
 		end
 
-	put_real_32_le (v: DOUBLE; pos: INTEGER_32)
+	put_real_32_le (v: REAL; pos: INTEGER_32)
 			-- Insert `v' at position `pos' in little-endian format.
 		require
 			pos_nonnegative: pos >= 0
@@ -879,7 +879,7 @@ feature -- Access: Big-endian format
 			Result := read_natural_64_be (pos).as_integer_64
 		end
 
-	read_real_32_be (pos: INTEGER): DOUBLE is
+	read_real_32_be (pos: INTEGER): REAL is
 			-- Read REAL_32 at position `pos'.
 		require
 			pos_nonnegative: pos >= 0
@@ -1016,7 +1016,7 @@ feature -- Element change: Big-endian format
 			inserted: i = read_integer_64_be (pos)
 		end
 
-	put_real_32_be (v: DOUBLE; pos: INTEGER_32)
+	put_real_32_be (v: REAL; pos: INTEGER_32)
 			-- Insert `v' at position `pos' in big-endian format.
 		require
 			pos_nonnegative: pos >= 0
