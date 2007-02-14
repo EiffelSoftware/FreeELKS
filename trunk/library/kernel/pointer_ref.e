@@ -15,12 +15,12 @@ inherit
 		redefine
 			out, is_equal, is_hashable
 		end
-		
+
 	REFACTORING_HELPER
 		redefine
 			out, is_equal
 		end
-		
+
 feature -- Access
 
 	item: POINTER is
@@ -154,7 +154,7 @@ feature -- Allocation/free
 		do
 			Result := c_calloc (a_count, a_element_size)
 		end
-		
+
 	memory_realloc (a_size: INTEGER): POINTER is
 			-- Realloc `Current'.
 		require
@@ -198,7 +198,7 @@ feature {NONE} -- Implementation
 		alias
 			"memcpy"
 		end
-	
+
 	c_memmove (destination, source: POINTER; count: INTEGER) is
 			-- C memmove
 		external
