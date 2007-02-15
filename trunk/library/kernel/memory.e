@@ -433,7 +433,7 @@ feature {NONE} -- Implementation
 		external
 			"C use %"eif_memory.h%""
 		alias
-			"gc_mon"
+			"eif_gc_mon"
 		end
 	
 	find_referers (target: POINTER; result_type: INTEGER): SPECIAL [ANY] is
