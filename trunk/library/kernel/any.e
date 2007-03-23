@@ -26,6 +26,7 @@ feature -- Access
 			"built_in"
 		ensure
 			generator_not_void: Result /= Void
+			generator_not_empty: not Result.is_empty
 		end
 
  	generating_type: STRING is
@@ -35,6 +36,7 @@ feature -- Access
 			"built_in"
  		ensure
  			generating_type_not_void: Result /= Void
+			generating_type_not_empty: not Result.is_empty
  		end
 
 feature -- Status report
