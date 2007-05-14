@@ -103,6 +103,7 @@ class HASH_TABLE [G, H -> HASHABLE] inherit
 	MISMATCH_CORRECTOR
 		export
 			{NONE} all
+			{ANY} mismatch_information
 		undefine
 			copy, is_equal
 		redefine
