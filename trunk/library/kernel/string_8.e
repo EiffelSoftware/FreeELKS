@@ -2581,7 +2581,7 @@ feature {NONE} -- Implementation
 			new_string_area_big_enough: Result.capacity >= n
 		end
 
-feature {NONE} -- Transformation
+feature -- Transformation
 
 	correct_mismatch is
 			-- Attempt to correct object mismatch during retrieve using `mismatch_information'.
