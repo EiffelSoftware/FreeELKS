@@ -468,11 +468,33 @@ feature -- Status report
 
 	valid_key (k: H): BOOLEAN is
 			-- Is `k' a valid key?
-			-- (Answer: always yes for hash tables in this version)
+		local
+			l_internal: INTERNAL
+			l_default_key: H
+			l_index, i, nb: INTEGER
+			l_name: STRING
 		do
 			Result := True
-		ensure then
-			Result
+			debug ("prevent_hash_table_catcall")
+				if k /= l_default_key then
+					create l_internal
+					from
+						i := 1
+						nb := l_internal.field_count (Current)
+						l_name := "static_type_of_keys"
+					until
+						i >= nb
+					loop
+						if l_internal.field_name (i, Current).is_equal (l_name) then
+							l_index := i
+							i := nb + 1
+						end
+						i := i + 1
+					end
+					Result := l_internal.field_static_type_of_type (
+						l_index, l_internal.dynamic_type (Current)) = l_internal.dynamic_type (k)
+				end
+			end
 		end
 
 feature -- Cursor movement
