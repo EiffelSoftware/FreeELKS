@@ -2508,10 +2508,6 @@ feature -- Duplication
 			else
 				Result := new_string (0)
 			end
-		ensure then
-			first_item: Result.count > 0 implies Result.item (1) = item (start_index)
-			recurse: Result.count > 0 implies
-				Result.substring (2, Result.count).is_equal (substring (start_index + 1, end_index))
 		end
 
 	multiply (n: INTEGER) is
