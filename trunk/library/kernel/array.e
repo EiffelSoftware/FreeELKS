@@ -444,22 +444,24 @@ feature -- Iteration
 			action_not_void: action /= Void
 		local
 			t: TUPLE [G, INTEGER]
-			i, nb: INTEGER
+			i, j, nb: INTEGER
 			l_area: like area
 		do
 			from
 				create t
 				i := 0
+				j := lower
 				nb := capacity - 1
 				l_area := area
 			until
 				i > nb
 			loop
 				t.put (l_area.item (i), 1)
-				t.put (i + 1, 2)
+				t.put (j, 2)
 				action.call (t)
+				j := j + 1
 				i := i + 1
-			end		
+			end
 		end
 
 	do_if_with_index (action: PROCEDURE [ANY, TUPLE [G, INTEGER]]; test: FUNCTION [ANY, TUPLE [G, INTEGER], BOOLEAN]) is
@@ -472,22 +474,24 @@ feature -- Iteration
 			test_not_void: test /= Void
 		local
 			t: TUPLE [G, INTEGER]
-			i, nb: INTEGER
+			i, j, nb: INTEGER
 			l_area: like area
 		do
 			from
 				create t
 				i := 0
+				j := lower
 				nb := capacity - 1
 				l_area := area
 			until
 				i > nb
 			loop
 				t.put (l_area.item (i), 1)
-				t.put (i + 1, 2)
+				t.put (j, 2)
 				if test.item (t) then
 					action.call (t)
 				end
+				j := j + 1
 				i := i + 1
 			end
 		end
