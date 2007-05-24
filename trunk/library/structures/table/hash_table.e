@@ -122,17 +122,19 @@ feature -- Initialization
 		local
 			clever: PRIMES
 			l_void_item: G
+			l_size: INTEGER
 		do
 			create clever
-			capacity := n.Max (Minimum_capacity)
-			capacity := capacity + capacity // 2 + 1
-			capacity := clever.higher_prime (capacity)
-			create content.make (capacity + 1)
-			create keys.make (capacity + 1)
+			l_size := n.Max (minimum_capacity)
+			l_size := l_size + l_size // 2 + 1
+			l_size := clever.higher_prime (l_size)
+			capacity := l_size
 					-- Position `capacity' ignored by hash sequences,
 					-- used to store value for default key.
-			create deleted_marks.make (capacity + 1)
-			iteration_position := capacity + 1
+			create content.make (l_size + 1)
+			create keys.make (l_size + 1)
+			create deleted_marks.make (l_size + 1)
+			iteration_position := l_size + 1
 			count := 0
 			deleted_position := 0
 			control := 0
@@ -142,8 +144,7 @@ feature -- Initialization
 			used_slot_count := 0
 		ensure
 			breathing_space: n < capacity
-			minimum_space: Minimum_capacity < capacity
-			more_than_minimum: capacity >= Minimum_capacity
+			more_than_minimum: capacity > minimum_capacity
 			no_status: not special_status
 		end
 
@@ -1418,7 +1419,7 @@ feature {NONE} -- Implementation
 			breathing_space: count < capacity
 		end
 
-	Minimum_capacity: INTEGER is 5
+	minimum_capacity: INTEGER is 2
 
 	frozen static_type_of_keys: H
 			-- Store the static type of the keys. Used in `valid_key' when one wants
