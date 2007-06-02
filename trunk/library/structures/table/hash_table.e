@@ -498,6 +498,7 @@ feature -- Status report
 						l_index, l_internal.dynamic_type (l_cell)) = l_internal.dynamic_type (k)
 				end
 			end
+		end
 
 feature -- Cursor movement
 
