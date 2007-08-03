@@ -114,7 +114,6 @@ feature {NONE} -- Implementation
 				if ($a_rout_disp != 0) {
 					return (FUNCTION_CAST(EIF_TYPED_VALUE, (EIF_POINTER, EIF_REFERENCE, EIF_REFERENCE)) $a_rout_disp)(
 						$a_calc_rout_addr, $a_closed_operands, $a_operands).$$_result_value;
-			#undef t_$$_result_type
 				} else {
 					rout_obj_call_function_dynamic (
 						$a_class_id,
