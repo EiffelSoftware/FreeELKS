@@ -112,8 +112,8 @@ feature {NONE} -- Implementation
 			#ifdef WORKBENCH
 				$$_result_type result;
 				if ($a_rout_disp != 0) {
-					return (FUNCTION_CAST(EIF_TYPED_VALUE, (EIF_POINTER, EIF_REFERENCE, EIF_REFERENCE)) $a_rout_disp)(
-						$a_calc_rout_addr, $a_closed_operands, $a_operands).$$_result_value;
+					return (FUNCTION_CAST(EIF_UNION, (EIF_POINTER, EIF_REFERENCE, EIF_REFERENCE)) $a_rout_disp)(
+						$a_calc_rout_addr, $a_closed_operands, $a_operands).value.$$_result_type_value;
 				} else {
 					rout_obj_call_function_dynamic (
 						$a_class_id,
