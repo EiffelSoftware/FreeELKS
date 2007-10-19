@@ -108,7 +108,7 @@ feature -- Status report
 				and then (calc_rout_addr = other.calc_rout_addr)
 		end
 
-	valid_operands (args: OPEN_ARGS): BOOLEAN is
+	valid_operands (args: TUPLE): BOOLEAN is
 			-- Are `args' valid operands for this routine?
 		local
 			i, arg_type_code: INTEGER
