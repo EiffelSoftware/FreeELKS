@@ -23,6 +23,8 @@ feature -- Basic operations
 			-- New identifier for `an_object'
 		external
 			"built_in"
+		ensure
+			eif_object_id_positive: Result > 0
 		end
 
 	eif_object_id_free (an_id: INTEGER) is
