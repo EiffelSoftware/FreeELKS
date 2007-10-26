@@ -689,7 +689,7 @@ feature -- Status report
 				end
 			end
 		ensure
-			definition: Result = substring (1, s.count).is_equal (s)
+			definition: Result = s.same_string (substring (1, s.count))
 		end
 
 	ends_with (s: STRING_32): BOOLEAN is
@@ -720,7 +720,7 @@ feature -- Status report
 				end
 			end
 		ensure
-			definition: Result = substring (count - s.count + 1, count).is_equal (s)
+			definition: Result = s.same_string (substring (count - s.count + 1, count))
 		end
 
 	extendible: BOOLEAN is True
