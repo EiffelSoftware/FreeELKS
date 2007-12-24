@@ -1,11 +1,11 @@
 indexing
-
 	description: "[
 		Constants used for exception handling.
 		This class may be used as ancestor by classes needing its facilities.
 		]"
-
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -51,8 +51,20 @@ feature -- Access
 	Signal_exception: INTEGER is 12
 			-- Exception code for operating system signal
 
+	Eiffel_runtime_panic: INTEGER is 13
+			-- Eiffel run-time panic
+
 	Rescue_exception: INTEGER is 14
 			-- Exception code for exception in rescue clause
+
+	Out_of_memory: INTEGER is 15
+			-- Out of memory (cannot be ignored)
+
+	Resumption_failed: INTEGER is 16
+			-- Resumption failed (retry did not succeed)
+
+	Create_on_deferred: INTEGER is 17
+			-- Create on deferred
 
 	External_exception: INTEGER is 18
 			-- Exception code for operating system error
@@ -62,6 +74,9 @@ feature -- Access
 	Void_assigned_to_expanded: INTEGER is 19
 			-- Exception code for assignment of void value
 			-- to expanded entity
+
+	Exception_in_signal_handler: INTEGER is 20
+			-- Exception in signal handler
 
 	Io_exception: INTEGER is 21
 			-- Exception code for I/O error
@@ -78,6 +93,12 @@ feature -- Access
 	Developer_exception: INTEGER is 24
 			-- Exception code for developer exception
 
+	Eiffel_runtime_fatal_error: INTEGER is 25
+			-- Eiffel run-time fatal error
+
+	Dollar_applied_to_melted_feature: INTEGER is 26
+			-- $ applied to melted feature
+
 	Runtime_io_exception: INTEGER is 27
 			-- Exception code for I/O error raised by runtime functions
 			-- such as store/retrieve, file access...
@@ -88,7 +109,13 @@ feature -- Access
 	Runtime_check_exception: INTEGER is 29
 			-- Exception code for runtime check being violated.
 
-	number_of_codes: INTEGER is 29
+	old_exception: INTEGER is 30
+			-- Old exception code.
+
+	serialization_exception: INTEGER is 31
+			-- Serialization exception code.
+
+	number_of_codes: INTEGER is 31
 			-- How many codes are there to represent exceptions?
 
 	valid_code (c: INTEGER): BOOLEAN is
@@ -97,38 +124,4 @@ feature -- Access
 			Result := c >= 1 and c <= number_of_codes
 		end
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class EXCEP_CONST
-
-
+end

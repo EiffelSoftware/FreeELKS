@@ -1,6 +1,8 @@
 indexing
 	description: "Path name abstraction"
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -115,6 +117,7 @@ feature -- Status setting
 			str1 := to_c
 			str2 := directory_name.to_c
 			eif_append_directory ($Current, $str1, $str2)
+			set_count (c_strlen ($str1))
 		ensure
 			valid_file_name: is_valid
 		end
@@ -135,6 +138,7 @@ feature -- Status setting
 			str1 := to_c
 			str2 := directory_name.to_c
 			eif_set_directory ($Current, $str1, $str2)
+			set_count (c_strlen ($str1))
 		ensure
 			valid_file_name: is_valid
 		end
@@ -163,71 +167,44 @@ feature {NONE} -- Externals
 
 	eif_is_volume_name_valid (p: POINTER): BOOLEAN is
 		external
-			"C (EIF_CHARACTER *): EIF_BOOLEAN | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *): EIF_BOOLEAN use %"eif_path_name.h%""
 		end
 
 	eif_is_directory_name_valid (p: POINTER): BOOLEAN is
 		external
-			"C (EIF_CHARACTER *): EIF_BOOLEAN | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *): EIF_BOOLEAN use %"eif_path_name.h%""
 		end
 
 	eif_append_directory (s, p, v: POINTER) is
 		external
-			"C (EIF_REFERENCE, EIF_CHARACTER *, EIF_CHARACTER *) | %"eif_path_name.h%""
+			"C signature (EIF_REFERENCE, EIF_CHARACTER *, EIF_CHARACTER *) use %"eif_path_name.h%""
 		end
 
 	eif_set_directory (s, p, v: POINTER) is
 		external
-			"C (EIF_REFERENCE, EIF_CHARACTER *, EIF_CHARACTER *) | %"eif_path_name.h%""
+			"C signature (EIF_REFERENCE, EIF_CHARACTER *, EIF_CHARACTER *) use %"eif_path_name.h%""
 		end
 
 	eif_path_name_compare (s, t: POINTER; length: INTEGER): BOOLEAN is
 		external
-			"C (EIF_CHARACTER *, EIF_CHARACTER *, EIF_INTEGER): EIF_BOOLEAN | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *, EIF_CHARACTER *, EIF_INTEGER): EIF_BOOLEAN use %"eif_path_name.h%""
 		end
 
 	eif_volume_name (s: POINTER): STRING is
 		external
-			"C (EIF_CHARACTER *): EIF_REFERENCE | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *): EIF_REFERENCE use %"eif_path_name.h%""
 		end
 
 	eif_extracted_paths (s: POINTER): ARRAY [STRING] is
 		external
-			"C (EIF_CHARACTER *): EIF_REFERENCE | %"eif_path_name.h%""
+			"C signature (EIF_CHARACTER *): EIF_REFERENCE use %"eif_path_name.h%""
 		end
 
-indexing
+	c_strlen (ptr: POINTER): INTEGER is
+		external
+			"C signature (char *): EIF_INTEGER use <string.h>"
+		alias
+			"strlen"
+		end
 
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class PATH_NAME
-
-
+end

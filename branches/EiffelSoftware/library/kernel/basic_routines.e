@@ -1,8 +1,9 @@
 indexing
-
 	description: "Some useful facilities on objects of basic types"
 
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -12,11 +13,9 @@ class
 feature -- Conversion
 
 	charconv (i: INTEGER): CHARACTER is
-			-- Character corresponding to ascii code `i'
-		external
-			"C [macro %"eif_misc.h%"]"
-		alias
-			"chconv"
+			-- Character associated with integer value `i'
+		do
+			Result := (i & 0x000000FF).to_character_8
 		end
 
 feature -- Basic operations
@@ -69,54 +68,25 @@ feature -- Basic operations
 
 	bottom_int_div (n1, n2: INTEGER): INTEGER is
 			-- Greatest lower bound of the integer division of `n1' by `n2'
-		external
-			"C | %"eif_misc.h%""
-		alias
-			"bointdiv"
+		do
+			Result := n1 // n2
+			if n1 >= 0 xor n2 > 0 then
+				if (n1 \\ n2) /= 0 then
+					Result := Result - 1
+				end
+			end
 		end
 
 	up_int_div (n1, n2: INTEGER): INTEGER is
 			-- Least upper bound of the integer division
 			-- of `n1' by `n2'
-		external
-			"C | %"eif_misc.h%""
-		alias
-			"upintdiv"
+		do
+			Result := n1 // n2
+			if not (n1 >= 0 xor n2 > 0) then
+				if (n1 \\ n2) /= 0 then
+					Result := Result + 1
+				end
+			end
 		end
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class BASIC_ROUTINES
-
-
-
+end

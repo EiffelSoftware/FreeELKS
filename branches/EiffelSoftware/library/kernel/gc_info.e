@@ -6,8 +6,9 @@ indexing
 			Time accounting is relevant only if `enable_time_accounting' 
 			(from MEMORY) has been called.
 		]"
-
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -38,7 +39,7 @@ feature -- Initialization
 		ensure
 			type_set: type = memory
 		end
-		
+
 	update (memory: INTEGER) is
 			-- Fill in statistics for `memory' type
 		require
@@ -119,6 +120,12 @@ feature -- Access
 			Result := c_real_iavg (item)
 		end
 
+	cpu_total_time: DOUBLE is
+			-- Amount of application CPU time, in seconds, for `type' before last call to `update'
+		do
+			Result := c_cpu_total_time (item)
+		end
+
 	cpu_time: DOUBLE is
 			-- Amount of CPU time, in seconds, spent in cycle,
 			-- for `type' before last call to `update'
@@ -146,6 +153,12 @@ feature -- Access
 			-- for `type' before last call to `update'
 		do
 			Result := c_cpu_iavg (item)
+		end
+
+	sys_total_time: DOUBLE is
+			-- Amount of application kernel time, in seconds, for `type' before last call to `update'
+		do
+			Result := c_sys_total_time (item)
 		end
 
 	sys_time: DOUBLE is
@@ -184,6 +197,8 @@ feature {NONE} -- Implementation
 			-- statistics frozen at the time of this call.
 		external
 			"C use %"eif_memory.h%""
+		alias
+			"eif_gc_stat"
 		end
 
 	structure_size: INTEGER is
@@ -191,178 +206,159 @@ feature {NONE} -- Implementation
 		do
 			Result := c_sizeof_gacstat
 		end
-		
+
 feature {NONE} -- C externals
 
 	c_sizeof_gacstat: INTEGER is
 			-- Size of struct `gacstat'.
 		external
-			"C macro use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"sizeof(struct gacstat)"
+			"return sizeof(struct gacstat);"
 		end
 
 	c_count (a_ptr: POINTER): INTEGER is
 			-- Access `count' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->count"
+			"return (EIF_INTEGER) ((struct gacstat *) $a_ptr)->count;"
 		end
-		
+
 	c_mem_used (a_ptr: POINTER): INTEGER is
 			-- Access `mem_used' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->mem_used"
+			"return (EIF_INTEGER) ((struct gacstat *) $a_ptr)->mem_used;"
 		end
 
 	c_mem_collect (a_ptr: POINTER): INTEGER is
 			-- Access `mem_collect' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->mem_collect"
+			"return (EIF_INTEGER) ((struct gacstat *) $a_ptr)->mem_collect;"
 		end
 
 	c_mem_avg (a_ptr: POINTER): INTEGER is
 			-- Access `mem_avg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->mem_avg"
+			"return (EIF_INTEGER) ((struct gacstat *) $a_ptr)->mem_avg;"
 		end
 
 	c_real_time (a_ptr: POINTER): INTEGER is
 			-- Access `real_time' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->real_time"
+			"return (EIF_INTEGER) ((struct gacstat *) $a_ptr)->real_time;"
 		end
 
 	c_real_avg (a_ptr: POINTER): INTEGER is
 			-- Access `real_avg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->real_avg"
+			"return (EIF_INTEGER) ((struct gacstat *) $a_ptr)->real_avg;"
 		end
 
 	c_real_itime (a_ptr: POINTER): INTEGER is
 			-- Access `real_itime' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->real_itime"
+			"return (EIF_INTEGER) ((struct gacstat *) $a_ptr)->real_itime;"
 		end
 
 	c_real_iavg (a_ptr: POINTER): INTEGER is
 			-- Access `real_iavg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->real_iavg"
+			"return (EIF_INTEGER) ((struct gacstat *) $a_ptr)->real_iavg;"
+		end
+
+	c_cpu_total_time (a_ptr: POINTER): DOUBLE is
+			-- Access `cpu_total_time' data member of `a_ptr' struct.
+		external
+			"C inline use %"eif_memory.h%""
+		alias
+			"return ((struct gacstat *) $a_ptr)->cpu_total_time;"
 		end
 
 	c_cpu_time (a_ptr: POINTER): DOUBLE is
 			-- Access `cpu_time' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->cpu_time"
+			"return ((struct gacstat *) $a_ptr)->cpu_time;"
 		end
 
 	c_cpu_avg (a_ptr: POINTER): DOUBLE is
 			-- Access `cpu_avg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->cpu_avg"
+			"return ((struct gacstat *) $a_ptr)->cpu_avg;"
 		end
 
 	c_cpu_itime (a_ptr: POINTER): DOUBLE is
 			-- Access `cpu_itime' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->cpu_itime"
+			"return ((struct gacstat *) $a_ptr)->cpu_itime;"
 		end
 
 	c_cpu_iavg (a_ptr: POINTER): DOUBLE is
 			-- Access `cpu_iavg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->cpu_iavg"
+			"return ((struct gacstat *) $a_ptr)->cpu_iavg;"
+		end
+
+	c_sys_total_time (a_ptr: POINTER): DOUBLE is
+			-- Access `sys_total_time' data member of `a_ptr' struct.
+		external
+			"C inline use %"eif_memory.h%""
+		alias
+			"return ((struct gacstat *) $a_ptr)->sys_total_time;"
 		end
 
 	c_sys_time (a_ptr: POINTER): DOUBLE is
 			-- Access `sys_time' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->sys_time"
+			"return ((struct gacstat *) $a_ptr)->sys_time;"
 		end
 
 	c_sys_avg (a_ptr: POINTER): DOUBLE is
 			-- Access `sys_avg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->sys_avg"
+			"return ((struct gacstat *) $a_ptr)->sys_avg;"
 		end
 
 	c_sys_itime (a_ptr: POINTER): DOUBLE is
 			-- Access `sys_itime' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->sys_itime"
+			"return ((struct gacstat *) $a_ptr)->sys_itime;"
 		end
 
 	c_sys_iavg (a_ptr: POINTER): DOUBLE is
 			-- Access `sys_iavg' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct gacstat *) $a_ptr)->sys_iavg"
+			"return ((struct gacstat *) $a_ptr)->sys_iavg;"
 		end
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class GC_INFO
-
-
-
+end

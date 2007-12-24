@@ -5,7 +5,9 @@ indexing
 		may be used as ancestor by classes needing its facilities.
 		]"
 
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -20,8 +22,10 @@ feature -- Access
 		require
 			index_large_enough: i >= 0
 			index_small_enough: i <= argument_count
-		do
-			Result := arg_option (i)
+		external
+			"built_in"
+		ensure
+			argument_not_void: Result /= Void
 		end
 
 	argument_array: ARRAY [STRING] is
@@ -44,7 +48,7 @@ feature -- Access
 				i > argument_count
 			loop
 				Result.append (" ")
-				Result.append (arg_option (i))
+				Result.append (argument (i))
 				i := i + 1
 			end
 		ensure
@@ -54,7 +58,7 @@ feature -- Access
 	Command_name: STRING is
 			-- Name of command that started system execution
 		once
-			Result := arg_option (0)
+			Result := argument (0)
 		ensure
 			definition: Result.is_equal (argument (0))
 		end
@@ -72,7 +76,7 @@ feature -- Status report
 			-- at what position?
 			-- If one of the arguments in list of space-separated arguments
 			-- is `Xopt', where `X' is the current `option_sign',
-			-- then index of this argument in list; 
+			-- then index of this argument in list;
 			-- else 0.
 		require
 			opt_non_void: opt /= Void
@@ -88,18 +92,18 @@ feature -- Status report
 			loop
 				i := i + 1
 			end
-			if i <= argument_count then 
-				Result := i 
+			if i <= argument_count then
+				Result := i
 			end
 		end
 
 	index_of_beginning_with_word_option (opt: STRING): INTEGER is
-			-- Does command line specify argument beginning with word 
+			-- Does command line specify argument beginning with word
 			-- option `opt' and, if so, at what position?
 			-- If one of the arguments in list of space-separated arguments
 			-- is `Xoptxx', where `X' is the current `option_sign', 'xx' 
 			-- is arbitrary, possibly empty sequence of characters,
-			-- then index of this argument in list; 
+			-- then index of this argument in list;
 			-- else 0.
 		require
 			opt_non_void: opt /= Void
@@ -130,7 +134,7 @@ feature -- Status report
 			-- Does command line specify character option `o' and, if so,
 			-- at what position?
 			-- If one of the space-separated arguments is of the form `Xxxoyy',
-			-- where `X' is the current `option_sign', `xx' and `yy' 
+			-- where `X' is the current `option_sign', `xx' and `yy'
 			-- are arbitrary, possibly empty sequences of characters,
 			-- then index of this argument in list of arguments;
 			-- else 0.
@@ -151,9 +155,9 @@ feature -- Status report
 		end
 
 	separate_character_option_value (o: CHARACTER): STRING is
-			-- The value, if any, specified after character option `o' on 
+			-- The value, if any, specified after character option `o' on
 			-- the command line.
-			-- This is one of the following (where `X' is the current 
+			-- This is one of the following (where `X' is the current
 			-- `option_sign', `xx' and 'yy' are arbitrary, possibly empty
 			-- sequences of characters):
 			--   `val' if command line includes two consecutive arguments
@@ -179,7 +183,7 @@ feature -- Status report
 		end
 
 	separate_word_option_value (opt: STRING): STRING is
-			-- The value, if any, specified after word option `opt' on the 
+			-- The value, if any, specified after word option `opt' on the
 			-- command line.
 			-- This is one of the following (where `X' is the current `option_sign'):
 			--   `val' if command line includes two consecutive arguments
@@ -212,7 +216,7 @@ feature -- Status report
 		end
 
 	coalesced_character_option_value (o: CHARACTER): STRING is
-			-- The value, if any, specified for character option `o' on 
+			-- The value, if any, specified for character option `o' on
 			-- the command line.
 			-- Defined as follows (where 'X' is the current 'option_sign' and
 			-- 'xx' is an arbitrary, possibly empty sequence of characters):
@@ -242,7 +246,7 @@ feature -- Status report
 		end
 
 	coalesced_word_option_value (opt: STRING): STRING is
-			-- The value, if any, specified for word option `opt' on the 
+			-- The value, if any, specified for word option `opt' on the
 			-- command line.
 			-- Defined as follows (where X is the current `option_sign'):
 			--   `val' if command line includes an argument of the form `Xoptval'
@@ -267,7 +271,7 @@ feature -- Status report
 
 	option_sign: CHARACTER_REF is
 			-- The character used to signal options on the command line.
-			-- This can be '%U' if no sign is necesary for the argument 
+			-- This can be '%U' if no sign is necesary for the argument
 			-- to be an option
 			-- Default is '-'
 		once
@@ -279,7 +283,7 @@ feature -- Status setting
 
 	set_option_sign (c: CHARACTER) is
 			-- Make `c' the option sign.
-			-- Use'%U' if no sign is necesary for the argument to 
+			-- Use'%U' if no sign is necesary for the argument to
 			-- be an option
 		do
 			option_sign.set_item (c)
@@ -290,36 +294,32 @@ feature -- Measurement
 	argument_count: INTEGER is
 			-- Number of arguments given to command that started
 			-- system execution (command name does not count)
-		once
-			Result := arg_number - 1
+		external
+			"built_in"
 		ensure
-			Result >= 0
+			argument_count_positive: Result >= 0
 		end
 
 feature {NONE} -- Implementation
 
-	arg_number: INTEGER is
-		external
-			"C | %"eif_argv.h%""
-		end
-
-	arg_option (i: INTEGER): STRING is
-		external
-			"C | %"eif_argv.h%""
-		end
-
 	option_word_equal (arg, w: STRING): BOOLEAN is
 			-- Is `arg' equal to the word option `w'?
+		require
+			arg_not_void: arg /= Void
+			w_not_void: w /= Void
 		do
 			if option_sign.item = '%U' then
 				Result := arg.is_equal (w)
-			elseif arg.item (1) = option_sign.item then
+			elseif not arg.is_empty and then arg.item (1) = option_sign.item then
 				Result := arg.substring (2, arg.count).is_equal (w)
 			end
 		end
 
 	option_word_begins_with (arg, w: STRING): BOOLEAN is
 			-- Does `arg' begin with the word option `w'?
+		require
+			arg_not_void: arg /= Void
+			w_not_void: w /= Void
 		do
 			if option_sign.item = '%U' and then arg.count >= w.count then
 				Result := arg.substring (1, w.count).is_equal (w)
@@ -330,6 +330,8 @@ feature {NONE} -- Implementation
 
 	option_character_equal (arg: STRING; c: CHARACTER): BOOLEAN is
 			-- Does `arg' contain the character option `c'?
+		require
+			arg_not_void: arg /= Void
 		do
 			if option_sign.item = '%U' then
 				Result := arg.has (c)
@@ -348,46 +350,11 @@ feature {NONE} -- Implementation
 			until
 				i > argument_count
 			loop
-				Result.put (arg_option (i), i)
+				Result.put (argument (i), i)
 				i := i + 1
 			end
 		ensure
 			internal_argument_array_not_void: Result /= Void
 		end
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class ARGUMENTS
-
-
-
+end

@@ -2,8 +2,9 @@ indexing
 
 	description:
 		"Unbounded queues, implemented by resizable arrays"
+	legal: "See notice at end of class."
 
-	status: "See notice at end of class"
+	status: "See notice at end of class."
 	names: dispenser, array;
 	representation: array;
 	access: fixed, fifo, membership;
@@ -68,7 +69,7 @@ feature -- Access
 	item: G is
 			-- Oldest item.
 		do
-			Result := i_th (out_index)
+			Result := area.item (out_index - lower)
 		end
 
 	has (v: like item): BOOLEAN is
@@ -110,9 +111,12 @@ feature -- Measurement
 
 	count: INTEGER is
 			-- Number of items.
+		local
+			l_capacity: like capacity
 		do
-			if capacity > 0 then
-				Result := (in_index - out_index + capacity) \\ capacity
+			l_capacity := capacity
+			if l_capacity > 0 then
+				Result := (in_index - out_index + l_capacity) \\ l_capacity
 			end
 		end
 
@@ -155,11 +159,22 @@ feature -- Element change
 
 	extend, put, force (v: G) is
 			-- Add `v' as newest item.
+		local
+			l_in_index: like in_index
+			l_capacity: like capacity
 		do
-			if count + 1 >= array_count then grow end
-			put_i_th (v, in_index)
-			in_index := (in_index + 1) \\ capacity
-			if in_index = 0 then in_index := capacity end
+			l_capacity := capacity
+			l_in_index := in_index			
+			if l_capacity = 0 or ((l_in_index - out_index + l_capacity) \\ l_capacity + 1 >= l_capacity) then
+				grow
+				l_capacity := capacity
+			end
+			area.put (v, l_in_index - lower)
+			l_in_index := (l_in_index + 1) \\ l_capacity
+			if l_in_index = 0 then
+				l_in_index := l_capacity
+			end
+			in_index := l_in_index
 		end
 
 	replace (v: like item) is
@@ -174,10 +189,17 @@ feature -- Removal
 			-- Remove oldest item.
 		local
 			default_value: G
+			l_out_index: like out_index
+			l_capacity: like capacity
 		do
-			put_i_th (default_value, out_index)
-			out_index := (out_index + 1) \\ capacity
-			if out_index = 0 then out_index := capacity end
+			l_out_index := out_index
+			l_capacity := capacity
+			area.put (default_value, l_out_index - lower)
+			l_out_index := (l_out_index + 1) \\ l_capacity
+			if l_out_index = 0 then
+				l_out_index := l_capacity 
+			end
+			out_index := l_out_index
 		end
 
 	wipe_out is
@@ -259,6 +281,8 @@ feature {ARRAYED_QUEUE} -- Implementation
 				end
 				out_index := j + 1
 			end
+		ensure
+			in_index_unchanged: in_index = old in_index
 		end
 
 invariant
@@ -270,36 +294,22 @@ invariant
 
 
 indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
+	library:	"EiffelBase: Library of reusable components for Eiffel."
+	copyright:	"Copyright (c) 1984-2006, Eiffel Software and others"
+	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
+			 Eiffel Software
+			 356 Storke Road, Goleta, CA 93117 USA
+			 Telephone 805-685-1006, Fax 805-685-6869
+			 Website http://www.eiffel.com
+			 Customer support http://support.eiffel.com
+		]"
 
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
+
+
+
+
+
 
 end -- class ARRAYED_QUEUE
 

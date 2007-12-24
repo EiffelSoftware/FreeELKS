@@ -2,8 +2,9 @@ indexing
 
 	description:
 		"Unbounded queues implemented as linked lists"
+	legal: "See notice at end of class."
 
-	status: "See notice at end of class"
+	status: "See notice at end of class."
 	names: linked_queue, dispenser, linked_list;
 	representation: linked;
 	access: fixed, fifo, membership;
@@ -19,7 +20,7 @@ class LINKED_QUEUE [G] inherit
 		redefine
 			linear_representation, prune_all, extend
 		select
-			item, put
+			item, put, extend
 		end
 
 	LINKED_LIST [G]
@@ -28,22 +29,23 @@ class LINKED_QUEUE [G] inherit
 			remove as ll_remove,
 			make as ll_make,
 			remove_left as remove,
-			put as ll_put
+			put as ll_put,
+			extend as ll_extend
 		export
 			{NONE}
 				all
 			{LINKED_QUEUE}
 				cursor, valid_cursor, start, forth, go_to,
-				first_element, last_element
+				first_element, last_element, ll_item
 			{ANY}
 				writable, extendible, wipe_out,
 				readable, off, before, after, index
 		undefine
 			fill, append, prune,
-			readable, writable, prune_all, extend,
+			readable, writable, prune_all,
 			force, is_inserted
 		redefine
-			duplicate, linear_representation
+			duplicate, linear_representation, copy
 		select
 			remove
 		end
@@ -69,7 +71,7 @@ feature -- Access
 		do
 			Result := active.item
 		ensure then
-			last_element_if_not_empty: 
+			last_element_if_not_empty:
 				not is_empty implies (active = last_element)
 		end
 
@@ -109,8 +111,10 @@ feature -- Duplication
 	duplicate (n: INTEGER): like Current is
 			-- New queue containing the `n' oldest items in current queue.
 			-- If `n' is greater than `count', identical to current queue.
+		local
+			l_cur: like cursor
 		do
-			start
+			l_cur := cursor
 			from
 				create Result.make
 				start
@@ -120,7 +124,38 @@ feature -- Duplication
 				Result.extend (ll_item)
 				forth
 			end
-			finish
+			go_to (l_cur)
+		end
+
+	copy (other: like Current) is
+			-- Update current object using fields of object attached
+			-- to `other', so as to yield equal objects.
+		local
+			cur: like cursor
+			obj_comparison: BOOLEAN
+		do
+			obj_comparison := other.object_comparison
+			standard_copy (other)
+			if not other.is_empty then
+				internal_wipe_out
+				cur ?= other.cursor
+				from
+					other.start
+				until
+					other.off
+				loop
+					ll_extend (other.ll_item)
+						-- For speeding up next insertion, we go
+						-- to the end, that way `extend' does not
+						-- need to traverse the list completely.
+					forth
+					other.forth
+				end
+				other.go_to (cur)
+			end
+			object_comparison := obj_comparison
+			after := True
+			before := False
 		end
 
 feature {NONE} -- Not applicable
@@ -144,36 +179,22 @@ invariant
 	is_always_after: not is_empty implies after
 
 indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
+	library:	"EiffelBase: Library of reusable components for Eiffel."
+	copyright:	"Copyright (c) 1984-2006, Eiffel Software and others"
+	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
+			 Eiffel Software
+			 356 Storke Road, Goleta, CA 93117 USA
+			 Telephone 805-685-1006, Fax 805-685-6869
+			 Website http://www.eiffel.com
+			 Customer support http://support.eiffel.com
+		]"
 
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
+
+
+
+
+
 
 end -- class LINKED_QUEUE
 

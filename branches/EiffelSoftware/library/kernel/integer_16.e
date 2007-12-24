@@ -1,13 +1,46 @@
 indexing
-
 	description: "Integer values coded on 16 bits"
-	status: "See notice at end of class"
+	external_name: "System.Int16"
+	assembly: "mscorlib"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2005, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
-expanded class INTEGER_16 inherit
+frozen expanded class INTEGER_16 inherit
 
 	INTEGER_16_REF
+		redefine
+			infix "<",
+			infix "+",
+			infix "-",
+			infix "*",
+			infix "/",
+			prefix "+",
+			prefix "-",
+			infix "//",
+			infix "\\",
+			infix "^",
+			as_natural_8,
+			as_natural_16,
+			as_natural_32,
+			as_natural_64,
+			as_integer_8,
+			as_integer_16,
+			as_integer_32,
+			as_integer_64,
+			to_real,
+			to_double,
+			to_character_8,
+			to_character_32,
+			bit_and,
+			bit_or,
+			bit_xor,
+			bit_not,
+			bit_shift_left,
+			bit_shift_right
+		end
 
 create
 	default_create,
@@ -15,45 +48,185 @@ create
 
 convert
 	make_from_reference ({INTEGER_16_REF}),
-	to_reference: {INTEGER_16_REF, NUMERIC, COMPARABLE, PART_COMPARABLE, HASHABLE, ANY},
 	to_real: {REAL},
 	to_double: {DOUBLE},
 	to_integer_32: {INTEGER},
 	to_integer_64: {INTEGER_64}
 
-indexing
+feature -- Comparison
 
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
+	infix "<" (other: like Current): BOOLEAN is
+			-- Is current integer less than `other'?
+		external
+			"built_in"
+		end
 
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
+feature -- Basic operations
 
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
+	infix "+" (other: like Current): like Current is
+			-- Sum with `other'
+		external
+			"built_in"
+		end
 
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
+	infix "-" (other: like Current): like Current is
+			-- Result of subtracting `other'
+		external
+			"built_in"
+		end
 
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
+	infix "*" (other: like Current): like Current is
+			-- Product by `other'
+		external
+			"built_in"
+		end
 
-end -- class INTEGER_16
+	infix "/" (other: like Current): DOUBLE is
+			-- Division by `other'
+		external
+			"built_in"
+		end
 
+	prefix "+": like Current is
+			-- Unary plus
+		external
+			"built_in"
+		end
 
+	prefix "-": like Current is
+			-- Unary minus
+		external
+			"built_in"
+		end
 
+	infix "//" (other: like Current): like Current is
+			-- Integer division of Current by `other'
+		external
+			"built_in"
+		end
+
+	infix "\\" (other: like Current): like Current is
+			-- Remainder of the integer division of Current by `other'
+		external
+			"built_in"
+		end
+
+	infix "^" (other: DOUBLE): DOUBLE is
+			-- Integer power of Current by `other'
+		external
+			"built_in"
+		end
+
+feature -- Conversion
+
+	as_natural_8: NATURAL_8 is
+			-- Convert `item' into an NATURAL_8 value.
+		external
+			"built_in"
+		end
+
+	as_natural_16: NATURAL_16 is
+			-- Convert `item' into an NATURAL_16 value.
+		external
+			"built_in"
+		end
+
+	as_natural_32: NATURAL_32 is
+			-- Convert `item' into an NATURAL_32 value.
+		external
+			"built_in"
+		end
+
+	as_natural_64: NATURAL_64 is
+			-- Convert `item' into an NATURAL_64 value.
+		external
+			"built_in"
+		end
+
+	as_integer_8: INTEGER_8 is
+			-- Convert `item' into an INTEGER_8 value.
+		external
+			"built_in"
+		end
+
+	as_integer_16: INTEGER_16 is
+			-- Convert `item' into an INTEGER_16 value.
+		external
+			"built_in"
+		end
+
+	as_integer_32: INTEGER is
+			-- Convert `item' into an INTEGER_32 value.
+		external
+			"built_in"
+		end
+
+	as_integer_64: INTEGER_64 is
+			-- Convert `item' into an INTEGER_64 value.
+		external
+			"built_in"
+		end
+
+	to_real: REAL is
+			-- Convert `item' into a REAL
+		external
+			"built_in"
+		end
+
+	to_double: DOUBLE is
+			-- Convert `item' into a DOUBLE
+		external
+			"built_in"
+		end
+
+	to_character_8: CHARACTER_8 is
+			-- Associated character in 8 bit version.
+		external
+			"built_in"
+		end
+
+	to_character_32: CHARACTER_32 is
+			-- Associated character in 32 bit version.
+		external
+			"built_in"
+		end
+
+feature -- Bit operations
+
+	bit_and (i: like Current): like Current is
+			-- Bitwise and between Current' and `i'.
+		external
+			"built_in"
+		end
+
+	bit_or (i: like Current): like Current is
+			-- Bitwise or between Current' and `i'.
+		external
+			"built_in"
+		end
+
+	bit_xor (i: like Current): like Current is
+			-- Bitwise xor between Current' and `i'.
+		external
+			"built_in"
+		end
+
+	bit_not: like Current is
+			-- One's complement of Current.
+		external
+			"built_in"
+		end
+
+	bit_shift_left (n: INTEGER): like Current is
+			-- Shift Current from `n' position to left.
+		external
+			"built_in"
+		end
+
+	bit_shift_right (n: INTEGER): like Current is
+			-- Shift Current from `n' position to right.
+		external
+			"built_in"
+		end
+
+end

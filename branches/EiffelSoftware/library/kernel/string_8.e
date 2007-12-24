@@ -1,17 +1,28 @@
 indexing
-
 	description: "[
-		Sequences of characters, accessible through integer indices 
+		Sequences of characters, accessible through integer indices
 		in a contiguous range.
 		]"
-
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
-class STRING inherit
+class
+	STRING_8
+
+inherit
+	STRING_GENERAL
+		rename
+			append as append_string_general
+		redefine
+			copy, is_equal, out, append_string_general
+		end
 
 	INDEXABLE [CHARACTER, INTEGER]
+		rename
+			item as item
 		redefine
 			copy, is_equal, out, prune_all,
 			changeable_comparison_criterion
@@ -23,27 +34,14 @@ class STRING inherit
 			changeable_comparison_criterion
 		end
 
-	HASHABLE
-		redefine
-			copy, is_equal, out
-		end
-
-	COMPARABLE
-		redefine
-			copy, is_equal, out
-		end
-
 	TO_SPECIAL [CHARACTER]
+		rename
+			item as item
 		redefine
 			copy, is_equal, out,
 			item, infix "@", put, valid_index
 		end
 
-	STRING_HANDLER
-		redefine
-			copy, is_equal, out
-		end
-		
 	MISMATCH_CORRECTOR
 		redefine
 			copy, is_equal, out, correct_mismatch
@@ -54,7 +52,13 @@ create
 	make_empty,
 	make_filled,
 	make_from_string,
-	make_from_c
+	make_from_c,
+	make_from_cil
+
+convert
+	to_cil: {SYSTEM_STRING},
+	as_string_32: {STRING_32},
+	make_from_cil ({SYSTEM_STRING})
 
 feature -- Initialization
 
@@ -65,11 +69,7 @@ feature -- Initialization
 		do
 			count := 0
 			internal_hash_code := 0
-			if n = 0 then
-				area := empty_area
-			else
-				make_area (n + 1)
-			end
+			make_area (n + 1)
 		ensure
 			empty_string: count = 0
 			area_allocated: capacity >= n
@@ -116,34 +116,57 @@ feature -- Initialization
 
 	make_from_c (c_string: POINTER) is
 			-- Initialize from contents of `c_string',
-			-- a string created by some external C function
+			-- a string created by some C function
 		require
 			c_string_exists: c_string /= default_pointer
 		local
-			length: INTEGER
+			l_count: INTEGER
 		do
-			length := str_len (c_string)
-			make_area (length + 1)
-			area.base_address.memory_copy (c_string, length)
-			count := length
-			internal_hash_code := 0
+			if area = Void then
+				c_string_provider.share_from_pointer (c_string)
+				l_count := c_string_provider.count
+				make_area (l_count + 1)
+				count := l_count
+				internal_hash_code := 0
+				c_string_provider.read_string_into (Current)
+			else
+				from_c (c_string)
+			end
+		end
+
+	make_from_cil (a_system_string: SYSTEM_STRING) is
+			-- Initialize Current with `a_system_string'.
+		require
+			is_dotnet: {PLATFORM}.is_dotnet
+		local
+			l_count: INTEGER
+		do
+			if a_system_string /= Void then
+				l_count := a_system_string.length
+				make_area (l_count + 1)
+				count := l_count
+				internal_hash_code := 0
+				dotnet_convertor.read_system_string_into (a_system_string, Current)
+			else
+				make (0)
+			end
 		end
 
 	from_c (c_string: POINTER) is
 			-- Reset contents of string from contents of `c_string',
-			-- a string created by some external C function.
+			-- a string created by some C function.
 		require
 			c_string_exists: c_string /= default_pointer
 		local
-			length: INTEGER
+			l_count: INTEGER
 		do
-			length := str_len (c_string)
-			if safe_capacity < length then
-				make_area (length + 1)
-			end
-			area.base_address.memory_copy (c_string, length)
-			count := length
+			c_string_provider.share_from_pointer (c_string)
+				-- Resize string in case it is not big enough
+			l_count := c_string_provider.count
+			resize (l_count + 1)
+			count := l_count
 			internal_hash_code := 0
+			c_string_provider.read_string_into (Current)
 		ensure
 			no_zero_byte: not has ('%/0/')
 			-- characters: for all i in 1..count, item (i) equals
@@ -154,23 +177,21 @@ feature -- Initialization
 
 	from_c_substring (c_string: POINTER; start_pos, end_pos: INTEGER) is
 			-- Reset contents of string from substring of `c_string',
-			-- a string created by some external C function.
+			-- a string created by some C function.
 		require
 			c_string_exists: c_string /= default_pointer
 			start_position_big_enough: start_pos >= 1
 			end_position_big_enough: start_pos <= end_pos + 1
 		local
-			length: INTEGER
+			l_count: INTEGER
 		do
-			length := end_pos - start_pos + 1
-			if safe_capacity < length then
-				make_area (length + 1)
-			end
-				-- Make `area' the substring of `c_string'
-				-- from `start_pos' .. `end_pos'.
-			area.base_address.memory_copy (c_string + (start_pos - 1), end_pos - start_pos + 1)
-			count := length
+			l_count := end_pos - start_pos + 1
+			c_string_provider.share_from_pointer_and_count (c_string + (start_pos - 1), l_count)
+				-- Resize string in case it is not big enough
+			resize (l_count + 1)
+			count := l_count
 			internal_hash_code := 0
+			c_string_provider.read_substring_into (Current, 1, l_count)
 		ensure
 			valid_count: count = end_pos - start_pos + 1
 			-- characters: for all i in 1..count, item (i) equals
@@ -183,6 +204,9 @@ feature -- Initialization
 		do
 			Result := new_string (0)
 			Result.share (s)
+		ensure
+			adapt_not_void: Result /= Void
+			shared_implementation: Result.shared_with (s)
 		end
 
 	remake (n: INTEGER) is
@@ -200,10 +224,17 @@ feature -- Initialization
 
 feature -- Access
 
-	item, infix "@" (i: INTEGER): CHARACTER is
+	item, infix "@" (i: INTEGER): CHARACTER assign put is
 			-- Character at position `i'
 		do
 			Result := area.item (i - 1)
+		end
+
+
+	code (i: INTEGER): NATURAL_32 is
+			-- Numeric code of character at position `i'
+		do
+			Result := area.item (i - 1).code.to_natural_32
 		end
 
 	item_code (i: INTEGER): INTEGER is
@@ -217,10 +248,24 @@ feature -- Access
 
 	hash_code: INTEGER is
 			-- Hash code value
+		local
+			i, nb: INTEGER
+			l_area: like area
 		do
 			Result := internal_hash_code
 			if Result = 0 then
-				Result := hashcode ($area, count)
+					-- The magic number `8388593' below is the greatest prime lower than
+					-- 2^23 so that this magic number shifted to the left does not exceed 2^31.
+				from
+					i := 0
+					nb := count
+					l_area := area
+				until
+					i = nb
+				loop
+					Result := ((Result \\ 8388593) |<< 8) + l_area.item (i).code
+					i := i + 1
+				end
 				internal_hash_code := Result
 			end
 		end
@@ -251,14 +296,13 @@ feature -- Access
 			if start_index <= nb then
 				from
 					i := start_index - 1
-					nb := nb - 1
 					a := area
 				until
-					i > nb or else a.item (i) = c
+					i = nb or else a.item (i) = c
 				loop
 					i := i + 1
 				end
-				if i <= nb then
+				if i < nb then
 						-- We add +1 due to the area starting at 0 and not at 1.
 					Result := i + 1
 				end
@@ -267,7 +311,7 @@ feature -- Access
 			valid_result: Result = 0 or (start_index <= Result and Result <= count)
 			zero_if_absent: (Result = 0) = not substring (start_index, count).has (c)
 			found_if_present: substring (start_index, count).has (c) implies item (Result) = c
-			none_before: substring (start_index, count).has (c) implies 
+			none_before: substring (start_index, count).has (c) implies
 				not substring (start_index, Result - 1).has (c)
 		end
 
@@ -308,11 +352,8 @@ feature -- Access
 			start_pos_small_enough: start_pos <= count
 			end_pos_large_enough: end_pos >= start_pos
 			end_pos_small_enough: end_pos <= count
-		local
-			a: ANY
 		do
-			a := other.area
-			Result := str_str ($area, $a, end_pos, other.count, start_pos, 0)
+			Result := string_searcher.substring_index (Current, other, start_pos, end_pos)
 		ensure
 			correct_place: Result > 0 implies
 				other.is_equal (substring (Result, Result + other.count - 1))
@@ -320,42 +361,43 @@ feature -- Access
 			--	not substring (x, x+other.count -1).is_equal (other)
 		end
 
-	string: STRING is
+	string: STRING_8 is
 			-- New STRING having same character sequence as `Current'.
 		do
 			create Result.make (count)
 			Result.append (Current)
 		ensure
 			string_not_void: Result /= Void
-			string_type: Result.same_type ("")
+			string_type: Result.same_type (create {STRING_8}.make_empty)
+			first_item: count > 0 implies Result.item (1) = item (1)
+			recurse: count > 1 implies Result.substring (2, count).is_equal (
+				substring (2, count).string)
+		end
+
+	string_representation: STRING_8 is
+			-- Similar to `string' but only create a new object if `Current' is not of dynamic type {STRING_8}
+		do
+			if same_type (create {STRING_8}.make_empty) then
+				Result := Current
+			else
+				Result := string
+			end
+		ensure
+			Result_not_void: Result /= Void
+			correct_type: Result.same_type (create {STRING_8}.make_empty)
 			first_item: count > 0 implies Result.item (1) = item (1)
 			recurse: count > 1 implies Result.substring (2, count).is_equal (
 				substring (2, count).string)
 		end
 
 	substring_index (other: STRING; start_index: INTEGER): INTEGER is
-			-- Index of first occurrence of other at or after start_index; 
+			-- Index of first occurrence of other at or after start_index;
 			-- 0 if none
 		require
 			other_not_void: other /= Void
 			valid_start_index: start_index >= 1 and start_index <= count + 1
-		local
-			a: ANY
-			l_other_count: INTEGER
 		do
-			if other = Current then
-				if start_index = 1 then
-					Result := 1
-				end
-			else
-				l_other_count := other.count
-				if l_other_count = 0 then
-					Result := start_index
-				elseif start_index <= (count - l_other_count + 1) then
-					a := other.area
-					Result := str_str ($area, $a, count, l_other_count, start_index, 0)
-				end
-			end
+			Result := string_searcher.substring_index (Current, other, start_index, count)
 		ensure
 			valid_result: Result = 0 or else
 				(start_index <= Result and Result <= count - other.count + 1)
@@ -363,7 +405,7 @@ feature -- Access
 				not substring (start_index, count).has_substring (other)
 			at_this_index: Result >= start_index implies
 				other.same_string (substring (Result, Result + other.count - 1))
-			none_before: Result > start_index implies 
+			none_before: Result > start_index implies
 				not substring (start_index, Result + other.count - 2).has_substring (other)
 		end
 
@@ -377,11 +419,8 @@ feature -- Access
 			start_large_enough: start >= 1
 			start_small_enough: start <= count
 			acceptable_fuzzy: fuzz <= other.count
-		local
-			a: ANY
 		do
-			a := other.area
-			Result := str_str ($area, $a, count, other.count, start, fuzz)
+			Result := string_searcher.fuzzy_index (Current, other, start, count, fuzz)
 		end
 
 feature -- Measurement
@@ -389,9 +428,7 @@ feature -- Measurement
 	capacity: INTEGER is
 			-- Allocated space
 		do
-			if area /= Void then
-				Result := safe_capacity
-			end
+			Result := area.count - 1
 		end
 
 	count: INTEGER
@@ -400,20 +437,19 @@ feature -- Measurement
 	occurrences (c: CHARACTER): INTEGER is
 			-- Number of times `c' appears in the string
 		local
-			counter, nb: INTEGER
+			i, nb: INTEGER
 			a: SPECIAL [CHARACTER]
 		do
 			from
-				counter := 0
-				nb := count - 1
+				nb := count
 				a := area
 			until
-				counter > nb
+				i = nb
 			loop
-				if a.item (counter) = c then
+				if a.item (i) = c then
 					Result := Result + 1
 				end
-				counter := counter + 1
+				i := i + 1
 			end
 		ensure then
 			zero_if_empty: count = 0 implies Result = 0
@@ -439,14 +475,51 @@ feature -- Comparison
 			-- Is string made of same character sequence as `other'
 			-- (possibly with a different capacity)?
 		local
-			o_area: like area
+			l_count: INTEGER
 		do
 			if other = Current then
 				Result := True
-			elseif count = other.count then
-				o_area := other.area
-				Result := str_strict_cmp ($area, $o_area, count) = 0
+			else
+				l_count := count
+				if l_count = other.count then
+					Result := str_strict_cmp (area, other.area, l_count) = 0
+				end
 			end
+		end
+
+	is_case_insensitive_equal (other: like Current): BOOLEAN is
+			-- Is string made of same character sequence as `other' regardless of casing
+			-- (possibly with a different capacity)?
+		require
+			other_not_void: other /= Void
+		local
+			l_area, l_other_area: like area
+			i, nb: INTEGER
+		do
+			if other = Current then
+				Result := True
+			else
+				nb := count
+				if nb = other.count then
+					from
+						l_area := area
+						l_other_area := other.area
+						Result := True
+					until
+						i = nb
+					loop
+						if l_area.item (i).as_lower /= l_other_area.item (i).as_lower then
+							Result := False
+							i := nb - 1 -- Jump out of loop
+						end
+						i := i + 1
+					end
+				end
+			end
+		ensure
+			symmetric: Result implies other.is_case_insensitive_equal (Current)
+			consistent: standard_is_equal (other) implies Result
+			valid_result: as_lower.is_equal (other.as_lower) implies Result
 		end
 
 	same_string (other: STRING): BOOLEAN is
@@ -460,17 +533,36 @@ feature -- Comparison
 			if other = Current then
 				Result := True
 			elseif other.count = count then
-				from
-					i := 0
-					nb := count - 1
-					l_area := area
-					l_other_area := other.area
-					Result := True
-				until
-					i > nb or not Result
-				loop
-					Result := l_area.item (i) = l_other_area.item (i)
-					i := i + 1
+				Result := True
+				nb := count
+				if same_type (other) then
+					from
+						l_area := area
+						l_other_area := other.area
+					until
+						i = nb
+					loop
+						if l_area.item (i) /= l_other_area.item (i) then
+							Result := False
+							i := nb -- Jump out of the loop.
+						else
+							i := i + 1
+						end
+					end
+				else
+					from
+						i := 1
+						nb := nb + 1
+					until
+						i = nb
+					loop
+						if item (i) /= other.item (i) then
+							Result := False
+							i := nb -- Jump out of the loop.
+						else
+							i := i + 1
+						end
+					end
 				end
 			end
 		ensure
@@ -480,21 +572,19 @@ feature -- Comparison
 	infix "<" (other: like Current): BOOLEAN is
 			-- Is string lexicographically lower than `other'?
 		local
-			other_area: like area
 			other_count: INTEGER
 			current_count: INTEGER
 		do
 			if other /= Current then
-				other_area := other.area
 				other_count := other.count
 				current_count := count
 				if other_count = current_count then
-					Result := str_strict_cmp ($other_area, $area, other_count) > 0
+					Result := str_strict_cmp (other.area, area, other_count) > 0
 				else
 					if current_count < other_count then
-						Result := str_strict_cmp ($other_area, $area, current_count) >= 0
+						Result := str_strict_cmp (other.area, area, current_count) >= 0
 					else
-						Result := str_strict_cmp ($other_area, $area, other_count) > 0
+						Result := str_strict_cmp (other.area, area, other_count) > 0
 					end
 				end
 			end
@@ -502,20 +592,31 @@ feature -- Comparison
 
 feature -- Status report
 
+	is_string_8: BOOLEAN is True
+			-- Current is a STRING_8 instance
+
+	is_string_32: BOOLEAN is False
+			-- Current is a not STRING_32 instance
+
+	is_valid_as_string_8: BOOLEAN is True
+			-- Is `Current' convertible to STRING_8 without information loss?
+
 	has (c: CHARACTER): BOOLEAN is
 			-- Does string include `c'?
 		local
-			counter: INTEGER
+			i, nb: INTEGER
+			l_area: like area
 		do
-			if not is_empty then
+			nb := count
+			if nb > 0 then
 				from
-					counter := 1
+					l_area := area
 				until
-					counter > count or else (item (counter) = c)
+					i = nb or else (l_area.item (i) = c)
 				loop
-					counter := counter + 1
+					i := i + 1
 				end
-				Result := (counter <= count)
+				Result := (i < nb)
 			end
 		ensure then
 			false_if_empty: count = 0 implies not Result
@@ -543,6 +644,66 @@ feature -- Status report
 				(Result = substring (2, count).has_substring (other))
 		end
 
+	starts_with (s: STRING_8): BOOLEAN is
+			-- Does string begin with `s'?
+		require
+			argument_not_void: s /= Void
+		local
+			i: INTEGER
+			l_area, l_s_area: like area
+		do
+			if Current = s then
+				Result := True
+			else
+				i := s.count
+				if i <= count then
+					from
+						l_area := area
+						l_s_area := s.area
+						Result := True
+					until
+						i = 0 or not Result
+					loop
+						i := i - 1
+						Result := l_area.item (i) = l_s_area.item (i)
+					end
+				end
+			end
+		ensure
+			definition: Result = s.same_string (substring (1, s.count))
+		end
+
+	ends_with (s: STRING_8): BOOLEAN is
+			-- Does string finish with `s'?
+		require
+			argument_not_void: s /= Void
+		local
+			i, j: INTEGER
+			l_area, l_s_area: like area
+		do
+			if Current = s then
+				Result := True
+			else
+				i := s.count
+				j := count
+				if i <= j then
+					from
+						l_area := area
+						l_s_area := s.area
+						Result := True
+					until
+						i = 0 or not Result
+					loop
+						i := i - 1
+						j := j - 1
+						Result := l_area.item (j) = l_s_area.item (i)
+					end
+				end
+			end
+		ensure
+			definition: Result = s.same_string (substring (count - s.count + 1, count))
+		end
+
 	extendible: BOOLEAN is True
 			-- May new items be added? (Answer: yes.)
 
@@ -558,69 +719,24 @@ feature -- Status report
 			Result := (i > 0) and (i <= count)
 		end
 
+	valid_code (v: NATURAL_32): BOOLEAN is
+			-- Is `v' a valid code for a CHARACTER_32?
+		do
+			Result := v <= {CHARACTER}.max_value.to_natural_32
+		end
+
 	changeable_comparison_criterion: BOOLEAN is False
 
-	is_integer: BOOLEAN is
-			-- Does `Current' represent an INTEGER?
-		local
-			l_c: CHARACTER
-			l_area: like area
-			i, nb, l_state: INTEGER
+	is_number_sequence: BOOLEAN is
+			-- Does `Current' represent a number sequence?
 		do
-				-- l_state = 0 : waiting sign or first digit.
-				-- l_state = 1 : sign read, waiting first digit.
-				-- l_state = 2 : in the number.
-				-- l_state = 3 : trailing white spaces
-				-- l_state = 4 : error state.
-			from
-				l_area := area
-				i := 0
-				nb := count - 1
-			until
-				i > nb or l_state > 3
-			loop
-				l_c := l_area.item (i)
-				i := i + 1
-				inspect l_state
-				when 0 then
-						-- Let's find beginning of an integer, if any.
-					if l_c.is_digit then
-						l_state := 2
-					elseif l_c = '-' or l_c = '+' then
-						l_state := 1
-					elseif l_c = ' ' then
-					else
-						l_state := 4
-					end
-				when 1 then
-						-- Let's find first digit after sign.
-					if l_c.is_digit then
-						l_state := 2
-					else
-						l_state := 4
-					end
-				when 2 then
-						-- Let's find another digit or end of integer.
-					if l_c.is_digit then
-					elseif l_c = ' ' then
-						l_state := 3
-					else
-						l_state := 4
-					end
-				when 3 then
-						-- Consume remaining white space.
-					if l_c /= ' ' then
-						l_state := 4
-					end
-				end
-			end
-			Result := l_state = 2 or l_state = 3
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_no_limitation)
 		ensure
 			syntax_and_range:
 				-- Result is true if and only if the following two
 				-- conditions are satisfied:
 				--
-				-- 1. In the following BNF grammar, the value of
+				-- In the following BNF grammar, the value of
 				--	Current can be produced by "Integer_literal":
 				--
 				-- Integer_literal = [Space] [Sign] Integer [Space]
@@ -628,19 +744,15 @@ feature -- Status report
 				-- Sign		= "+" | "-"
 				-- Integer	= Digit | Digit Integer
 				-- Digit	= "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"
-				--
-				-- 2. The integer value represented by Current
-				--	is within the range that can be represented
-				--	by an instance of type INTEGER.
 		end
 
 	is_real: BOOLEAN is
 			-- Does `Current' represent a REAL?
 		do
-			Result := str_isr ($area, count)
+			Result := is_double
 		ensure
 			syntax_and_range:
-				-- 'result' is True if and only if the following two
+				-- 'Result' is True if and only if the following two
 				-- conditions are satisfied:
 				--
 				-- 1. In the following BNF grammar, the value of
@@ -651,7 +763,7 @@ feature -- Status report
 				--				 | "e" Exponent
 				-- Exponent		= Integer_literal
 				-- Mantissa		= Decimal_literal
-				-- Decimal_literal = Integer_literal ["." Integer]
+				-- Decimal_literal = Integer_literal ["." [Integer]] | "." Integer
 				-- Integer_literal = [Sign] Integer
 				-- Sign			= "+" | "-"
 				-- Integer		= Digit | Digit Integer
@@ -664,11 +776,15 @@ feature -- Status report
 
 	is_double: BOOLEAN is
 			-- Does `Current' represent a DOUBLE?
+		local
+			l_convertor: like ctor_convertor
 		do
-			Result := str_isd ($area, count)
+			l_convertor := ctor_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_double)
+			Result := l_convertor.is_integral_double
 		ensure
 			syntax_and_range:
-				-- 'result' is True if and only if the following two
+				-- 'Result' is True if and only if the following two
 				-- conditions are satisfied:
 				--
 				-- 1. In the following BNF grammar, the value of
@@ -679,7 +795,7 @@ feature -- Status report
 				--				 | "e" Exponent
 				-- Exponent		= Integer_literal
 				-- Mantissa		= Decimal_literal
-				-- Decimal_literal = Integer_literal ["." Integer]
+				-- Decimal_literal = Integer_literal ["." [Integer]] | "." Integer
 				-- Integer_literal = [Sign] Integer
 				-- Sign			= "+" | "-"
 				-- Integer		= Digit | Digit Integer
@@ -689,19 +805,81 @@ feature -- Status report
 				--	is within the range that can be represented
 				--	by an instance of type DOUBLE.
 		end
-	
+
 	is_boolean: BOOLEAN is
 			-- Does `Current' represent a BOOLEAN?
 		local
-			s: STRING
+			nb: INTEGER
+			l_area: like area
 		do
-			s := twin
-			s.right_adjust
-			s.left_adjust
-			s.to_lower
-			Result := s.is_equal (true_constant) or else s.is_equal (false_constant)
+			nb := count
+			if nb = 4 then
+					-- Check if this is `true_constant'
+				l_area := area
+				Result := l_area.item (0).lower = 't' and then
+					l_area.item (1).lower = 'r' and then
+					l_area.item (2).lower = 'u' and then
+					l_area.item (3).lower = 'e'
+			elseif nb = 5 then
+					-- Check if this is `false_constant'
+				l_area := area
+				Result := l_area.item (0).lower = 'f' and then
+					l_area.item (1).lower = 'a' and then
+					l_area.item (2).lower = 'l' and then
+					l_area.item (3).lower = 's' and then
+					l_area.item (4).lower = 'e'
+			end
 		ensure
-			is_boolean: Result = (as_lower.has_substring (true_constant) or as_lower.has_substring (false_constant))
+			is_boolean: Result = (true_constant.same_string (as_lower) or false_constant.same_string (as_lower))
+		end
+
+	is_integer_8: BOOLEAN is
+			-- Does `Current' represent an INTEGER_8?
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_integer_8)
+		end
+
+	is_integer_16: BOOLEAN is
+			-- Does `Current' represent an INTEGER_16?
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_integer_16)
+		end
+
+	is_integer, is_integer_32: BOOLEAN is
+			-- Does `Current' represent an INTEGER?
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_integer_32)
+		end
+
+	is_integer_64: BOOLEAN is
+			-- Does `Current' represent an INTEGER_64?
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_integer_64)
+		end
+
+	is_natural_8: BOOLEAN is
+			-- Does `Current' represent a NATURAL_8?
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_natural_8)
+		end
+
+	is_natural_16: BOOLEAN is
+			-- Does `Current' represent a NATURAL_16?
+
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_natural_16)
+		end
+
+	is_natural, is_natural_32: BOOLEAN is
+			-- Does `Current' represent a NATURAL_32?
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_natural_32)
+		end
+
+	is_natural_64: BOOLEAN is
+			-- Does `Current' represent a NATURAL_64?
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_natural_64)
 		end
 
 feature -- Element change
@@ -734,9 +912,9 @@ feature -- Element change
 					-- Note: <= is needed as all Eiffel string should have an
 					-- extra character to insert null character at the end.
 				if old_area = Void or else old_area.count <= count then
-					area := area.standard_twin
+					area := area.twin
 				else
-					old_area.base_address.memory_copy ($area, count)
+					old_area.copy_data (area, 0, 0, count)
 					area := old_area
 				end
 				internal_hash_code := 0
@@ -757,15 +935,20 @@ feature -- Element change
 			valid_index_pos: valid_index (index_pos)
 			enough_space: (count - index_pos) >= (end_pos - start_pos)
 		local
-			other_area: like area
-			start0, end0, index0: INTEGER
+			l_other_area, l_area: like area
 		do
-			other_area := other.area
-			start0 := start_pos - 1
-			end0 := end_pos - 1
-			index0 := index_pos - 1
-			spsubcopy ($other_area, $area, start0, end0, index0)
-			internal_hash_code := 0
+			l_other_area := other.area
+			l_area := area
+			if end_pos >= start_pos then
+				if l_area /= l_other_area then
+					l_area.copy_data (l_other_area, start_pos - 1, index_pos - 1,
+						end_pos - start_pos + 1)
+				else
+					l_area.overlapping_move (start_pos - 1, index_pos - 1,
+						end_pos - start_pos + 1)
+				end
+				internal_hash_code := 0
+			end
 		ensure
 			same_count: count = old count
 			copied: elks_checking implies
@@ -782,18 +965,31 @@ feature -- Element change
 			valid_end_index: end_index <= count
 			meaningfull_interval: start_index <= end_index + 1
 		local
-			new_size, substring_size: INTEGER
-			s_area: like area
+			new_size: INTEGER
+			diff: INTEGER
+			l_area: like area
+			s_count: INTEGER
+			old_count: INTEGER
 		do
-			substring_size := end_index - start_index + 1
-			new_size := s.count + count - substring_size
-			if new_size > safe_capacity then
-				resize (new_size + additional_space)
+			s_count := s.count
+			old_count := count
+			diff := s_count - (end_index - start_index + 1)
+			new_size := diff + old_count
+			if diff > 0 then
+					-- We need to resize the string.
+				grow (new_size)
 			end
-			s_area := s.area
-			str_replace ($area, $s_area, count, s.count, start_index, end_index)
-			count := new_size
-			internal_hash_code := 0
+
+			l_area := area
+				--| We move the end of the string forward (if diff is > 0), backward (if diff < 0),
+				--| and nothing otherwise.
+			if diff /= 0 then
+				l_area.overlapping_move (end_index, end_index + diff, old_count - end_index)
+			end
+				--| Set new count
+			set_count (new_size)
+				--| We copy the substring.
+			l_area.copy_data (s.area, 0, start_index - 1, s_count)
 		ensure
 			new_count: count = old count + old s.count - end_index + start_index - 1
 			replaced: elks_checking implies
@@ -808,22 +1004,87 @@ feature -- Element change
 			new_exists: new /= Void
 			original_not_empty: not original.is_empty
 		local
-			change_pos: INTEGER
+			l_first_pos, l_next_pos: INTEGER
+			l_orig_count, l_new_count, l_count: INTEGER
+			l_area, l_new_area: like area
+			l_offset: INTEGER
+			l_string_searcher: like string_searcher
 		do
 			if not is_empty then
-				from
-					change_pos := substring_index (original, 1)
-				until
-					change_pos = 0
-				loop
-					replace_substring (new, change_pos, change_pos + original.count - 1)
-					if change_pos + new.count <= count then
-						change_pos := substring_index (original, change_pos + new.count)
+				l_count := count
+				l_string_searcher := string_searcher
+				l_string_searcher.initialize_deltas (original)
+				l_first_pos := l_string_searcher.substring_index_with_deltas (Current, original, 1, l_count)
+				if l_first_pos > 0 then
+					l_orig_count := original.count
+					l_new_count := new.count
+					if l_orig_count = l_new_count then
+							-- String will not be resized, simply perform character substitution
+						from
+							l_area := area
+							l_new_area := new.area
+						until
+							l_first_pos = 0
+						loop
+							l_area.copy_data (l_new_area, 0, l_first_pos - 1, l_new_count)
+							if l_first_pos + l_new_count <= l_count then
+								l_first_pos := l_string_searcher.substring_index_with_deltas (Current, original, l_first_pos + l_new_count, l_count)
+							else
+								l_first_pos := 0
+							end
+						end
+					elseif l_orig_count > l_new_count then
+							-- New string is smaller than previous string, we can optimize
+							-- substitution by only moving block between two occurrences of `orginal'.
+						from
+							l_next_pos := l_string_searcher.substring_index_with_deltas (Current, original, l_first_pos + l_orig_count, l_count)
+							l_area := area
+							l_new_area := new.area
+						until
+							l_next_pos = 0
+						loop
+								-- Copy new string into Current
+							l_area.copy_data (l_new_area, 0, l_first_pos - 1 - l_offset, l_new_count)
+								-- Shift characters between `l_first_pos' and `l_next_pos'
+							l_area.overlapping_move (l_first_pos + l_orig_count - 1,
+								l_first_pos + l_new_count - 1 - l_offset, l_next_pos - l_first_pos - l_orig_count)
+							l_first_pos := l_next_pos
+							l_offset := l_offset + (l_orig_count - l_new_count)
+							if l_first_pos + l_new_count <= l_count then
+								l_next_pos := l_string_searcher.substring_index_with_deltas (Current, original, l_first_pos + l_orig_count, l_count)
+							else
+								l_next_pos := 0
+							end
+						end
+							-- Perform final substitution:
+							-- Copy new string into Current
+						l_area.copy_data (l_new_area, 0, l_first_pos - 1 - l_offset, l_new_count)
+							-- Shift characters between `l_first_pos' and the end of the string
+						l_area.overlapping_move (l_first_pos + l_orig_count - 1,
+							l_first_pos + l_new_count - 1 - l_offset, l_count + 1 - l_first_pos - l_orig_count)
+								-- Perform last substitution
+						l_offset := l_offset + (l_orig_count - l_new_count)
+
+							-- Update `count'
+						set_count (l_count - l_offset)
 					else
-						change_pos := 0
+							-- Optimization is harder as we don't know how many times we need to resize
+							-- the string. For now, we do like we did in our previous implementation
+						from
+						until
+							l_first_pos = 0
+						loop
+							replace_substring (new, l_first_pos, l_first_pos + l_orig_count - 1)
+							l_count := count
+							if l_first_pos + l_new_count <= l_count then
+								l_first_pos := l_string_searcher.substring_index_with_deltas (Current, original, l_first_pos + l_new_count, l_count)
+							else
+								l_first_pos := 0
+							end
+						end
 					end
+					internal_hash_code := 0
 				end
-				internal_hash_code := 0
 			end
 		end
 
@@ -848,9 +1109,14 @@ feature -- Element change
 
 	fill_with (c: CHARACTER) is
 			-- Replace every character with `c'.
+		local
+			l_count: INTEGER
 		do
-			area.base_address.memory_set (c.code, count)
-			internal_hash_code := 0
+			l_count := count
+			if l_count /= 0 then
+				area.fill_with (c, 0, count - 1)
+				internal_hash_code := 0
+			end
 		ensure
 			same_count: (count = old count) and (capacity >= old capacity)
 			filled: elks_checking implies occurrences (c) = count
@@ -870,12 +1136,14 @@ feature -- Element change
 	fill_character (c: CHARACTER) is
 			-- Fill with `capacity' characters all equal to `c'.
 		local
-			l_cap: like safe_capacity
+			l_cap: like capacity
 		do
-			l_cap := safe_capacity
-			area.base_address.memory_set (c.code, l_cap)
-			count := l_cap
-			internal_hash_code := 0
+			l_cap := capacity
+			if l_cap /= 0 then
+				area.fill_with (c, 0, l_cap - 1)
+				count := l_cap
+				internal_hash_code := 0
+			end
 		ensure
 			filled: full
 			same_size: (count = capacity) and (capacity = old capacity)
@@ -931,19 +1199,11 @@ feature -- Element change
 		require
 			non_negative_argument: n >= 0
 		local
-			i, j: INTEGER
+			nb: like count
 		do
-			if n < count then
-				from
-					j := (count - n)
-					i := 0
-				until
-					i = n
-				loop
-					area.put (area.item (j), i)
-					i := i + 1
-					j := j + 1
-				end
+			nb := count
+			if n < nb then
+				area.overlapping_move (nb - n, 0, n)
 				count := n
 				internal_hash_code := 0
 			end
@@ -954,24 +1214,59 @@ feature -- Element change
 
 	left_adjust is
 			-- Remove leading whitespace.
+		local
+			nb, nb_space: INTEGER
+			l_area: like area
 		do
-			count := str_left ($area, count)
-			internal_hash_code := 0
+				-- Compute number of spaces at the left of current string.
+			from
+				nb := count - 1
+				l_area := area
+			until
+				nb_space > nb or else not l_area.item (nb_space).is_space
+			loop
+				nb_space := nb_space + 1
+			end
+
+			if nb_space > 0 then
+					-- Set new count value.
+				nb := nb + 1 - nb_space
+					-- Shift characters to the left.
+				l_area.overlapping_move (nb_space, 0, nb)
+					-- Set new count.
+				count := nb
+				internal_hash_code := 0
+			end
 		ensure
 			valid_count: count <= old count
-			new_count: (count /= 0) implies
-				((item (1) /= ' ') and
-				 (item (1) /= '%T') and
-				 (item (1) /= '%R') and
-				 (item (1) /= '%N'))
+			new_count: not is_empty implies not item (1).is_space
 			kept: elks_checking implies is_equal ((old twin).substring (old count - count + 1, old count))
 		end
 
 	right_adjust is
 			-- Remove trailing whitespace.
+		local
+			i, nb: INTEGER
+			nb_space: INTEGER
+			l_area: like area
 		do
-			count := str_right ($area, count)
-			internal_hash_code := 0
+				-- Compute number of spaces at the right of current string.
+			from
+				nb := count - 1
+				i := nb
+				l_area := area
+			until
+				i < 0 or else not l_area.item (i).is_space
+			loop
+				nb_space := nb_space + 1
+				i := i - 1
+			end
+
+			if nb_space > 0 then
+					-- Set new count.
+				count := nb + 1 - nb_space
+				internal_hash_code := 0
+			end
 		ensure
 			valid_count: count <= old count
 			new_count: (count /= 0) implies
@@ -1008,13 +1303,24 @@ feature -- Element change
 			stable_after_i: elks_checking implies substring (i + 1, count).is_equal (old substring (i + 1, count))
 		end
 
+	put_code (v: NATURAL_32; i: INTEGER) is
+			-- Replace character at position `i' by character of code `v'.
+		do
+			area.put (v.to_character_8, i - 1)
+			internal_hash_code := 0
+		end
+
 	precede, prepend_character (c: CHARACTER) is
 			-- Add `c' at front.
+		local
+			l_area: like area
 		do
-			if count = safe_capacity then
+			if count = capacity then
 				resize (count + additional_space)
 			end
-			str_cprepend ($area, c, count)
+			l_area := area
+			l_area.overlapping_move (0, 1, count)
+			l_area.put (c, 0)
 			count := count + 1
 			internal_hash_code := 0
 		ensure
@@ -1028,7 +1334,8 @@ feature -- Element change
 		do
 			insert_string (s, 1)
 		ensure
-			inserted: elks_checking implies is_equal (old (s.twin) + old substring (1, count))
+			new_count: count = old (count + s.count)
+			inserted: elks_checking implies string.is_equal (old (s.twin) + old substring (1, count))
 		end
 
 	prepend_boolean (b: BOOLEAN) is
@@ -1063,22 +1370,37 @@ feature -- Element change
 			end
 		end
 
+	append_string_general (s: STRING_GENERAL) is
+			-- Append a copy of `s' at end.
+		local
+			l_s8: STRING
+		do
+			if same_type (s) then
+				l_s8 ?= s
+				append (l_s8)
+			else
+				Precursor {STRING_GENERAL} (s)
+			end
+		end
+
 	append (s: STRING) is
 			-- Append a copy of `s' at end.
 		require
 			argument_not_void: s /= Void
 		local
-			new_size: INTEGER
-			s_area: like area
+			l_count, l_s_count, l_new_size: INTEGER
 		do
-			new_size := s.count + count
-			if new_size > safe_capacity then
-				resize (new_size + additional_space)
+			l_s_count := s.count
+			if l_s_count > 0 then
+				l_count := count
+				l_new_size := l_s_count + l_count
+				if l_new_size > capacity then
+					resize (l_new_size + additional_space)
+				end
+				area.copy_data (s.area, 0, l_count, l_s_count)
+				count := l_new_size
+				internal_hash_code := 0
 			end
-			s_area := s.area;
-			area.item_address (count).memory_copy ($s_area, s.count)
-			count := new_size
-			internal_hash_code := 0
 		ensure
 			new_count: count = old count + old s.count
 			appended: elks_checking implies is_equal (old twin + old s.twin)
@@ -1088,11 +1410,11 @@ feature -- Element change
 			-- Append a copy of 's' at the end of a copy of Current,
 			-- Then return the Result.
 		require
-			argument_not_void: s /= Void	
+			argument_not_void: s /= Void
 		do
 			Result := new_string (count + s.count)
-			Result.append_string (Current)
-			Result.append_string (s)
+			Result.append (Current)
+			Result.append (s)
 		ensure
 			Result_exists: Result /= Void
 			new_count: Result.count = count + s.count
@@ -1128,12 +1450,13 @@ feature -- Element change
 					if i < 0 then
 						append_character ('-')
 						l_starting_index := l_starting_index + 1
-						l_value := -i
 							-- Special case for minimum integer value as negating it
 							-- as no effect.
-						if l_value = feature {INTEGER_REF}.Min_value then
-							append_character ((-(l_value \\ 10) + 48).to_character)
-							l_value := -(l_value // 10)
+						if i = {INTEGER}.Min_value then
+							append_character ('8')
+							l_value := -(i // 10)
+						else
+							l_value := -i
 						end
 					else
 						l_value := i
@@ -1141,7 +1464,312 @@ feature -- Element change
 				until
 					l_value = 0
 				loop
-					append_character (((l_value \\ 10)+ 48).to_character)
+					append_character (((l_value \\ 10)+ 48).to_character_8)
+					l_value := l_value // 10
+				end
+
+					-- Now put digits in correct order from left to right.
+				from
+					l_ending_index := count - 1
+					l_area := area
+				until
+					l_starting_index >= l_ending_index
+				loop
+					l_temp := l_area.item (l_starting_index)
+					l_area.put (l_area.item (l_ending_index), l_starting_index)
+					l_area.put (l_temp, l_ending_index)
+					l_ending_index := l_ending_index - 1
+					l_starting_index := l_starting_index + 1
+				end
+			end
+		end
+
+	append_integer_8 (i: INTEGER_8) is
+			-- Append the string representation of `i' at end.
+		local
+			l_value: INTEGER_8
+			l_starting_index, l_ending_index: INTEGER
+			l_temp: CHARACTER
+			l_area: like area
+		do
+			if i = 0 then
+				append_character ('0')
+			else
+					-- Extract integer value digit by digit from right to left.
+				from
+					l_starting_index := count
+					if i < 0 then
+						append_character ('-')
+						l_starting_index := l_starting_index + 1
+							-- Special case for minimum integer value as negating it
+							-- as no effect.
+						if i = {INTEGER_8}.Min_value then
+							append_character ('8')
+							l_value := -(i // 10)
+						else
+							l_value := -i
+						end
+					else
+						l_value := i
+					end
+				until
+					l_value = 0
+				loop
+					append_character (((l_value \\ 10)+ 48).to_character_8)
+					l_value := l_value // 10
+				end
+
+					-- Now put digits in correct order from left to right.
+				from
+					l_ending_index := count - 1
+					l_area := area
+				until
+					l_starting_index >= l_ending_index
+				loop
+					l_temp := l_area.item (l_starting_index)
+					l_area.put (l_area.item (l_ending_index), l_starting_index)
+					l_area.put (l_temp, l_ending_index)
+					l_ending_index := l_ending_index - 1
+					l_starting_index := l_starting_index + 1
+				end
+			end
+		end
+
+	append_integer_16 (i: INTEGER_16) is
+			-- Append the string representation of `i' at end.
+		local
+			l_value: INTEGER_16
+			l_starting_index, l_ending_index: INTEGER
+			l_temp: CHARACTER
+			l_area: like area
+		do
+			if i = 0 then
+				append_character ('0')
+			else
+					-- Extract integer value digit by digit from right to left.
+				from
+					l_starting_index := count
+					if i < 0 then
+						append_character ('-')
+						l_starting_index := l_starting_index + 1
+							-- Special case for minimum integer value as negating it
+							-- as no effect.
+						if i = {INTEGER_16}.Min_value then
+							append_character ('8')
+							l_value := -(i // 10)
+						else
+							l_value := -i
+						end
+					else
+						l_value := i
+					end
+				until
+					l_value = 0
+				loop
+					append_character (((l_value \\ 10)+ 48).to_character_8)
+					l_value := l_value // 10
+				end
+
+					-- Now put digits in correct order from left to right.
+				from
+					l_ending_index := count - 1
+					l_area := area
+				until
+					l_starting_index >= l_ending_index
+				loop
+					l_temp := l_area.item (l_starting_index)
+					l_area.put (l_area.item (l_ending_index), l_starting_index)
+					l_area.put (l_temp, l_ending_index)
+					l_ending_index := l_ending_index - 1
+					l_starting_index := l_starting_index + 1
+				end
+			end
+		end
+
+	append_integer_64 (i: INTEGER_64) is
+			-- Append the string representation of `i' at end.
+		local
+			l_value: INTEGER_64
+			l_starting_index, l_ending_index: INTEGER
+			l_temp: CHARACTER
+			l_area: like area
+		do
+			if i = 0 then
+				append_character ('0')
+			else
+					-- Extract integer value digit by digit from right to left.
+				from
+					l_starting_index := count
+					if i < 0 then
+						append_character ('-')
+						l_starting_index := l_starting_index + 1
+							-- Special case for minimum integer value as negating it
+							-- as no effect.
+						if i = {INTEGER_64}.Min_value then
+							append_character ('8')
+							l_value := -(i // 10)
+						else
+							l_value := -i
+						end
+					else
+						l_value := i
+					end
+				until
+					l_value = 0
+				loop
+					append_character (((l_value \\ 10)+ 48).to_character_8)
+					l_value := l_value // 10
+				end
+
+					-- Now put digits in correct order from left to right.
+				from
+					l_ending_index := count - 1
+					l_area := area
+				until
+					l_starting_index >= l_ending_index
+				loop
+					l_temp := l_area.item (l_starting_index)
+					l_area.put (l_area.item (l_ending_index), l_starting_index)
+					l_area.put (l_temp, l_ending_index)
+					l_ending_index := l_ending_index - 1
+					l_starting_index := l_starting_index + 1
+				end
+			end
+		end
+
+	append_natural_8 (i: NATURAL_8) is
+			-- Append the string representation of `i' at end.
+		local
+			l_value: NATURAL_8
+			l_starting_index, l_ending_index: INTEGER
+			l_temp: CHARACTER
+			l_area: like area
+		do
+			if i = 0 then
+				append_character ('0')
+			else
+					-- Extract integer value digit by digit from right to left.
+				from
+					l_starting_index := count
+					l_value := i
+				until
+					l_value = 0
+				loop
+					append_character (((l_value \\ 10)+ 48).to_character_8)
+					l_value := l_value // 10
+				end
+
+					-- Now put digits in correct order from left to right.
+				from
+					l_ending_index := count - 1
+					l_area := area
+				until
+					l_starting_index >= l_ending_index
+				loop
+					l_temp := l_area.item (l_starting_index)
+					l_area.put (l_area.item (l_ending_index), l_starting_index)
+					l_area.put (l_temp, l_ending_index)
+					l_ending_index := l_ending_index - 1
+					l_starting_index := l_starting_index + 1
+				end
+			end
+		end
+
+	append_natural_16 (i: NATURAL_16) is
+			-- Append the string representation of `i' at end.
+		local
+			l_value: NATURAL_16
+			l_starting_index, l_ending_index: INTEGER
+			l_temp: CHARACTER
+			l_area: like area
+		do
+			if i = 0 then
+				append_character ('0')
+			else
+					-- Extract integer value digit by digit from right to left.
+				from
+					l_starting_index := count
+					l_value := i
+				until
+					l_value = 0
+				loop
+					append_character (((l_value \\ 10)+ 48).to_character_8)
+					l_value := l_value // 10
+				end
+
+					-- Now put digits in correct order from left to right.
+				from
+					l_ending_index := count - 1
+					l_area := area
+				until
+					l_starting_index >= l_ending_index
+				loop
+					l_temp := l_area.item (l_starting_index)
+					l_area.put (l_area.item (l_ending_index), l_starting_index)
+					l_area.put (l_temp, l_ending_index)
+					l_ending_index := l_ending_index - 1
+					l_starting_index := l_starting_index + 1
+				end
+			end
+		end
+
+	append_natural_32 (i: NATURAL_32) is
+			-- Append the string representation of `i' at end.
+		local
+			l_value: NATURAL_32
+			l_starting_index, l_ending_index: INTEGER
+			l_temp: CHARACTER
+			l_area: like area
+		do
+			if i = 0 then
+				append_character ('0')
+			else
+					-- Extract integer value digit by digit from right to left.
+				from
+					l_starting_index := count
+					l_value := i
+				until
+					l_value = 0
+				loop
+					append_character (((l_value \\ 10)+ 48).to_character_8)
+					l_value := l_value // 10
+				end
+
+					-- Now put digits in correct order from left to right.
+				from
+					l_ending_index := count - 1
+					l_area := area
+				until
+					l_starting_index >= l_ending_index
+				loop
+					l_temp := l_area.item (l_starting_index)
+					l_area.put (l_area.item (l_ending_index), l_starting_index)
+					l_area.put (l_temp, l_ending_index)
+					l_ending_index := l_ending_index - 1
+					l_starting_index := l_starting_index + 1
+				end
+			end
+		end
+
+	append_natural_64 (i: NATURAL_64) is
+			-- Append the string representation of `i' at end.
+		local
+			l_value: NATURAL_64
+			l_starting_index, l_ending_index: INTEGER
+			l_temp: CHARACTER
+			l_area: like area
+		do
+			if i = 0 then
+				append_character ('0')
+			else
+					-- Extract integer value digit by digit from right to left.
+				from
+					l_starting_index := count
+					l_value := i
+				until
+					l_value = 0
+				loop
+					append_character (((l_value \\ 10)+ 48).to_character_8)
 					l_value := l_value // 10
 				end
 
@@ -1179,7 +1807,7 @@ feature -- Element change
 			current_count: INTEGER
 		do
 			current_count := count
-			if current_count = safe_capacity then
+			if current_count = capacity then
 				resize (current_count + additional_space)
 			end
 			area.put (c, current_count)
@@ -1211,117 +1839,66 @@ feature -- Element change
 			inserted: elks_checking implies
 				(is_equal (old substring (1, i - 1) + old (s.twin) + old substring (i, count)))
 		end
-		
+
 	insert_string (s: STRING; i: INTEGER) is
-			-- Insert `s' at index `i', shifting characters between ranks 
+			-- Insert `s' at index `i', shifting characters between ranks
 			-- `i' and `count' rightwards.
 		require
 			string_exists: s /= Void
 			valid_insertion_index: 1 <= i and i <= count + 1
 		local
-			j, nb, pos, new_size: INTEGER
+			pos, new_size: INTEGER
 			l_s_count: INTEGER
-			l_area, s_area: like area
+			l_area: like area
 		do
-				-- Resize Current if necessary.
+				-- Insert `s' if `s' is not empty, otherwise is useless.
 			l_s_count := s.count
-			new_size := l_s_count + count
-			if new_size > safe_capacity then
-				resize (new_size + additional_space)
-			end
-			
-				-- Perform all operations using a zero based arrays.
-			l_area := area
-			s_area := s.area
-			pos := i - 1
-			
-				-- First shift from `s.count' position all characters starting at index `pos'.
-			from
-				j := count - 1
-			until
-				j < pos
-			loop
-				l_area.put (l_area.item (j), j + l_s_count)
-				j := j - 1
-			end
-
-				-- Copy string `s' at index `pos'.
-			if l_area /= s_area then
-					-- Normal copy as there is no overlap between `other' and `Current'.
-				from
-					j := 0
-					nb := l_s_count - 1
-				until
-					j > nb
-				loop
-					l_area.put (s_area.item (j), j + pos)
-					j := j + 1
-				end
-			else
-					-- We have an overlap between `s' and `Current'. Since now Current
-					-- is made of `low' + `empty' + `upper' part, we need to copy
-					-- the `low' part at the beginning of `empty' and the `upper' part
-					-- at the end of `empty'.
-					
-					-- First copy characters of Current from low part `0..pos - 1' to
-					-- `pos .. pos + pos - 1'.
-				from
-					j := 0
-					nb := pos - 1
-				until
-					j > nb
-				loop
-					l_area.put (l_area.item (j), j + pos)
-					j := j + 1
+			if l_s_count /= 0 then
+					-- Resize Current if necessary.
+				new_size := l_s_count + count
+				if new_size > capacity then
+					resize (new_size + additional_space)
 				end
 
-					-- Then copy characters of Current from upper part
-					-- `pos + l_s_count .. new_size - 1' to `pos + pos .. pos + l_s_count - 1'.
-				from
-					j := pos + pos
-					nb := pos + l_s_count - 1
-				until
-					j > nb
-				loop
-					l_area.put (l_area.item (j + l_s_count - pos), j)
-					j := j + 1
-				end
+					-- Perform all operations using a zero based arrays.
+				l_area := area
+				pos := i - 1
+
+					-- First shift from `s.count' position all characters starting at index `pos'.
+				l_area.overlapping_move (pos, pos + l_s_count, count - pos)
+
+					-- Copy string `s' at index `pos'.
+				l_area.copy_data (s.area, 0, pos, l_s_count)
+
+				count := new_size
+				internal_hash_code := 0
 			end
-			count := new_size
-			internal_hash_code := 0
 		ensure
 			inserted: elks_checking implies
 				(is_equal (old substring (1, i - 1) + old (s.twin) + old substring (i, count)))
 		end
 
 	insert_character (c: CHARACTER; i: INTEGER) is
-			-- Insert `c' at index `i', shifting characters between ranks 
+			-- Insert `c' at index `i', shifting characters between ranks
 			-- `i' and `count' rightwards.
 		require
 			valid_insertion_index: 1 <= i and i <= count + 1
 		local
-			j, pos, new_size: INTEGER
+			pos, new_size: INTEGER
 			l_area: like area
 		do
 				-- Resize Current if necessary.
 			new_size := 1 + count
-			if new_size > safe_capacity then
+			if new_size > capacity then
 				resize (new_size + additional_space)
 			end
-			
+
 				-- Perform all operations using a zero based arrays.
-			l_area := area
 			pos := i - 1
-			
+			l_area := area
+
 				-- First shift from `s.count' position all characters starting at index `pos'.
-			from
-				j := count - 1
-			until
-				j < pos
-			loop
-				l_area.put (l_area.item (j), j + 1)
-				j := j - 1
-			end
+			l_area.overlapping_move (pos, pos + 1, count - pos)
 
 				-- Insert new character
 			l_area.put (c, pos)
@@ -1339,16 +1916,15 @@ feature -- Removal
 
 	remove (i: INTEGER) is
 			-- Remove `i'-th character.
-		require
-			index_small_enough: i <= count
-			index_large_enough: i > 0
+		local
+			l_count: INTEGER
 		do
-			str_rmchar ($area, count, i)
-			count := count - 1
+			l_count := count
+				-- Shift characters to the left.
+			area.overlapping_move (i, i - 1, l_count - i)
+				-- Update content.
+			count := l_count - 1
 			internal_hash_code := 0
-		ensure
-			new_count: count = old count - 1
-			removed: elks_checking implies is_equal (old substring (1, i - 1) + old substring (i + 1, count))
 		end
 
 	remove_head (n: INTEGER) is
@@ -1375,15 +1951,13 @@ feature -- Removal
 			valid_end_index: end_index <= count
 			meaningful_interval: start_index <= end_index + 1
 		local
-			i: INTEGER
+			l_count, nb_removed: INTEGER
 		do
-			from
-				i := 0
-			until
-				i > end_index - start_index
-			loop
-				remove (start_index)
-				i := i + 1
+			nb_removed := end_index - start_index + 1
+			if nb_removed > 0 then
+				l_count := count
+				area.overlapping_move (start_index + nb_removed - 1, start_index - 1, l_count - end_index)
+				count := l_count - nb_removed
 			end
 		ensure
 			removed: elks_checking implies
@@ -1432,8 +2006,27 @@ feature -- Removal
 			-- Remove all occurrences of `c'.
 		require else
 			True
+		local
+			i, j, nb: INTEGER
+			l_area: like area
+			l_char: CHARACTER
 		do
-			count := str_rmall ($area, c, count)
+				-- Traverse string and shift characters to the left
+				-- each time we find an occurrence of `c'.
+			from
+				l_area := area
+				nb := count
+			until
+				i = nb
+			loop
+				l_char := l_area.item (i)
+				if l_char /= c then
+					l_area.put (l_char, j)
+					j := j + 1
+				end
+				i := i + 1
+			end
+			count := j
 			internal_hash_code := 0
 		ensure then
 			changed_count: count = (old count) - (old occurrences (c))
@@ -1465,7 +2058,7 @@ feature -- Removal
 	wipe_out is
 			-- Remove all characters.
 		do
-			area := empty_area
+			create area.make (1)
 			count := 0
 			internal_hash_code := 0
 		ensure then
@@ -1495,27 +2088,19 @@ feature -- Resizing
 			-- Rearrange string so that it can accommodate
 			-- at least `newsize' characters.
 			-- Do not lose any previously entered character.
-		require
-			new_size_non_negative: newsize >= 0
 		local
 			area_count: INTEGER
 		do
 			area_count := area.count
 			if newsize >= area_count then
-				if area_count = 1 then
-					make_area (newsize + 1)
-				else
-					area := str_resize ($area, newsize + 1)
-				end
+				area := area.aliased_resized_area (newsize + 1)
 			end
 		end
 
 	grow (newsize: INTEGER) is
 			-- Ensure that the capacity is at least `newsize'.
-		require else
-			new_size_non_negative: newsize >= 0
 		do
-			if newsize > safe_capacity then
+			if newsize > capacity then
 				resize (newsize)
 			end
 		end
@@ -1547,27 +2132,129 @@ feature -- Conversion
 		end
 
 	left_justify is
-			-- Left justify the string using
-			-- the capacity as the width
+			-- Left justify Current using `count' as witdth.
+		local
+			i, nb: INTEGER
+			l_area: like area
 		do
-			str_ljustify ($area, count, safe_capacity)
-			internal_hash_code := 0
+				-- Remove leading white spaces.
+			nb := count
+			left_adjust
+
+				-- Get new count
+			i := count
+			if i < nb then
+					-- `left_adjust' did remove some characters, so we need to add
+					-- some white spaces at the end of the string.
+				from
+					l_area := area
+				until
+					i = nb
+				loop
+					l_area.put (' ', i)
+					i := i + 1
+				end
+					-- Restore `count'
+				count := nb
+				internal_hash_code := 0
+			end
 		end
 
 	center_justify is
-			-- Center justify the string using
-			-- the capacity as the width
+			-- Center justify Current using `count' as width.
+		local
+			i, nb, l_offset: INTEGER
+			left_nb_space, right_nb_space: INTEGER
+			l_area: like area
 		do
-			str_cjustify ($area, count, safe_capacity)
-			internal_hash_code := 0
+				-- Compute number of spaces at the left of current string.
+			from
+				nb := count
+				l_area := area
+			until
+				left_nb_space = nb or else not l_area.item (left_nb_space).is_space
+			loop
+				left_nb_space := left_nb_space + 1
+			end
+
+				-- Compute number of spaces at the right of current string.
+			from
+				i := nb - 1
+				l_area := area
+			until
+				i = -1 or else not l_area.item (i).is_space
+			loop
+				right_nb_space := right_nb_space + 1
+				i := i - 1
+			end
+
+				-- We encourage that more spaces will be put to the left, when
+				-- number of spaces is not even.
+			l_offset := left_nb_space + right_nb_space
+			if l_offset \\ 2 = 0 then
+				l_offset := left_nb_space - l_offset // 2
+			else
+				l_offset := left_nb_space - l_offset // 2 - 1
+			end
+			if l_offset = 0 then
+					-- Nothing to be done.
+			else
+					-- Shift characters to the right or left (depending on sign of
+					-- `l_offset' by `l_offset' position.
+				l_area.move_data (left_nb_space, left_nb_space - l_offset,
+					nb - left_nb_space - right_nb_space)
+
+				if l_offset < 0 then
+						-- Fill left part with spaces.
+					l_area.fill_with (' ', left_nb_space, left_nb_space - l_offset - 1)
+				else
+						-- Fill right part with spaces.
+					l_area.fill_with (' ', nb - right_nb_space - l_offset, nb - 1)
+				end
+				internal_hash_code := 0
+			end
 		end
 
 	right_justify is
-			-- Right justify the string using
-			-- the capacity as the width
+			-- Right justify Current using `count' as width.
+		local
+			i, nb: INTEGER
+			nb_space: INTEGER
+			l_area: like area
 		do
-			str_rjustify ($area, count, safe_capacity)
-			internal_hash_code := 0
+			nb := count
+			right_adjust
+			i := count
+			nb_space := nb - i
+			if nb_space > 0 then
+					-- Shift characters to the right.
+				from
+					l_area := area
+				variant
+					i + 1
+				until
+					i = 0
+				loop
+					i := i - 1
+					l_area.put (l_area.item (i), i + nb_space)
+				end
+
+					-- Fill left part with spaces.
+				from
+				variant
+					nb_space + 1
+				until
+					nb_space = 0
+				loop
+					nb_space := nb_space - 1
+					l_area.put (' ', nb_space)
+				end
+					-- Restore `count'
+				count := nb
+				internal_hash_code := 0
+			end
+		ensure
+			same_count: count = old count
 		end
 
 	character_justify (pivot: CHARACTER; position: INTEGER) is
@@ -1582,35 +2269,28 @@ feature -- Conversion
 			pivot_not_space: pivot /= ' '
 			not_empty: not is_empty
 		local
-			l_index_of_pivot: INTEGER
+			l_index_of_pivot, l_new_size: INTEGER
+			l_area: like area
 		do
 			l_index_of_pivot := index_of (pivot, 1)
 			if l_index_of_pivot /= 0 then
 				if l_index_of_pivot < position then
-					from
-						precede (' ')
-					until
-						index_of (pivot, 1) = position
-					loop
-						precede (' ')
-					end
-				elseif l_index_of_pivot > position then
-					from
-						remove (1)
-					until
-						index_of (pivot, 1) = position
-					loop
-						remove (1)
-					end
+						-- We need to resize Current so that we can shift Current by
+						-- `l_index_of_pivot - position'.
+					l_new_size := count + position - l_index_of_pivot
+					grow (l_new_size)
+					l_area := area
+					l_area.move_data (0, position - l_index_of_pivot, count)
+					l_area.fill_with (' ', 0, position - l_index_of_pivot - 1)
+					count := l_new_size
+				else
+						-- Simply shift content to the left and reset trailing with spaces.
+					l_area := area
+					l_area.move_data (l_index_of_pivot - position, 0, count - l_index_of_pivot + position)
+					l_area.fill_with (' ', count - l_index_of_pivot + position, count - 1)
 				end
+				internal_hash_code := 0
 			end
-			from
-			until
-				count = safe_capacity
-			loop
-				extend (' ')
-			end
-			internal_hash_code := 0
 		end
 
 	to_lower is
@@ -1653,62 +2333,109 @@ feature -- Conversion
 			length_end_content: elks_checking implies is_equal (old as_upper)
 		end
 
-	to_integer: INTEGER is
-			-- Integer value;
-			-- for example, when applied to "123", will yield 123
+	to_integer_8: INTEGER_8 is
+			-- 8-bit integer value
 		require
-			is_integer: is_integer
+			is_integer_8: is_integer_8
+		local
+			l_convertor: like ctoi_convertor
 		do
-			Result := str_atoi ($area, count)
-		ensure
-			single_digit: count = 1 implies Result = ("0123456789").index_of (item (1), 1) - 1
-			minus_sign_followed_by_single_digit:
-				count = 2 and item (1) = '-' implies Result = -substring (2, 2).to_integer
-			plus_sign_followed_by_single_digit:
-				count = 2 and item (1) = '+' implies Result = substring (2, 2).to_integer
-			recurse_to_reduce_length:
-				count > 2 or count = 2 and not(("+-").has (item (1))) implies
-				 Result // 10 = substring (1, count - 1).to_integer and
-				 (Result \\ 10).abs = substring (count, count).to_integer
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_integer_8
+		end
+
+	to_integer_16: INTEGER_16 is
+			-- 16-bit integer value
+		require
+			is_integer_16: is_integer_16
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_integer_16
+		end
+
+	to_integer, to_integer_32: INTEGER is
+			-- 32-bit integer value
+		require
+			is_integer: is_integer_32
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_integer
 		end
 
 	to_integer_64: INTEGER_64 is
-			-- Integer value of type INTEGER_64;
-			-- for example, when applied to "123", will yield 123
+			-- 64-bit integer value
 		require
-			is_integer: is_integer
+			is_integer_64: is_integer_64
 		local
-			l_area: like area
-			l_character: CHARACTER
-			i, nb: INTEGER
-			l_is_negative: BOOLEAN
+			l_convertor: like ctoi_convertor
 		do
-			from
-				l_area := area
-				nb := count - 1
-			until
-				i > nb
-			loop
-				l_character := l_area.item (i)
-				if l_character.is_digit then
-					Result := (Result * 10) + l_character.code - 48
-				elseif l_character = '-' then
-					l_is_negative := True
-				end
-				i := i + 1
-			end
-			if l_is_negative then
-				Result := - Result
-			end
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_integer_64
 		end
-		
+
+	to_natural_8: NATURAL_8 is
+			-- 8-bit natural value
+		require
+			is_natural_8: is_natural_8
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_natural_8
+		end
+
+	to_natural_16: NATURAL_16 is
+			-- 16-bit natural value
+		require
+			is_natural_16: is_natural_16
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_natural_16
+		end
+
+	to_natural, to_natural_32: NATURAL_32 is
+			-- 32-bit natural value
+		require
+			is_natural: is_natural
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_natural_32
+		end
+
+	to_natural_64: NATURAL_64 is
+			-- 64-bit natural value
+		require
+			is_natural_64: is_natural_64
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_natural_64
+		end
+
 	to_real: REAL is
 			-- Real value;
 			-- for example, when applied to "123.0", will yield 123.0
 		require
 			represents_a_real: is_real
 		do
-			Result := str_ator ($area, count)
+			Result := to_double
 		end
 
 	to_double: DOUBLE is
@@ -1716,8 +2443,12 @@ feature -- Conversion
 			-- for example, when applied to "123.0", will yield 123.0 (double)
 		require
 			represents_a_double: is_double
+		local
+			l_convertor: like ctor_convertor
 		do
-			Result := str_atod ($area, count)
+			l_convertor := ctor_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_double
 		end
 
 	to_boolean: BOOLEAN is
@@ -1726,17 +2457,14 @@ feature -- Conversion
 			-- (case-insensitive)
 		require
 			is_boolean: is_boolean
-		local
-			s: STRING
 		do
-			s := twin
-			s.right_adjust
-			s.left_adjust
-			s.to_lower
-			Result := s.is_equal (true_constant)
+			check true_constant.count = 4 end
+			if count = 4 then
+				Result := True
+			end
 		ensure
-			to_boolean: (Result = same_string (true_constant)) or
-				(not Result = same_string (false_constant))
+			to_boolean: (Result = true_constant.same_string (as_lower)) or
+				(not Result = false_constant.same_string (as_lower))
 		end
 
 	linear_representation: LINEAR [CHARACTER] is
@@ -1745,7 +2473,7 @@ feature -- Conversion
 			temp: ARRAYED_LIST [CHARACTER]
 			i: INTEGER
 		do
-			create temp.make (safe_capacity)
+			create temp.make (capacity)
 			from
 				i := 1
 			until
@@ -1756,7 +2484,7 @@ feature -- Conversion
 			end
 			Result := temp
 		end
-	
+
 	split (a_separator: CHARACTER): LIST [STRING] is
 			-- Split on `a_separator'.
 		local
@@ -1793,36 +2521,32 @@ feature -- Conversion
 				end
 			else
 					-- Extend empty string, since Current is empty.
-				l_list.extend ("")	
+				l_list.extend ("")
 			end
 			Result := l_list
-			check 
+			check
 				l_list.count = occurrences (a_separator) + 1
 			end
 		ensure
 			Result /= Void
 		end
-	
+
 	frozen to_c: ANY is
 			-- A reference to a C form of current string.
 			-- Useful only for interfacing with C software.
+		require
+			not_is_dotnet: not {PLATFORM}.is_dotnet
 		local
 			l_area: like area
 		do
-				--| `area' can be Void in some cases (e.g. during
-				--| partial retrieval of objects).
 			l_area := area
-			if l_area /= Void then
-				l_area.put ('%U', count)
-				Result := l_area
-			else
-				Result := empty_area
-			end
+			l_area.put ('%U', count)
+			Result := l_area
 		end
 
 	mirrored: like Current is
 			-- Mirror image of string;
-			-- result for "Hello world" is "dlrow olleH".
+			-- Result for "Hello world" is "dlrow olleH".
 		do
 			Result := twin
 			if count > 0 then
@@ -1866,24 +2590,14 @@ feature -- Duplication
 	substring (start_index, end_index: INTEGER): like Current is
 			-- Copy of substring containing all characters at indices
 			-- between `start_index' and `end_index'
-		local
-			other_area: like area
 		do
 			if (1 <= start_index) and (start_index <= end_index) and (end_index <= count) then
 				Result := new_string (end_index - start_index + 1)
-				other_area := Result.area;
-				other_area.base_address.memory_copy (
-					area.item_address (start_index - 1), end_index - start_index + 1)
+				Result.area.copy_data (area, start_index - 1, 0, end_index - start_index + 1)
 				Result.set_count (end_index - start_index + 1)
 			else
 				Result := new_string (0)
 			end
-		ensure
-			substring_not_void: Result /= Void
-			substring_count: Result.count = end_index - start_index + 1 or Result.count = 0
-			first_item: Result.count > 0 implies Result.item (1) = item (start_index)
-			recurse: Result.count > 0 implies
-				Result.substring (2, Result.count).is_equal (substring (start_index + 1, end_index))
 		end
 
 	multiply (n: INTEGER) is
@@ -1892,7 +2606,7 @@ feature -- Duplication
 		require
 			meaningful_multiplier: n >= 1
 		local
-			s: STRING
+			s: like Current
 			i: INTEGER
 		do
 			s := twin
@@ -1923,50 +2637,20 @@ feature {STRING_HANDLER} -- Implementation
 
 	frozen set_count (number: INTEGER) is
 			-- Set `count' to `number' of characters.
-		require
-			valid_count: 0 <= number and number <= capacity
 		do
 			count := number
 			internal_hash_code := 0
-		ensure
-			new_count: count = number
 		end
 
 feature {NONE} -- Empty string implementation
-
-	elks_checking: BOOLEAN is False
-			-- Are ELKS expensive checkings verified?
-
-	empty_area: SPECIAL [CHARACTER] is
-			-- Empty `area' used when calling `make (0)'.
-		local
-			old_area: like area
-		once
-			old_area := area
-			make_area (1)
-			Result := area
-			area := old_area
-		end
-
-	safe_capacity: INTEGER is
-			-- Allocated space
-		require
-			area_not_void: area /= Void
-		do
-			Result := area.count - 1
-		end
 
 	internal_hash_code: INTEGER
 			-- Computed hash-code.
 
 	frozen set_internal_hash_code (v: like internal_hash_code) is
 			-- Set `internal_hash_code' with `v'.
-		require
-			v_nonnegative: v >= 0
 		do
 			internal_hash_code := v
-		ensure
-			internal_hash_code_set: internal_hash_code = v
 		end
 
 feature {NONE} -- Implementation
@@ -1983,7 +2667,7 @@ feature {NONE} -- Implementation
 			new_string_area_big_enough: Result.capacity >= n
 		end
 
-feature {NONE} -- Transformation
+feature -- Transformation
 
 	correct_mismatch is
 			-- Attempt to correct object mismatch during retrieve using `mismatch_information'.
@@ -1991,199 +2675,61 @@ feature {NONE} -- Transformation
 			-- Nothing to be done because we only added `internal_hash_code' that will
 			-- be recomputed next time we query `hash_code'.
 		end
-		
-feature {STRING} -- Implementation
 
-	hashcode (c_string: POINTER; len: INTEGER): INTEGER is
-			-- Hash code value of `c_string'
-		external
-			"C signature (char *, EIF_INTEGER): EIF_INTEGER use %"eif_tools.h%""
-		end
+feature {NONE} -- Implementation
 
-	str_str (c_str, o_str: POINTER; clen, olen, i, fuzzy: INTEGER): INTEGER is
-			-- Forward search of `o_str' within `c_str' starting at `i'.
-			-- Return the index within `c_str' where the pattern was
-			-- located, 0 if not found.
-			-- The 'fuzzy' parameter is the maximum allowed number of
-			-- mismatches within the pattern. A 0 means an exact match.
-		external
-			"C signature (char *, char *, int, int, int, int): int use %"eif_eiffel.h%""
-		end
-
-	str_len (c_string: POINTER): INTEGER is
-			-- Length of the C string: `c_string'
-		external
-			"C signature (char *): EIF_INTEGER use %"eif_str.h%""
-		alias
-			"strlen"
-		end
-
-	c_p_i: INTEGER is
-			-- Number of characters per INTEGER
-		obsolete
-			"You now have to implement it yourself by inheriting from PLATFORM."
+	is_valid_integer_or_natural (type: INTEGER) : BOOLEAN is
+			-- Is `Current' a valid number according to given `type'?
+		local
+			l_convertor: like ctoi_convertor
 		do
-				-- Example of implementation using features from PLATFORM
-				-- Result := Integer_bits // Character_bits;
+			l_convertor := ctoi_convertor
+			l_convertor.reset (type)
+			l_convertor.parse_string_with_type (Current, type)
+			Result := l_convertor.is_integral_integer
 		end
 
-	str_ljustify (c_string: POINTER; length, cap: INTEGER) is
-			-- Left justify in a field of `capacity'
-			-- the `c_string' of length `length'
-		external
-			"C signature (EIF_CHARACTER *, EIF_INTEGER, EIF_INTEGER) use %"eif_str.h%""
-		end
-
-	str_cjustify (c_string: POINTER; length, cap: INTEGER) is
-			-- Center justify in a field of `capacity'
-			-- the `c_string' of length `length'
-		external
-			"C signature (EIF_CHARACTER *, EIF_INTEGER, EIF_INTEGER) use %"eif_str.h%""
-		end
-
-	str_rjustify (c_string: POINTER; length, cap: INTEGER) is
-			-- Right justify in a field of `capacity'
-			-- the `c_string' of length `length'
-		external
-			"C signature (EIF_CHARACTER *, EIF_INTEGER, EIF_INTEGER) use %"eif_str.h%""
-		end
-
-	str_strict_cmp (this, other: POINTER; len: INTEGER): INTEGER is
-			-- Compare `this' and `other' C strings 
-			-- for the first `len' characters.
+	str_strict_cmp (this, other: like area; nb: INTEGER): INTEGER is
+			-- Compare `this' and `other' strings
+			-- for the first `nb' characters.
 			-- 0 if equal, < 0 if `this' < `other',
 			-- > 0 if `this' > `other'
-		external
-			"C signature (char *, char *, size_t): EIF_INTEGER use <string.h>"
-		alias
-			"strncmp"
+		require
+			this_not_void: this /= Void or else nb = 0
+			other_not_void: other /= Void
+			nb_non_negative: nb >= 0
+			nb_valid: (this /= Void implies nb <= this.count) and nb <= other.count
+		local
+			i, l_current_code, l_other_code: INTEGER
+		do
+			from
+			until
+				i = nb
+			loop
+				l_current_code := this.item (i).code
+				l_other_code := other.item (i).code
+				if l_current_code /= l_other_code then
+					Result := l_current_code - l_other_code
+					i := nb - 1 -- Jump out of loop
+				end
+				i := i + 1
+			end
 		end
 
-	str_atoi (c_string: POINTER; length: INTEGER): INTEGER is
-			-- Value of integer in `c_string'
-		external
-			"C signature (EIF_CHARACTER *, EIF_INTEGER): EIF_INTEGER use %"eif_str.h%""
-		end
-
-	str_ator (c_string: POINTER; length: INTEGER): REAL is
-			-- Value of real in `c_string'
-		external
-			"C signature (EIF_CHARACTER *, EIF_INTEGER): EIF_REAL use %"eif_str.h%""
-		end
-
-	str_atod (c_string: POINTER; length: INTEGER): DOUBLE is
-			-- Value of double in `c_string'
-		external
-			"C signature (EIF_CHARACTER *, EIF_INTEGER): EIF_DOUBLE use %"eif_str.h%""
-		end
-
-	str_isr (c_string: POINTER; length: INTEGER): BOOLEAN is
-			-- Is is a real?
-		external
-			"C signature (EIF_CHARACTER *, EIF_INTEGER): EIF_BOOLEAN use %"eif_str.h%""
-		end
-
-	str_isd (c_string: POINTER; length: INTEGER): BOOLEAN is
-			-- Is is a double?
-		external
-			"C signature (EIF_CHARACTER *, EIF_INTEGER): EIF_BOOLEAN use %"eif_str.h%""
-		end
-
-	str_cprepend (c_string: POINTER; c: CHARACTER; length: INTEGER) is
-			-- Prepend `c' to `c_string'.
-		external
-			"C signature (EIF_CHARACTER *, EIF_CHARACTER, EIF_INTEGER) use %"eif_str.h%""
-		end
-
-	str_rmchar (c_string: POINTER; length, i: INTEGER) is
-			-- Remove `i'-th character from `c_string'.
-		external
-			"C signature (EIF_CHARACTER *, EIF_INTEGER, EIF_INTEGER) use %"eif_str.h%""
-		end
-
-	str_replace (c_string, other_string: POINTER; c_length, other_length,
-			star_post, end_pos: INTEGER) is
-			-- Replace substring (`start_pos', `end_pos') from `c_string'
-			-- by `other_string'.
-		external
-			"C signature (EIF_CHARACTER *, EIF_CHARACTER *, EIF_INTEGER, EIF_INTEGER, EIF_INTEGER, EIF_INTEGER) use %"eif_str.h%""
-		end
-
-	str_rmall (c_string: POINTER; c: CHARACTER; length: INTEGER): INTEGER is
-			-- Remove all occurrences of `c' in `c_string'.
-			-- Return new number of character making up `c_string'
-		external
-			"C signature (EIF_CHARACTER *, EIF_CHARACTER, EIF_INTEGER): EIF_INTEGER use %"eif_str.h%""
-		end
-
-	str_left (c_string: POINTER; length: INTEGER): INTEGER is
-			-- Remove all leading whitespace from `c_string'.
-			-- Return the new number of characters making `c_string'
-		external
-			"C signature (EIF_CHARACTER *, EIF_INTEGER): EIF_INTEGER use %"eif_str.h%""
-		end
-
-	str_right (c_string: POINTER; length: INTEGER): INTEGER is
-			-- Remove all trailing whitespace from `c_string'.
-			-- Return the new number of characters making `c_string'
-		external
-			"C signature (EIF_CHARACTER *, EIF_INTEGER): EIF_INTEGER use %"eif_str.h%""
-		end
-
-	str_resize (a: POINTER; newsize: INTEGER): like area is
-			-- Area which can accomodate
-			-- at least `newsize' characters
-		external
-			"C signature (EIF_REFERENCE, unsigned int): EIF_REFERENCE use %"eif_malloc.h%""
-		alias
-			"sprealloc"
-		end
-
-	spsubcopy (source, target: POINTER; s, e, i: INTEGER) is
-			-- Copy characters of `source' within bounds `s'
-			-- and `e' to `target' starting at index `i'.
-		external
-			"C signature (EIF_REFERENCE, EIF_REFERENCE, EIF_INTEGER, EIF_INTEGER, EIF_INTEGER) use %"eif_copy.h%""
+	empty_area: SPECIAL [CHARACTER] is
+			-- Empty `area' to avoid useless creation of empty areas when wiping out a STRING.
+		obsolete
+			"Simply create `area' directly."
+		do
+			create Result.make (1)
+		ensure
+			empty_area_not_void: Result /= Void
 		end
 
 invariant
 	extendible: extendible
 	compare_character: not object_comparison
 	index_set_has_same_count: index_set.count = count
+	area_not_void: area /= Void
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class STRING
-
-
-
+end

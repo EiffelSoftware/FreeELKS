@@ -1,9 +1,7 @@
 indexing
-
-	description:
-		"Finite structures whose item count is subject to change"
-
-	status: "See notice at end of class"
+	description: "Finite structures whose item count is subject to change"
+	legal: "See notice at end of class."
+	status: "See notice at end of class."
 	names: storage;
 	size: resizable;
 	date: "$Date$"
@@ -15,7 +13,6 @@ deferred class RESIZABLE [G] inherit
 
 feature -- Measurement
 
-
 	Growth_percentage: INTEGER is 50
 			-- Percentage by which structure will grow automatically
 
@@ -26,7 +23,8 @@ feature -- Measurement
 			-- Proposed number of additional items
 			--| Result is a reasonable value, resulting from a space-time tradeoff.
 		do
-			Result := (capacity * Growth_percentage // 100).max (Minimal_increase)
+				-- To prevent overflow we do not use `growth_percentage' but its known value.
+			Result := (capacity // 2).max (Minimal_increase)
 		ensure
 			At_least_one: Result >= 1
 		end
@@ -49,8 +47,7 @@ feature -- Resizing
 		do
 			grow (capacity + additional_space)
 		ensure
-			increased_capacity:
-				capacity >= old capacity + old capacity * Growth_percentage // 100
+			increased_capacity: capacity >= old capacity + old additional_space
 		end
 
 	grow (i: INTEGER) is
@@ -65,36 +62,22 @@ invariant
 	increase_by_at_least_one: Minimal_increase >= 1
 
 indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
+	library:	"EiffelBase: Library of reusable components for Eiffel."
+	copyright:	"Copyright (c) 1984-2006, Eiffel Software and others"
+	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
+			 Eiffel Software
+			 356 Storke Road, Goleta, CA 93117 USA
+			 Telephone 805-685-1006, Fax 805-685-6869
+			 Website http://www.eiffel.com
+			 Customer support http://support.eiffel.com
+		]"
 
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
+
+
+
+
+
 
 end -- class RESIZABLE
 

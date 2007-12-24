@@ -1,11 +1,11 @@
 indexing
-
 	description: "[
 		Commonly used console input and output mechanisms. 
 		This class may be used as ancestor by classes needing its facilities.
 		]"
-
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -21,18 +21,28 @@ class CONSOLE inherit
 			{CONSOLE} open_read, close
 			{ANY}
 				separator, append, file_pointer, last_character, last_integer,
+				last_integer_32, last_integer_8, last_integer_16, last_integer_64,
+				last_natural_8, last_natural_16, last_natural, last_natural_32,
+				last_natural_64,
 				last_real, last_string, last_double, file_readable,
 				lastchar, lastint, lastreal, laststring, lastdouble,
-				readable, is_closed, extendible, is_open_write
+				readable, is_closed, extendible, is_open_write,
+				putint, put_integer, put_integer_8, put_integer_16, put_integer_32, put_integer_64,
+				readint, read_integer, read_integer_8, read_integer_16, read_integer_32, read_integer_64,
+				put_natural, put_natural_8, put_natural_16, put_natural_32, put_natural_64,
+				read_natural, read_natural_8, read_natural_16, read_natural_32, read_natural_64
 		redefine
 			make_open_stdin, make_open_stdout, count, is_empty, exists,
-			read_integer, read_real, read_double, read_character,
-			read_line, read_stream, read_word, next_line, put_integer,
+			read_real, read_double, read_character,
+			read_line, read_stream, read_word, next_line,
 			put_boolean, put_real, put_double, put_string, put_character,
 			put_new_line, new_line, end_of_file, file_close,
-			readint, readreal, readdouble, readchar, readline, readstream,
-			readword, putint, putbool, putreal, putdouble, putstring, putchar,
-			dispose, read_to_string
+			readreal, readdouble, readchar, readline, readstream,
+			readword, putbool, putreal, putdouble, putstring, putchar,
+			dispose, read_to_string, back,
+			read_integer_with_no_type,
+			ctoi_convertor
+
 		end
 
 	ANY
@@ -92,14 +102,14 @@ feature -- Removal
 			-- file_close (file_pointer)
 		end
 
-feature -- Input
+feature {NONE} -- Cursor movement
 
-	read_integer, readint is
-			-- Read a new integer from standard input.
-			-- Make result available in `last_integer'.
+	back is
+			-- Not supported on console
 		do
-			last_integer := console_readint (file_pointer)
 		end
+
+feature -- Input
 
 	read_real, readreal is
 			-- Read a new real from standard input.
@@ -271,12 +281,6 @@ feature -- Output
 			console_pd (file_pointer, d)
 		end
 
-	put_integer, putint (i: INTEGER) is
-			-- Write `i' at end of default output.
-		do
-			console_pi (file_pointer, i)
-		end
-
 	put_boolean, putbool (b: BOOLEAN) is
 			-- Write `b' at end of default output.
 		do
@@ -302,6 +306,37 @@ feature {NONE} -- Inapplicable
 
 feature {NONE} -- Implementation
 
+	ctoi_convertor: STRING_TO_INTEGER_CONVERTOR is
+			-- Convertor used to parse string to integer or natural
+		once
+			create Result.make
+			Result.set_leading_separators (internal_leading_separators)
+			Result.set_leading_separators_acceptable (True)
+			Result.set_trailing_separators_acceptable (False)
+		end
+
+	read_integer_with_no_type is
+			-- Read a ASCII representation of number of `type'
+			-- at current position.
+		do
+			read_number_sequence (ctoi_convertor, {NUMERIC_INFORMATION}.type_no_limitation)
+				-- Consume all left characters.
+			consume_characters
+		end
+
+	consume_characters is
+			-- Consume all characters from current position
+			-- until we meet a new-line character.
+		do
+			from
+
+			until
+				end_of_file or last_character = '%N'
+			loop
+				read_character
+			end
+		end
+
 	read_to_string (a_string: STRING; pos, nb: INTEGER): INTEGER is
 			-- Fill `a_string', starting at position `pos' with at
 			-- most `nb' characters read from current file.
@@ -314,54 +349,54 @@ feature {NONE} -- Implementation
 			-- Convert `number' to the corresponding
 			-- file descriptor.
 		external
-			"C | %"eif_console.h%""
+			"C use %"eif_console.h%""
 		end
 
 	console_eof (file: POINTER): BOOLEAN is
 		external
-			"C (FILE *): EIF_BOOLEAN | %"eif_console.h%""
+			"C signature (FILE *): EIF_BOOLEAN use %"eif_console.h%""
 		end
 
 	console_separator (file: POINTER): CHARACTER is
 			-- ASCII code of character following last word read
 		external
-			"C (FILE *): EIF_CHARACTER | %"eif_console.h%""
+			"C signature (FILE *): EIF_CHARACTER use %"eif_console.h%""
 		end
 
 	console_ps (file: POINTER; s_name: POINTER; length: INTEGER) is
 			-- Write string `s' at end of `file'
 		external
-			"C (FILE *, char *, EIF_INTEGER) | %"eif_console.h%""
+			"C signature (FILE *, char *, EIF_INTEGER) use %"eif_console.h%""
 		end
 
 	console_pr (file: POINTER; r: REAL) is
 			-- Write real `r' at end of `file'
 		external
-			"C (FILE *, EIF_REAL) | %"eif_console.h%""
+			"C signature (FILE *, EIF_REAL) use %"eif_console.h%""
 		end
 
 	console_pc (file: POINTER; c: CHARACTER) is
 			-- Write character `c' at end of `file'
 		external
-			"C (FILE *, EIF_CHARACTER) | %"eif_console.h%""
+			"C signature (FILE *, EIF_CHARACTER) use %"eif_console.h%""
 		end
 
 	console_pd (file: POINTER; d: DOUBLE) is
 			-- Write double `d' at end of `file'
 		external
-			"C (FILE *, EIF_DOUBLE) | %"eif_console.h%""
+			"C signature (FILE *, EIF_DOUBLE) use %"eif_console.h%""
 		end
 
 	console_pi (file: POINTER; i: INTEGER) is
 			-- Write integer `i' at end of `file'
 		external
-			"C (FILE *, EIF_INTEGER) | %"eif_console.h%""
+			"C signature (FILE *, EIF_INTEGER) use %"eif_console.h%""
 		end
 
 	console_tnwl (file: POINTER) is
 			-- Write a new_line to `file'
 		external
-			"C (FILE *) | %"eif_console.h%""
+			"C signature (FILE *) use %"eif_console.h%""
 		end
 
 	console_readreal (file: POINTER): REAL is
@@ -420,43 +455,9 @@ feature {NONE} -- Implementation
 	file_close (file: POINTER) is
 			-- Close `file'
 		external
-			"C (FILE *) | %"eif_console.h%""
+			"C signature (FILE *) use %"eif_console.h%""
 		alias
 			"console_file_close"
 		end
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class CONSOLE
-
-
+end

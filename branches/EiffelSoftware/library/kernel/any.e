@@ -6,7 +6,9 @@ indexing
 		ANY may be customized for individual projects or teams.
 		]"
 
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -17,23 +19,29 @@ feature -- Customization
 
 feature -- Access
 
-	frozen generator: STRING is
+	generator: STRING is
 			-- Name of current object's generating class
 			-- (base class of the type of which it is a direct instance)
 		external
 			"built_in"
+		ensure
+			generator_not_void: Result /= Void
+			generator_not_empty: not Result.is_empty
 		end
 
- 	frozen generating_type: STRING is
+ 	generating_type: STRING is
 			-- Name of current object's generating type
 			-- (type of which it is a direct instance)
 		external
 			"built_in"
+ 		ensure
+ 			generating_type_not_void: Result /= Void
+			generating_type_not_empty: not Result.is_empty
  		end
 
 feature -- Status report
 
-	frozen conforms_to (other: ANY): BOOLEAN is
+	conforms_to (other: ANY): BOOLEAN is
 			-- Does type of current object conform to type
 			-- of `other' (as per Eiffel: The Language, chapter 13)?
 		require
@@ -42,7 +50,7 @@ feature -- Status report
 			"built_in"
 		end
 
-	frozen same_type (other: ANY): BOOLEAN is
+	same_type (other: ANY): BOOLEAN is
 			-- Is type of current object identical to type of `other'?
 		require
 			other_not_void: other /= Void
@@ -114,6 +122,8 @@ feature -- Comparison
 
 	frozen is_deep_equal (other: like Current): BOOLEAN is
 			-- Are `Current' and `other' attached to isomorphic object structures?
+		require
+			other_not_void: other /= Void
 		external
 			"built_in"
 		ensure
@@ -143,21 +153,21 @@ feature -- Duplication
 	frozen twin: like Current is
 			-- New object equal to `Current'
 			-- `twin' calls `copy'; to change copying/twining semantics, redefine `copy'.
-		do
-			Result := standard_twin
+		external
+			"built_in"
 		ensure
 			twin_not_void: Result /= Void
 			is_equal: Result.is_equal (Current)
 		end
-		
+
 	copy (other: like Current) is
 			-- Update current object using fields of object attached
 			-- to `other', so as to yield equal objects.
 		require
 			other_not_void: other /= Void
 			type_identity: same_type (other)
-		do
-			standard_copy (other)
+		external
+			"built_in"
 		ensure
 			is_equal: is_equal (other)
 		end
@@ -213,12 +223,13 @@ feature -- Duplication
 			standard_twin_not_void: Result /= Void
 			equal: standard_equal (Result, Current)
 		end
-		
+
 	frozen deep_twin: like Current is
 			-- New object structure recursively duplicated from Current.
 		external
 			"built_in"
 		ensure
+			deep_twin_not_void: Result /= Void
 			deep_equal: deep_equal (Current, Result)
 		end
 
@@ -249,7 +260,7 @@ feature -- Duplication
 feature {NONE} -- Retrieval
 
 	frozen internal_correct_mismatch is
-			-- Called from runtime to perform a proper dynamic dispatch on `correct_mismatch' 
+			-- Called from runtime to perform a proper dynamic dispatch on `correct_mismatch'
 			-- from MISMATCH_CORRECTOR.
 		local
 			l_corrector: MISMATCH_CORRECTOR
@@ -274,6 +285,8 @@ feature -- Output
 		once
 			create Result
 			Result.set_output_default
+		ensure
+			io_not_void: Result /= Void
 		end
 
 	out: STRING is
@@ -281,6 +294,8 @@ feature -- Output
 			-- of current object
 		do
 			Result := tagged_out
+		ensure
+			out_not_void: Result /= Void
 		end
 
 	frozen tagged_out: STRING is
@@ -288,6 +303,8 @@ feature -- Output
 			-- of current object
 		external
 			"built_in"
+		ensure
+			tagged_out_not_void: Result /= Void
 		end
 
 	print (some: ANY) is
@@ -305,6 +322,8 @@ feature -- Platform
 			-- Objects available from the operating system
 		once
 			create Result
+		ensure
+			operating_environment_not_void: Result /= Void
 		end
 
 feature {NONE} -- Initialization
@@ -346,36 +365,4 @@ invariant
 	reflexive_equality: standard_is_equal (Current)
 	reflexive_conformance: conforms_to (Current)
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class ANY
+end

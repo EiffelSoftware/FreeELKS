@@ -1,13 +1,12 @@
 indexing
-
-	description:
-		"References to objects containing a double-precision real number"
-
-	status: "See notice at end of class"
+	description: "References to objects containing a double-precision real number"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
-class DOUBLE_REF inherit
+class REAL_64_REF inherit
 
 	NUMERIC
 		redefine
@@ -26,8 +25,11 @@ class DOUBLE_REF inherit
 
 feature -- Access
 
-	item: DOUBLE
+	item: REAL_64 is
 			-- Numeric double value
+		external
+			"built_in"
+		end
 
 	hash_code: INTEGER is
 			-- Hash code value
@@ -78,10 +80,10 @@ feature -- Comparison
 
 feature -- Element change
 
-	set_item (d: DOUBLE) is
+	set_item (d: REAL_64) is
 			-- Make `d' the `item' value.
-		do
-			item := d
+		external
+			"built_in"
 		end
 
 feature -- Status report
@@ -125,19 +127,19 @@ feature -- Status report
 
 feature {NONE} -- Conversion
 
-	make_from_reference (v: DOUBLE_REF) is
+	make_from_reference (v: REAL_64_REF) is
 			-- Initialize `Current' with `v.item'.
 		require
 			v_not_void: v /= Void
 		do
-			item := v.item
+			set_item (v.item)
 		ensure
-			item_set: item = v.item	
+			item_set: item = v.item
 		end
 
 feature -- Conversion
 
-	to_reference: DOUBLE_REF is
+	to_reference: REAL_64_REF is
 			-- Associated reference of Current
 		do
 			create Result
@@ -150,27 +152,27 @@ feature -- Conversion
 			-- Integer part (Same sign, largest absolute
 			-- value no greater than current object's)
 		do
-			Result := c_truncated_to_integer (item)
+			Result := item.truncated_to_integer
 		end
 
 	truncated_to_integer_64: INTEGER_64 is
 			-- Integer part (Same sign, largest absolute
 			-- value no greater than current object's)
 		do
-			Result := c_truncated_to_integer_64 (item)
+			Result := item.truncated_to_integer_64
 		end
 
-	truncated_to_real: REAL is
+	truncated_to_real: REAL_32 is
 			-- Real part (Same sign, largest absolute
 			-- value no greater than current object's)
 		do
-			Result := c_truncated_to_real (item)
+			Result := item.truncated_to_real
 		end
 
 	ceiling: INTEGER is
 			-- Smallest integral value no smaller than current object
 		do
-			Result := c_ceiling (item).truncated_to_integer
+			Result := ceiling_real_64.truncated_to_integer
 		ensure
 			result_no_smaller: Result >= item
 			close_enough: Result - item < item.one
@@ -179,7 +181,7 @@ feature -- Conversion
 	floor: INTEGER is
 			-- Greatest integral value no greater than current object
 		do
-			Result := c_floor (item).truncated_to_integer
+			Result := floor_real_64.truncated_to_integer
 		ensure
 			result_no_greater: Result <= item
 			close_enough: item - Result < Result.one
@@ -188,14 +190,40 @@ feature -- Conversion
 	rounded: INTEGER is
 			-- Rounded integral value
 		do
-			Result := sign * (c_floor (abs_ref.item + 0.5).truncated_to_integer)
+			Result := sign * ((abs + 0.5).floor)
 		ensure
 			definition: Result = sign * ((abs + 0.5).floor)
 		end
 
+	ceiling_real_64: REAL_64 is
+			-- Smallest integral value no smaller than current object
+		do
+			Result := item.ceiling_real_64
+		ensure
+			result_no_smaller: Result >= item
+			close_enough: Result - item < item.one
+		end
+
+	floor_real_64: REAL_64 is
+			-- Greatest integral value no greater than current object
+		do
+			Result := item.floor_real_64
+		ensure
+			result_no_greater: Result <= item
+			close_enough: item - Result < Result.one
+		end
+
+	rounded_real_64: REAL_64 is
+			-- Rounded integral value
+		do
+			Result := sign * ((abs + 0.5).floor_real_64)
+		ensure
+			definition: Result = sign * ((abs + 0.5).floor_real_64)
+		end
+
 feature -- Basic operations
 
-	abs: DOUBLE is
+	abs: REAL_64 is
 			-- Absolute value
 		do
 			Result := abs_ref.item
@@ -257,12 +285,12 @@ feature -- Output
 	out: STRING is
 			-- Printable representation of double value
 		do
-			Result := c_outd (item)
+			Result := item.out
 		end
 
 feature {NONE} -- Implementation
 
-	abs_ref: DOUBLE_REF is
+	abs_ref: like Current is
 			-- Absolute value
 		do
 			if item >= 0.0 then
@@ -275,82 +303,7 @@ feature {NONE} -- Implementation
 			same_absolute_value: equal (Result, Current) or equal (Result, - Current)
 		end
 
-	c_outd (d: DOUBLE): STRING is
-			-- Printable representation of double value
-		external
-			"built_in"
-		end
-
-	c_truncated_to_integer (d: DOUBLE): INTEGER is
-			-- Integer part of `d' (same sign, largest absolute
-			-- value no greater than `d''s)
-		external
-			"built_in"
-		end
-
-	c_truncated_to_integer_64 (d: DOUBLE): INTEGER_64 is
-			-- Integer part of `d' (same sign, largest absolute
-			-- value no greater than `d''s)
-		external
-			"built_in"
-		end
-
-	c_truncated_to_real (d: DOUBLE): REAL is
-			-- Real part of `d' (same sign, largest absolute
-			-- value no greater than `d''s)
-		external
-			"built_in"
-		end
-
-	c_ceiling (d: DOUBLE): DOUBLE is
-			-- Smallest integral value no smaller than `d'
-		external
-			"built_in"
-		end
-
-	c_floor (d: DOUBLE): DOUBLE is
-			-- Greatest integral value no greater than `d'
-		external
-			"built_in"
-		end
-
 invariant
-
 	sign_times_abs: sign * abs = item
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class DOUBLE_REF
-
-
-
+end

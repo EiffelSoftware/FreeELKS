@@ -1,10 +1,12 @@
 indexing
-
 	description: "Implementation of the STORABLE mechanism with streams."
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
-class 
+class
 	STREAM
 
 inherit
@@ -42,7 +44,7 @@ feature -- Access
 		do
 			Result := c_buffer (internal_buffer_access)
 		end
-	
+
 	buffer: POINTER is
 			-- C buffer correspond to the Eiffel STREAM
 		obsolete
@@ -123,7 +125,7 @@ feature -- Element change
 			-- Set `new_size' to BUFFER_SIZE, internal value used to
 			-- increment `buffer_size' during storable operations.
 		external
-			"C | %"eif_store.h%""
+			"C use %"eif_store.h%""
 		alias
 			"set_buffer_size"
 		end
@@ -140,9 +142,9 @@ feature {NONE} -- Implementation
 		external
 			"C inline"
 		alias
-			"*(EIF_POINTER *) $a_buf"
+			"return (*(EIF_POINTER *) $a_buf);"
 		end
-			
+
 	c_stream_basic_store (stream_buffer: POINTER; stream_buffer_size: INTEGER; object: POINTER; c_real_size: POINTER): INTEGER is
 			-- Store object structure reachable form current object
 			-- Return new size of `internal_buffer_access'.
@@ -176,12 +178,12 @@ feature {NONE} -- Implementation
 		external
 			"C signature (EIF_POINTER *, EIF_INTEGER, EIF_INTEGER, EIF_INTEGER *): EIF_REFERENCE use %"eif_retrieve.h%""
 		alias
-			"stream_eretrieve"	
+			"stream_eretrieve"
 		end
-	
+
 	c_malloc (size: INTEGER): POINTER is
 		external
-			"C | %"eif_store.h%""
+			"C use %"eif_store.h%""
 		alias
 			"stream_malloc"
 		end
@@ -246,7 +248,7 @@ feature -- Output
 		require else
 			stream_exists: exists
 		do
-			put_character ('%N')		
+			put_character ('%N')
 		end
 
 	put_string, putstring (s: STRING) is
@@ -264,7 +266,42 @@ feature -- Output
 		do
 		end
 
-	put_integer, putint (i: INTEGER) is
+	put_integer, putint, put_integer_32 (i: INTEGER) is
+			-- Write `i' to medium.
+		do
+		end
+
+	put_integer_8 (i: INTEGER_8) is
+			-- Write `i' to medium.
+		do
+		end
+
+	put_integer_16 (i: INTEGER_16) is
+			-- Write `i' to medium.
+		do
+		end
+
+	put_integer_64 (i: INTEGER_64) is
+			-- Write `i' to medium.
+		do
+		end
+
+	put_natural_8 (i: NATURAL_8) is
+			-- Write `i' to medium.
+		do
+		end
+
+	put_natural_16 (i: NATURAL_16) is
+			-- Write `i' to medium.
+		do
+		end
+
+	put_natural, put_natural_32 (i: NATURAL_32) is
+			-- Write `i' to medium.
+		do
+		end
+
+	put_natural_64 (i: NATURAL_64) is
 			-- Write `i' to medium.
 		do
 		end
@@ -276,6 +313,12 @@ feature -- Output
 
 	put_double, putdouble (d: DOUBLE) is
 			-- Write `d' to medium.
+		do
+		end
+
+	put_managed_pointer (p: MANAGED_POINTER; start_pos, nb_bytes: INTEGER) is
+			-- Put data of length `nb_bytes' pointed by `start_pos' index in `p' at
+			-- current position.
 		do
 		end
 
@@ -299,9 +342,51 @@ feature -- Input
 		do
 		end
 
-	read_integer, readint is
+	read_integer, readint, read_integer_32 is
 			-- Read a new integer.
 			-- Make result available in `last_integer'.
+		do
+		end
+
+	read_integer_8 is
+			-- Read a new integer.
+			-- Make result available in `last_integer_8'.
+		do
+		end
+
+	read_integer_16 is
+			-- Read a new integer.
+			-- Make result available in `last_integer_16'.
+		do
+		end
+
+	read_integer_64 is
+			-- Read a new integer.
+			-- Make result available in `last_integer_64'.
+		do
+		end
+
+	read_natural_8 is
+			-- Read a new natural.
+			-- Make result available in `last_natural_8'.
+		do
+		end
+
+	read_natural_16 is
+			-- Read a new natural.
+			-- Make result available in `last_natural_16'.
+		do
+		end
+
+	read_natural, read_natural_32 is
+			-- Read a new natural.
+			-- Make result available in `last_natural'.
+		do
+		end
+
+	read_natural_64 is
+			-- Read a new natural.
+			-- Make result available in `last_natural_64'.
 		do
 		end
 
@@ -316,6 +401,12 @@ feature -- Input
 			-- Read characters until a new line or
 			-- end of medium.
 			-- Make result available in `last_string'.
+		do
+		end
+
+	read_to_managed_pointer (p: MANAGED_POINTER; start_pos, nb_bytes: INTEGER) is
+			-- Read at most `nb_bytes' bound bytes and make result
+			-- available in `p' at position `start_pos'.
 		do
 		end
 
@@ -337,38 +428,4 @@ feature {NONE} -- Not exported
 		do
 		end
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class STREAM
-
-
+end

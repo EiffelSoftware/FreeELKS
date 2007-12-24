@@ -1,58 +1,77 @@
 indexing
-
-	description:
-		"Truth values, with the boolean operations"
-
-	status: "See notice at end of class"
+	description: "Truth values, with the boolean operations"
+	external_name: "System.Boolean"
+	assembly: "mscorlib"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
-expanded class BOOLEAN
+frozen expanded class BOOLEAN
 
 inherit
 	BOOLEAN_REF
+		redefine
+			infix "and",
+			infix "and then",
+			infix "or",
+			infix "or else",
+			infix "xor",
+			infix "implies",
+			prefix "not"
+		end
 
 create
 	default_create,
 	make_from_reference
 
 convert
-	make_from_reference ({BOOLEAN_REF}),
-	to_reference: {BOOLEAN_REF, HASHABLE, ANY}
+	make_from_reference ({BOOLEAN_REF})
 
-indexing
+feature -- Basic operations
 
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
+	infix "and" (other: like Current): BOOLEAN is
+			-- Boolean conjunction with `other'
+		external
+			"built_in"
+		end
 
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
+	infix "and then" (other: like Current): BOOLEAN is
+			-- Boolean semi-strict conjunction with `other'
+		external
+			"built_in"
+		end
 
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
+	infix "implies" (other: like Current): BOOLEAN is
+			-- Boolean implication of `other'
+			-- (semi-strict)
+		external
+			"built_in"
+		end
 
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
+	prefix "not": like Current is
+			-- Negation
+		external
+			"built_in"
+		end
 
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
+	infix "or" (other: like Current): BOOLEAN is
+			-- Boolean disjunction with `other'
+		external
+			"built_in"
+		end
 
-end -- class BOOLEAN
+	infix "or else" (other: like Current): BOOLEAN is
+			-- Boolean semi-strict disjunction with `other'
+		external
+			"built_in"
+		end
 
+	infix "xor" (other: like Current): BOOLEAN is
+			-- Boolean exclusive or with `other'
+		external
+			"built_in"
+		end
 
-
+end
