@@ -1,57 +1,58 @@
 indexing
-
-	description:
-		"References to objects meant to be exchanged with non-Eiffel software."
-
-	status: "See notice at end of class"
+	description: "References to objects meant to be exchanged with non-Eiffel software."
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
-expanded class POINTER inherit
+frozen expanded class POINTER inherit
 
 	POINTER_REF
+		redefine
+			hash_code,
+			infix "+",
+			to_integer_32,
+			out
+		end
 
 create
 	default_create,
 	make_from_reference
 
 convert
-	make_from_reference ({POINTER_REF}),
-	to_reference: {POINTER_REF, HASHABLE, ANY}
+	make_from_reference ({POINTER_REF})
 
-indexing
+feature -- Access
 
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
+	hash_code: INTEGER is
+			-- Hash code value
+		external
+			"built_in"
+		end
 
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
+feature -- Operations
 
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
+	infix "+" (offset: INTEGER): POINTER is
+			-- Pointer moved by an offset of `offset' bytes.
+		external
+			"built_in"
+		end
 
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
+feature -- Conversion
 
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
+	to_integer_32: INTEGER is
+			-- Convert `item' into an INTEGER_32 value.
+		external
+			"built_in"
+		end
 
-end -- class POINTER
+feature -- Output
 
+	out: STRING is
+			-- Printable representation of pointer value
+		external
+			"built_in"
+		end
 
-
+end

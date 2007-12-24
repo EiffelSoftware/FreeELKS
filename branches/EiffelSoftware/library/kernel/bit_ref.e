@@ -1,33 +1,49 @@
 indexing
-
 	description: "Bit sequences of length `count', with binary operations"
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
-
---| Caution:
---| For implementation reasons, additional operations on BIT types can
---| only be introduced by ISE
 
 class BIT_REF inherit
 
 	ANY
 		redefine
-			out
+			out,
+			generator,
+			conforms_to
 		end
-	
-convert
-	to_reference: {BIT_REF, ANY}
-	
+
 feature -- Access
 
-	item, infix "@" (i: INTEGER): BOOLEAN is
+	item alias "[]", infix "@" (i: INTEGER): BOOLEAN assign put is
 			-- `i'-th bit
 		require
 			index_large_enough: i >= 1
 			index_small_enough: i <= count
 		do
 			Result := b_item ($Current, i)
+		end
+
+	generator: STRING is
+			-- Name of the current object's generating class.
+		do
+			create Result.make (10)
+			Result.append ("BIT ")
+			Result.append_integer (count)
+		end
+
+	conforms_to (other: ANY): BOOLEAN is
+			-- Is dynamic type of current object a descendant of
+			-- dynamic type of `other'?
+		local
+			b: BIT_REF
+		do
+			b ?= other
+			if b /= Void then
+				Result := count <= b.count
+			end
 		end
 
 feature -- Measurement
@@ -128,7 +144,7 @@ feature -- Conversion
 			l_out := out.to_c
 			Result := b_makebit_from ($l_out, count)
 		end
-		
+
 feature {NONE} -- Implementation
 
 	b_item (a_bit: POINTER; index: INTEGER): BOOLEAN is
@@ -206,42 +222,8 @@ feature {NONE} -- Implementation
 		alias
 			"RTMB"
 		end
-		
+
 invariant
 	valid_count: count > 0
-	
-indexing
 
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class BIT_REF
-
-
+end

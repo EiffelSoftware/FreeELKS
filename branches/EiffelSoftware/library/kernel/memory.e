@@ -1,11 +1,11 @@
 indexing
-
 	description: "[
 		Facilities for tuning up the garbage collection mechanism.
 		This class may be used as ancestor by classes needing its facilities.
 		]"
-
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -46,41 +46,41 @@ feature -- Status report
 			-- Minimum amount of bytes to be allocated before
 			-- starting an automatic garbage collection.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
-			"mem_tget"
+			"eif_mem_tget"
 		end
 
 	collection_period: INTEGER is
 			-- Period of full collection.
-			-- If the environment variable EIF_FULL_COLLECTION_PERIOD   
-			-- is defined, it is set to the closest reasonable 
+			-- If the environment variable EIF_FULL_COLLECTION_PERIOD
+			-- is defined, it is set to the closest reasonable
 			-- value from it.
 			-- If null, no full collection is launched.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
-			"mem_pget"
+			"eif_mem_pget"
 		end
 
 	coalesce_period: INTEGER is
 			-- Period of full coalesce (in number of collections)
-			-- If the environment variable EIF_FULL_COALESCE_PERIOD   
-			-- is defined, it is set to the closest reasonable 
+			-- If the environment variable EIF_FULL_COALESCE_PERIOD
+			-- is defined, it is set to the closest reasonable
 			-- value from it.
 			-- If null, no full coalescing is launched.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_coalesce_period"
 		end
-			
+
 	collecting: BOOLEAN is
 			-- Is garbage collection enabled?
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
-			"gc_ison"
+			"eif_gc_ison"
 		end
 
 	largest_coalesced_block: INTEGER is
@@ -89,13 +89,13 @@ feature -- Status report
 		external
 			"C use %"eif_memory.h%""
 		alias
-			"mem_largest"
+			"eif_mem_largest"
 		end
 
 	max_mem: INTEGER is
 			-- Maximum amount of bytes the run-time can allocate.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_get_max_mem"
 		end
@@ -103,47 +103,47 @@ feature -- Status report
 	chunk_size: INTEGER is
 			-- Minimal size of a memory chunk. The run-time always
 			-- allocates a multiple of this size.
-			-- If the environment variable EIF_MEMORY_CHUNK   
-			-- is defined, it is set to the closest reasonable 
+			-- If the environment variable EIF_MEMORY_CHUNK
+			-- is defined, it is set to the closest reasonable
 			-- value from it.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_get_chunk_size"
 		end
 
 	tenure: INTEGER is
 			-- Maximum age of object before being considered
-			-- as old (old objects are not scanned during 
+			-- as old (old objects are not scanned during
 			-- partial collection).
-			-- If the environment variable EIF_TENURE_MAX   
-			-- is defined, it is set to the closest reasonable 
+			-- If the environment variable EIF_TENURE_MAX
+			-- is defined, it is set to the closest reasonable
 			-- value from it.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_tenure"
 		end
-			
+
 	generation_object_limit: INTEGER is
 			-- Maximum size of object in generational scavenge zone.
-			-- If the environment variable EIF_GS_LIMIT   
-			-- is defined, it is set to the closest reasonable 
+			-- If the environment variable EIF_GS_LIMIT
+			-- is defined, it is set to the closest reasonable
 			-- value from it.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_generation_object_limit"
 		end
-	
+
 	scavenge_zone_size: INTEGER is
 			-- Size of generational scavenge zone.
-			-- If the environment variable EIF_MEMORY_SCAVENGE   
-			-- is defined, it is set to the closest reasonable 
+			-- If the environment variable EIF_MEMORY_SCAVENGE
+			-- is defined, it is set to the closest reasonable
 			-- value from it.
 
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_scavenge_zone_size"
 		end
@@ -155,11 +155,11 @@ feature -- Status report
 		do
 			Result := find_referers ($an_object, special_any_dynamic_type)
 		end
-		
+
 	objects_instance_of (an_object: ANY): SPECIAL [ANY] is
 			-- Objects that have same dynamic type as `an_object'.
 		do
-			Result := find_instance_of (feature {ISE_RUNTIME}.dynamic_type ($an_object),
+			Result := find_instance_of (internal_.dynamic_type (an_object),
 				special_any_dynamic_type)
 		end
 
@@ -171,10 +171,38 @@ feature -- Status report
 			l_spec: SPECIAL [ANY]
 			l_item: ANY
 			l_list: ARRAYED_LIST [ANY]
+			l_memory_count_map: HASH_TABLE [INTEGER, INTEGER]
 		do
 				-- First get all object instances in runtime.
 			l_spec := find_all_instances (special_any_dynamic_type)
-			
+
+				-- Now create a memory count map of all objects. There are two reasons
+				-- why we do not simply query `memory_count_map':
+				-- 1. This would cause two calls to `find_all_instances'.
+				-- 2. The new objects created by the first call would be included in the
+				-- second list so they would not match exactly.
+
+				-- The reason why we prepass and create a memory count map is
+				-- to enable us to create the arrayed lists in `Result' with
+				-- the exact size required for their contents. Even though we now have to
+				-- perform the prepass, `memory_map' is approx 15-20% faster as
+				-- resizing the arrayed lists each time an item was addded is slow.
+
+			create l_memory_count_map.make (100)
+			from
+				i := 0
+				nb := l_spec.count
+			until
+				i >= nb
+			loop
+				l_item := l_spec.item (i)
+				if l_item /= Void then
+					dtype := internal_.dynamic_type (l_item)
+					l_memory_count_map.force (l_memory_count_map.item (dtype) + 1, dtype)
+				end
+				i := i + 1
+			end
+
 				-- Now create table indexed by dynamic type. For a given
 				-- dynamic type, we will have a list of all objects of
 				-- this type.
@@ -187,15 +215,17 @@ feature -- Status report
 			loop
 				l_item := l_spec.item (i)
 				if l_item /= Void then
-					dtype := feature {ISE_RUNTIME}.dynamic_type ($l_item)
+					dtype := internal_.dynamic_type (l_item)
 					Result.search (dtype)
 					if Result.found then
 						l_list := Result.found_item
 					else
-						create l_list.make (5)
+						create l_list.make_filled (l_memory_count_map.item (dtype))
+						l_list.start
 						Result.put (l_list, dtype)
 					end
-					l_list.extend (l_item)
+					l_list.put_i_th (l_item, l_list.index)
+					l_list.forth
 				end
 				i := i + 1
 			end
@@ -212,7 +242,7 @@ feature -- Status report
 		do
 				-- First get all object instances in runtime.
 			l_spec := find_all_instances (special_any_dynamic_type)
-			
+
 				-- Now create table indexed by dynamic type. For a given
 				-- dynamic type, we will count all objects of this type.
 			create Result.make (100)
@@ -224,7 +254,7 @@ feature -- Status report
 			loop
 				l_item := l_spec.item (i)
 				if l_item /= Void then
-					dtype := feature {ISE_RUNTIME}.dynamic_type ($l_item)
+					dtype := internal_.dynamic_type (l_item)
 					Result.search (dtype)
 					if Result.found then
 						Result.force (Result.found_item + 1, dtype)
@@ -235,50 +265,84 @@ feature -- Status report
 				i := i + 1
 			end
 		end
-	
+
 feature -- Status setting
+
+	execute_without_collection (a_action: PROCEDURE [ANY, TUPLE]) is
+			-- Execute `a_action' with the garbage collector disabled.
+			-- If `a_action' modifies the status of `collecting', we restore
+			-- it no matter what at the end.
+		require
+			a_action_not_void: a_action /= Void
+		local
+			l_is_collecting: like collecting
+			retried: BOOLEAN
+		do
+			if not retried then
+				l_is_collecting := collecting
+				if l_is_collecting then
+					collection_off
+					a_action.call (Void)
+					collection_on
+				else
+					a_action.call (Void)
+					collection_off
+				end
+			else
+				if l_is_collecting then
+					collection_on
+				else
+					collection_off
+				end
+			end
+		ensure
+			collection_status_preserved: collecting = old collecting
+		rescue
+			retried := True
+			retry
+		end
 
 	collection_off is
 			-- Disable garbage collection.
 		external
-			"C | %"eif_garcol.h%""
+			"C use %"eif_memory.h%""
 		alias
-			"gc_stop"
+			"eif_gc_stop"
 		end
 
 	collection_on is
 			-- Enable garbage collection.
 		external
-			"C | %"eif_garcol.h%""
+			"C use %"eif_memory.h%""
 		alias
-			"gc_run"
+			"eif_gc_run"
 		end
 
 	allocate_fast is
 			-- Enter ``speed'' mode: will optimize speed of memory
 			-- allocation rather than memory usage.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
-			"mem_speed"
+			"eif_mem_speed"
 		end
 
 	allocate_compact is
 			-- Enter ``memory'' mode: will try to compact memory
 			-- before requesting more from the operating system.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
-			"mem_slow"
+			"eif_mem_slow"
 		end
 
 	allocate_tiny is
 			-- Enter ``tiny'' mode: will enter ``memory'' mode
 			-- after having freed as much memory as possible.
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
-			"mem_tiny"
+			"eif_mem_tiny"
 		end
 
 	enable_time_accounting is
@@ -294,38 +358,38 @@ feature -- Status setting
 		end
 
 	set_memory_threshold (value: INTEGER) is
-			-- Set a new `memory_threshold' in bytes. Whenever the memory 
+			-- Set a new `memory_threshold' in bytes. Whenever the memory
 			-- allocated for Eiffel reaches this value, an automatic
 			-- collection is performed.
 		require
 			positive_value: value > 0
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
-			"mem_tset"
+			"eif_mem_tset"
 		end
 
 	set_collection_period (value: INTEGER) is
 			-- Set `collection_period'. Every `value' collection,
 			-- the Garbage collector will perform a collection
-			-- on the whole memory (full collection), otherwise 
+			-- on the whole memory (full collection), otherwise
 			-- a simple partial collection is done.
 		require
 			positive_value: value >= 0
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
-			"mem_pset"
+			"eif_mem_pset"
 		end
 
 	set_coalesce_period (value: INTEGER) is
 			-- Set `coalesce_period'. Every `value' collection,
 			-- the Garbage Collector will coalesce
-			-- the whole memory. 
+			-- the whole memory.
 		require
 			positive_value: value >= 0
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_set_coalesce_period"
 		end
@@ -335,7 +399,7 @@ feature -- Status setting
 		require
 			positive_value: value > 0
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"eif_set_max_mem"
 		end
@@ -366,6 +430,8 @@ feature -- Removal
 			-- (Preferred interface is `free'.)
 		external
 			"C signature (EIF_REFERENCE) use %"eif_memory.h%""
+		alias
+			"eif_mem_free"
 		end
 
 	full_coalesce is
@@ -375,21 +441,21 @@ feature -- Removal
 		external
 			"C use %"eif_memory.h%""
 		alias
-			"mem_coalesc"
+			"eif_mem_coalesc"
 		end
 
 	collect is
 			-- Force a partial collection cycle if garbage
 			-- collection is enabled; do nothing otherwise.
 		external
-			"C | %"eif_eiffel.h%""
+			"C use %"eif_memory.h%""
 		end
 
 	full_collect is
 			-- Force a full collection cycle if garbage
 			-- collection is enabled; do nothing otherwise.
 		external
-			"C | %"eif_garcol.h%""
+			"C use %"eif_memory.h%""
 		alias
 			"plsc"
 		end
@@ -399,11 +465,11 @@ feature {NONE} -- Implementation
 	gc_monitoring (flag: BOOLEAN) is
 			-- Set up GC monitoring according to `flag'
 		external
-			"C | %"eif_memory.h%""
+			"C use %"eif_memory.h%""
 		alias
-			"gc_mon"
+			"eif_gc_mon"
 		end
-	
+
 	find_referers (target: POINTER; result_type: INTEGER): SPECIAL [ANY] is
 		external
 			"C signature (EIF_REFERENCE, EIF_INTEGER): EIF_REFERENCE use %"eif_traverse.h%""
@@ -427,42 +493,15 @@ feature {NONE} -- Implementation
 		once
 			create a.make (0, 0)
 			spec := a.area
-			Result := feature {ISE_RUNTIME}.dynamic_type ($spec)
+			Result := internal_.dynamic_type (spec)
 		end
 
-indexing
+	internal_: INTERNAL is
+			-- Internal features
+		once
+			create Result
+		ensure
+			internal_not_void: Result /= Void
+		end
 
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class MEMORY
-
-
-
+end

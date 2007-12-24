@@ -5,7 +5,9 @@ indexing
 		accessible through integer indices in a contiguous interval.
 		]"
 
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2005, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -17,6 +19,8 @@ class ARRAY [G] inherit
 		end
 
 	INDEXABLE [G, INTEGER]
+		rename
+			item as item alias "[]"
 		redefine
 			copy, is_equal
 		end
@@ -30,7 +34,13 @@ class ARRAY [G] inherit
 
 create
 	make,
-	make_from_array
+	make_from_array,
+	make_from_cil
+
+convert
+	to_cil: {NATIVE_ARRAY [G]},
+	to_special: {SPECIAL [G]},
+	make_from_cil ({NATIVE_ARRAY [G]})
 
 feature -- Initialization
 
@@ -66,9 +76,20 @@ feature -- Initialization
 			upper := a.upper
 		end
 
+	make_from_cil (na: NATIVE_ARRAY [like item]) is
+			-- Initialize array from `na'.
+		require
+			is_dotnet: {PLATFORM}.is_dotnet
+			na_not_void: na /= Void
+		do
+			create area.make_from_native_array (na)
+			lower := 1
+			upper := area.count
+		end
+
 feature -- Access
 
-	item, infix "@" (i: INTEGER): G is
+	item alias "[]", infix "@" (i: INTEGER): G assign put is
 			-- Entry at index `i', if in index interval
 		do
 			Result := area.item (i - lower)
@@ -134,18 +155,16 @@ feature -- Measurement
 		local
 			i: INTEGER
 		do
-			if object_comparison then
-				if v /= Void then
-					from
-						i := lower
-					until
-						i > upper
-					loop
-						if item (i) /= Void and then v.is_equal (item (i)) then
-							Result := Result + 1
-						end
-						i := i + 1
+			if object_comparison and then v /= Void then
+				from
+					i := lower
+				until
+					i > upper
+				loop
+					if item (i) /= Void and then v.is_equal (item (i)) then
+						Result := Result + 1
 					end
+					i := i + 1
 				end
 			else
 				from
@@ -178,14 +197,17 @@ feature -- Comparison
 		local
 			i: INTEGER
 		do
-			if lower = other.lower and then upper = other.upper and then
-				object_comparison = other.object_comparison then
+			if other = Current then
+				Result := True
+			elseif lower = other.lower and then upper = other.upper and then
+				object_comparison = other.object_comparison
+			then
 				if object_comparison then
-					from 
+					from
 						Result := True
 						i := lower
-					until 
-						not Result or i > upper 
+					until
+						not Result or i > upper
 					loop
 						Result := equal (item (i), other.item (i))
 						i := i + 1
@@ -203,9 +225,9 @@ feature -- Status report
 		do
 			Result := area.all_default (upper - lower)
 		ensure
-			definition: Result = (count = 0 or else 
-				((item (upper) = Void or else 
-				item (upper) = item (upper).default) and 
+			definition: Result = (count = 0 or else
+				((item (upper) = Void or else
+				item (upper) = item (upper).default) and
 				subarray (lower, upper - 1).all_default))
 		end
 
@@ -226,7 +248,7 @@ feature -- Status report
 		ensure
 			definition: Result = ((count = other.count) and then
 				(count = 0 or else (item (upper) = other.item (other.upper)
-				and subarray (lower, upper - 1).same_items 
+				and subarray (lower, upper - 1).same_items
 				(other.subarray (other.lower, other.upper - 1)))))
 		end
 
@@ -294,7 +316,7 @@ feature -- Element change
 			higher_count: count >= old count
 		end
 
-	subcopy (other: ARRAY [G]; start_pos, end_pos, index_pos: INTEGER) is
+	subcopy (other: ARRAY [like item]; start_pos, end_pos, index_pos: INTEGER) is
 			-- Copy items of `other' within bounds `start_pos' and `end_pos'
 			-- to current array starting at index `index_pos'.
 		require
@@ -304,11 +326,8 @@ feature -- Element change
 			valid_bounds: (start_pos <= end_pos) or (start_pos = end_pos + 1)
 			valid_index_pos: valid_index (index_pos)
 			enough_space: (upper - index_pos) >= (end_pos - start_pos)
-		local
-			other_lower: INTEGER
 		do
-			other_lower := other.lower
-			area.subcopy (other.area, start_pos - other_lower, end_pos - other_lower, index_pos - lower)
+			area.copy_data (other.area, start_pos - other.lower, index_pos - lower, end_pos - start_pos + 1)
 		ensure
 			-- copied: forall `i' in 0 .. (`end_pos'-`start_pos'),
 			--     item (index_pos + i) = other.item (start_pos + i)
@@ -317,9 +336,9 @@ feature -- Element change
 feature -- Iteration
 
 	do_all (action: PROCEDURE [ANY, TUPLE [G]]) is
-			-- Apply `action' to every non-void item.
+			-- Apply `action' to every item, from first to last.
 			-- Semantics not guaranteed if `action' changes the structure;
-			-- in such a case, apply iterator to clone of structure instead. 
+			-- in such a case, apply iterator to clone of structure instead.
 		require
 			action_not_void: action /= Void
 		local
@@ -342,9 +361,9 @@ feature -- Iteration
 		end
 
 	do_if (action: PROCEDURE [ANY, TUPLE [G]]; test: FUNCTION [ANY, TUPLE [G], BOOLEAN]) is
-			-- Apply `action' to every non-void item that satisfies `test'.
+			-- Apply `action' to every item that satisfies `test', from first to last.
 			-- Semantics not guaranteed if `action' or `test' changes the structure;
-			-- in such a case, apply iterator to clone of structure instead. 
+			-- in such a case, apply iterator to clone of structure instead.
 		require
 			action_not_void: action /= Void
 			test_not_void: test /= Void
@@ -393,7 +412,7 @@ feature -- Iteration
 		end
 
 	for_all (test: FUNCTION [ANY, TUPLE [G], BOOLEAN]): BOOLEAN is
-			-- Is `test' true for all non-void items?
+			-- Is `test' true for all items?
 		require
 			test_not_void: test /= Void
 		local
@@ -412,6 +431,67 @@ feature -- Iteration
 			loop
 				t.put (l_area.item (i), 1)
 				Result := test.item (t)
+				i := i + 1
+			end
+		end
+
+	do_all_with_index (action: PROCEDURE [ANY, TUPLE [G, INTEGER]]) is
+			-- Apply `action' to every item, from first to last.
+			-- `action' receives item and its index.
+			-- Semantics not guaranteed if `action' changes the structure;
+			-- in such a case, apply iterator to clone of structure instead.
+		require
+			action_not_void: action /= Void
+		local
+			t: TUPLE [G, INTEGER]
+			i, j, nb: INTEGER
+			l_area: like area
+		do
+			from
+				create t
+				i := 0
+				j := lower
+				nb := capacity - 1
+				l_area := area
+			until
+				i > nb
+			loop
+				t.put (l_area.item (i), 1)
+				t.put (j, 2)
+				action.call (t)
+				j := j + 1
+				i := i + 1
+			end
+		end
+
+	do_if_with_index (action: PROCEDURE [ANY, TUPLE [G, INTEGER]]; test: FUNCTION [ANY, TUPLE [G, INTEGER], BOOLEAN]) is
+			-- Apply `action' to every item that satisfies `test', from first to last.
+			-- `action' and `test' receive the item and its index.
+			-- Semantics not guaranteed if `action' or `test' changes the structure;
+			-- in such a case, apply iterator to clone of structure instead.
+		require
+			action_not_void: action /= Void
+			test_not_void: test /= Void
+		local
+			t: TUPLE [G, INTEGER]
+			i, j, nb: INTEGER
+			l_area: like area
+		do
+			from
+				create t
+				i := 0
+				j := lower
+				nb := capacity - 1
+				l_area := area
+			until
+				i > nb
+			loop
+				t.put (l_area.item (i), 1)
+				t.put (j, 2)
+				if test.item (t) then
+					action.call (t)
+				end
+				j := j + 1
 				i := i + 1
 			end
 		end
@@ -463,6 +543,8 @@ feature -- Resizing
 		local
 			old_size, new_size, old_count: INTEGER
 			new_lower, new_upper: INTEGER
+			offset: INTEGER
+			v: like item
 		do
 			if empty_area then
 				new_lower := min_index
@@ -478,9 +560,15 @@ feature -- Resizing
 			end
 			if empty_area then
 				make_area (new_size)
-			elseif new_size > old_size or new_lower < lower then
-				area := arycpy ($area, new_size,
-					lower - new_lower, old_count)
+			else
+				if new_size > old_size then
+					area := area.aliased_resized_area (new_size)
+				end
+				if new_lower < lower then
+					offset := lower - new_lower
+					area.move_data (0, offset, old_count)
+					area.fill_with (v, 0, offset - 1)
+				end
 			end
 			lower := new_lower
 			upper := new_upper
@@ -509,8 +597,29 @@ feature -- Conversion
 	to_c: ANY is
 			-- Address of actual sequence of values,
 			-- for passing to external (non-Eiffel) routines.
+		require
+			not_is_dotnet: not {PLATFORM}.is_dotnet
 		do
 			Result := area
+		end
+
+	to_cil: NATIVE_ARRAY [G] is
+			-- Address of actual sequence of values,
+			-- for passing to external (non-Eiffel) routines.
+		require
+			is_dotnet: {PLATFORM}.is_dotnet
+		do
+			Result := area.native_array
+		ensure
+			to_cil_not_void: Result /= Void
+		end
+
+	to_special: SPECIAL [G] is
+			-- 'area'.
+		do
+			Result := area
+		ensure
+			to_special_not_void: Result /= Void
 		end
 
 	linear_representation: LINEAR [G] is
@@ -539,7 +648,7 @@ feature -- Duplication
 		do
 			if other /= Current then
 				standard_copy (other)
-				set_area (other.area.standard_twin)
+				set_area (other.area.twin)
 			end
 		ensure then
 			equal_areas: area.is_equal (other.area)
@@ -550,11 +659,14 @@ feature -- Duplication
 			-- bounds `start_pos' and `end_pos'.
 		require
 			valid_start_pos: valid_index (start_pos)
-			valid_end_pos: valid_index (end_pos)
+			valid_end_pos: end_pos <= upper
 			valid_bounds: (start_pos <= end_pos) or (start_pos = end_pos + 1)
 		do
 			create Result.make (start_pos, end_pos)
-			Result.subcopy (Current, start_pos, end_pos, start_pos)
+			if start_pos <= end_pos then
+					-- Only copy elements if needed.
+				Result.subcopy (Current, start_pos, end_pos, start_pos)
+			end
 		ensure
 			lower: Result.lower = start_pos
 			upper: Result.upper = end_pos
@@ -576,16 +688,6 @@ feature {NONE} -- Inapplicable
 		do
 		end
 
-feature {ARRAY} -- Implementation
-
-	arycpy (old_area: POINTER; newsize, s, n: INTEGER): like area is
-			-- New area of size `newsize' containing `n' items
-			-- from `oldarea'.
-			-- Old items are at position `s' in new area.
-		external
-			"built_in"
-		end
-
 feature {NONE} -- Implementation
 
 	auto_resize (min_index, max_index: INTEGER) is
@@ -599,6 +701,8 @@ feature {NONE} -- Implementation
 		local
 			old_size, new_size: INTEGER
 			new_lower, new_upper: INTEGER
+			offset: INTEGER
+			v: like item
 		do
 			if empty_area then
 				new_lower := min_index
@@ -618,9 +722,15 @@ feature {NONE} -- Implementation
 			end
 			if empty_area then
 				make_area (new_size)
-			elseif new_size > old_size or new_lower < lower then
-					area := arycpy ($area, new_size,
-						lower - new_lower, capacity)
+			else
+				if new_size > old_size then
+					area := area.aliased_resized_area (new_size)
+				end
+				if new_lower < lower then
+					offset := lower - new_lower
+					area.move_data (0, offset, capacity)
+					area.fill_with (v, 0, offset - 1)
+				end
 			end
 			lower := new_lower
 			upper := new_upper
@@ -639,39 +749,7 @@ invariant
 	non_negative_count: count >= 0
 	index_set_has_same_count: valid_index_set
 -- Internal discussion haven't reached an agreement on this invariant
---	index_set_has_same_bounds: ((index_set.lower = lower) and 
+--	index_set_has_same_bounds: ((index_set.lower = lower) and
 --				(index_set.upper = lower + count - 1))
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class ARRAY
+end

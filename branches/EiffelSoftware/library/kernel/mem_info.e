@@ -1,11 +1,11 @@
 indexing
-
 	description: "[
 		Properties of the memory management mechanism.
 		This class may be used as ancestor by classes needing its facilities.
 		]"
-
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -18,7 +18,7 @@ inherit
 		export
 			{NONE} make_by_pointer, structure_make, item, shared
 		end
-	
+
 	MEM_CONST
 
 create
@@ -98,6 +98,8 @@ feature {NONE} -- Implementation
 			-- statistics frozen at the time of this call.
 		external
 			"C use %"eif_memory.h%""
+		alias
+			"eif_mem_stat"
 		end
 
 	structure_size: INTEGER is
@@ -105,86 +107,51 @@ feature {NONE} -- Implementation
 		do
 			Result := c_sizeof_emallinfo
 		end
-		
+
 feature {NONE} -- C externals
 
 	c_ml_total (a_ptr: POINTER): INTEGER is
 			-- Access `ml_total' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct emallinfo *) $a_ptr)->ml_total"
+			"return (EIF_INTEGER) ((struct emallinfo *) $a_ptr)->ml_total;"
 		end
 
 	c_ml_used (a_ptr: POINTER): INTEGER is
 			-- Access `ml_used' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct emallinfo *) $a_ptr)->ml_used"
+			"return (EIF_INTEGER) ((struct emallinfo *) $a_ptr)->ml_used;"
 		end
 
 	c_ml_over (a_ptr: POINTER): INTEGER is
 			-- Access `ml_over' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct emallinfo *) $a_ptr)->ml_over"
+			"return (EIF_INTEGER) ((struct emallinfo *) $a_ptr)->ml_over;"
 		end
 
 	c_ml_chunk (a_ptr: POINTER): INTEGER is
 			-- Access `ml_chunk' data member of `a_ptr' struct.
 		external
-			"C inline use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"((struct emallinfo *) $a_ptr)->ml_chunk"
+			"return (EIF_INTEGER) ((struct emallinfo *) $a_ptr)->ml_chunk;"
 		end
 
 	c_sizeof_emallinfo: INTEGER is
 			-- Size of struct `emallinfo'.
 		external
-			"C macro use %"eif_eiffel.h%""
+			"C inline use %"eif_memory.h%""
 		alias
-			"sizeof(struct emallinfo)"
+			"return sizeof(struct emallinfo);"
 		end
 
 invariant
 
 	consistent_memory: total = free + used + overhead
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class MEM_INFO
-
-
-
+end

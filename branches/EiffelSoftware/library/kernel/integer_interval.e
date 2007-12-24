@@ -1,7 +1,8 @@
 indexing
-
 	description: "Contiguous integer intervals"
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -17,8 +18,8 @@ inherit
 		end
 
 	INDEXABLE [INTEGER, INTEGER]
-	
 		rename
+			item as item alias "[]",
 			put as indexable_put
 		undefine
 			changeable_comparison_criterion
@@ -104,7 +105,7 @@ feature -- Access
 			Result := upper_internal
 		end
 
-	item, infix "@" (i: INTEGER): INTEGER is
+	item alias "[]", infix "@" (i: INTEGER): INTEGER is
 			-- Entry at index `i', if in index interval
 		do
 			Result := i
@@ -330,12 +331,32 @@ feature -- Duplication
 
 feature -- Iteration
 
+	do_all (action: PROCEDURE [ANY, TUPLE [INTEGER]]) is
+			-- Apply `action' to every item of current interval.
+		require
+			action_exists: action /= Void
+			finite: upper_defined and lower_defined
+		local
+			i, nb: INTEGER
+		do
+			from
+				i := lower
+				nb := upper
+			until
+				i > nb
+			loop
+				action.call ([i])
+				i := i + 1
+			end
+		end
+		
 	for_all (condition:
 				FUNCTION [ANY, TUPLE [INTEGER], BOOLEAN]):
 			BOOLEAN is
 			-- Do all interval's values satisfy `condition'?
 		require
 			finite: upper_defined and lower_defined
+			condition_not_void: condition /= Void
 		local
 			i: INTEGER
 		do
@@ -359,6 +380,7 @@ feature -- Iteration
 			-- satisfy `condition'?
 		require
 			finite: upper_defined and lower_defined
+			condition_not_void: condition /= Void
 		local
 			i: INTEGER
 		do
@@ -382,6 +404,7 @@ feature -- Iteration
 			-- satisfy `condition'?
 		require
 			finite: upper_defined and lower_defined
+			condition_not_void: condition /= Void
 		do
 			Result := (hold_count (condition) = 1)
 		ensure
@@ -396,6 +419,7 @@ feature -- Iteration
 			-- satisfy `condition'
 		require
 			finite: upper_defined and lower_defined
+			condition_not_void: condition /= Void
 		local
 			i: INTEGER
 		do
@@ -438,47 +462,8 @@ feature {NONE} -- Inapplicable
 		end
 
 invariant
-
 	count_definition: upper_defined and lower_defined implies count = upper - lower + 1
-
 	index_set_is_range: equal (index_set, Current)
-	
 	not_infinite: upper_defined and lower_defined
 
-
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class INTEGER_INTERVAL
-
-
-
+end

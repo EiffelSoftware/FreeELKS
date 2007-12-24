@@ -1,9 +1,8 @@
 indexing
-
-	description:
-		"Internal file information"
-
-	status: "See notice at end of class"
+	description: "Internal file information"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -106,14 +105,14 @@ feature -- Access
 			-- Otherwise, the UID
 		do
 			Result := file_owner (user_id)
-		end -- owner_name
+		end
 
 	group_name: STRING is
 			-- Name of the file group, if available from /etc/group.
 			-- Otherwise, the GID
 		do
 			Result := file_group (group_id)
-		end -- owner_name
+		end
 
 	file_name: STRING
 			-- File name to which information applies.
@@ -257,38 +256,38 @@ feature -- Element change
 				-- renamed, the name here will change accordingly and access()
 				-- based calls will continue to work properly.
 			file_name := f_name
-		end -- update
+		end
 
 feature {NONE} -- Implementation
 
 	stat_size: INTEGER is
 			-- Get size of 'struct stat' (in bytes)
 		external
-			"C | %"eif_file.h%""
+			"C use %"eif_file.h%""
 		end
 
 	file_stat (name, stat_buf: POINTER) is
 			-- Get information from file `name' into `stat_buf'
 		external
-			"C (char *, struct stat *) | %"eif_file.h%""
+			"C signature (char *, struct stat *) use %"eif_file.h%""
 		end
 
 	file_access (f_name: POINTER; which: INTEGER): BOOLEAN is
 			-- Perform access test `which' on `f_name' using real ID.
 		external
-			"C (char *, EIF_INTEGER): EIF_BOOLEAN | %"eif_file.h%""
+			"C signature (char *, EIF_INTEGER): EIF_BOOLEAN use %"eif_file.h%""
 		end
 
 	file_eaccess (stat_buf: POINTER; which: INTEGER): BOOLEAN is
 			-- Perform access tests using effective ID.
 		external
-			"C (struct stat *, int): EIF_BOOLEAN | %"eif_file.h%""
+			"C signature (struct stat *, int): EIF_BOOLEAN use %"eif_file.h%""
 		end
 
 	file_info (stat_buf: POINTER; which: INTEGER): INTEGER is
 			-- Extract information `which' from information buffer
 		external
-			"C (struct stat *, int): EIF_INTEGER | %"eif_file.h%""
+			"C signature (struct stat *, int): EIF_INTEGER use %"eif_file.h%""
 		end
 
 	file_owner (uid: INTEGER): STRING is
@@ -303,39 +302,4 @@ feature {NONE} -- Implementation
 			"C signature (int): EIF_REFERENCE use %"eif_file.h%""
 		end
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class UNIX_FILE_INFO
-
-
-
+end

@@ -1,11 +1,11 @@
 indexing
-
 	description: "[
 		Objects that may be stored and retrieved along with all their dependents.
 		This class may be used as ancestor by classes needing its facilities.
 		]"
-
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -65,7 +65,7 @@ feature -- Setting
 			-- If `v' it will discard POINTER values and replace them by
 			-- the `default_pointer' pointer. Otherwise it keeps the original value.
 		external
-			"C macro signature (EIF_BOOLEAN) use %"eif_retrieve.h%""
+			"C signature (EIF_BOOLEAN) use %"eif_retrieve.h%""
 		alias
 			"eif_set_discard_pointer_values"
 		end
@@ -74,7 +74,7 @@ feature -- Setting
 			-- If `v' it will use ISE Eiffel 5.0 storable format for
 			-- storing.
 		external
-			"C macro signature (EIF_BOOLEAN) use %"eif_store.h%""
+			"C signature (EIF_BOOLEAN) use %"eif_store.h%""
 		alias
 			"eif_set_new_independent_format"
 		end
@@ -83,7 +83,7 @@ feature -- Setting
 			-- If `v' it will use ISE Eiffel 5.3 storable format for
 			-- storing with ability to recover when there is a type mismatch.
 		external
-			"C macro signature (EIF_BOOLEAN) use %"eif_store.h%""
+			"C signature (EIF_BOOLEAN) use %"eif_store.h%""
 		alias
 			"eif_set_new_recoverable_format"
 		end
@@ -159,38 +159,4 @@ feature -- Element change
 			end
 		end
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class STORABLE
-
-
+end

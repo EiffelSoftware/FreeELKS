@@ -1,8 +1,8 @@
 indexing
-
-	description:
-		"Any medium that can perform input and/or output"
-	status: "See notice at end of class"
+	description: "Any medium that can perform input and/or output"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -11,7 +11,7 @@ deferred class IO_MEDIUM
 inherit
 	DISPOSABLE
 		export
-		 {NONE} all
+			{NONE} all
 		end
 
 	STRING_HANDLER
@@ -49,7 +49,7 @@ feature -- Element change
 			support_storable: support_storable
 		deferred
 		end
- 
+
 	general_store (object: ANY) is
 			-- Produce an external representation of the
 			-- entire object structure reachable from `object'.
@@ -64,7 +64,7 @@ feature -- Element change
 			support_storable: support_storable
 		deferred
 		end
- 
+
 	independent_store (object: ANY) is
 			-- Produce an external representation of the
 			-- entire object structure reachable from `object'.
@@ -76,7 +76,7 @@ feature -- Element change
 			support_storable: support_storable
 		deferred
 		end
- 
+
 feature -- Status report
 
 	handle: INTEGER is
@@ -106,11 +106,47 @@ feature -- Status report
 	last_integer: INTEGER
 			-- Last integer read by `read_integer'
 
+	last_integer_32: INTEGER is
+			-- Synonymy of `last_integer'
+		do
+			Result := last_integer
+		end
+
+	last_integer_64: INTEGER_64
+			-- Last 64-bit integer read by `read_integer_64'
+
+	last_integer_16: INTEGER_16
+			-- Last 16-bit integer read by `read_integer_16'
+
+	last_integer_8: INTEGER_8
+			-- Last 8-bit integer read by `read_integer_8'
+
+	last_natural_64: NATURAL_64
+			-- Last 64-bit natural read by `read_natural_64'
+
+	last_natural: NATURAL_32
+			-- Last 32-bit natural read by `read_natural'
+
+	last_natural_32: NATURAL_32 is
+			-- Synonymy of `last_natural'
+		do
+			Result := last_natural
+		end
+
+	last_natural_16: NATURAL_16
+			-- Last 16-bit natural read by `read_natural_16'
+
+	last_natural_8: NATURAL_8
+			-- Last 8-bit natural read by `read_natural_8'
+
 	last_real: REAL
 			-- Last real read by `read_real'
 
 	last_double: DOUBLE
 			-- Last double read by `read_double'
+
+	bytes_read: INTEGER
+			-- Last number of bytes read by `read_to_managed_pointer'.
 
 	exists: BOOLEAN is
 			-- Does medium exist?
@@ -220,7 +256,56 @@ feature -- Output
 		deferred
 		end
 
-	put_integer, putint (i: INTEGER) is
+	put_integer, putint, put_integer_32 (i: INTEGER) is
+			-- Write `i' to medium.
+		require
+			extendible: extendible
+		deferred
+		end
+
+	put_integer_8 (i: INTEGER_8) is
+			-- Write `i' to medium.
+		require
+			extendible: extendible
+		deferred
+		end
+
+	put_integer_16 (i: INTEGER_16) is
+			-- Write `i' to medium.
+		require
+			extendible: extendible
+		deferred
+		end
+
+	put_integer_64 (i: INTEGER_64) is
+			-- Write `i' to medium.
+		require
+			extendible: extendible
+		deferred
+		end
+
+	put_natural_8 (i: NATURAL_8) is
+			-- Write `i' to medium.
+		require
+			extendible: extendible
+		deferred
+		end
+
+	put_natural_16 (i: NATURAL_16) is
+			-- Write `i' to medium.
+		require
+			extendible: extendible
+		deferred
+		end
+
+	put_natural, put_natural_32 (i: NATURAL_32) is
+			-- Write `i' to medium.
+		require
+			extendible: extendible
+		deferred
+		end
+
+	put_natural_64 (i: NATURAL_64) is
 			-- Write `i' to medium.
 		require
 			extendible: extendible
@@ -237,6 +322,17 @@ feature -- Output
 	put_double, putdouble (d: DOUBLE) is
 			-- Write `d' to medium.
 		require
+			extendible: extendible
+		deferred
+		end
+
+	put_managed_pointer (p: MANAGED_POINTER; start_pos, nb_bytes: INTEGER) is
+			-- Put data of length `nb_bytes' pointed by `start_pos' index in `p' at
+			-- current position.
+		require
+			p_not_void: p /= Void
+			p_large_enough: p.count >= nb_bytes + start_pos
+			nb_bytes_non_negative: nb_bytes >= 0
 			extendible: extendible
 		deferred
 		end
@@ -267,9 +363,65 @@ feature -- Input
 		deferred
 		end
 
-	read_integer, readint is
-			-- Read a new integer.
+	read_integer, readint, read_integer_32 is
+			-- Read a new 32-bit integer.
 			-- Make result available in `last_integer'.
+		require
+			is_readable: readable
+		deferred
+		end
+
+	read_integer_8 is
+			-- Read a new 8-bit integer.
+			-- Make result available in `last_integer_8'.
+		require
+			is_readable: readable
+		deferred
+		end
+
+	read_integer_16 is
+			-- Read a new 16-bit integer.
+			-- Make result available in `last_integer_16'.
+		require
+			is_readable: readable
+		deferred
+		end
+
+	read_integer_64 is
+			-- Read a new 64-bit integer.
+			-- Make result available in `last_integer_64'.
+		require
+			is_readable: readable
+		deferred
+		end
+
+	read_natural_8 is
+			-- Read a new 8-bit natural.
+			-- Make result available in `last_natural_8'.
+		require
+			is_readable: readable
+		deferred
+		end
+
+	read_natural_16 is
+			-- Read a new 16-bit natural.
+			-- Make result available in `last_natural_16'.
+		require
+			is_readable: readable
+		deferred
+		end
+
+	read_natural, read_natural_32 is
+			-- Read a new 32-bit natural.
+			-- Make result available in `last_natural'.
+		require
+			is_readable: readable
+		deferred
+		end
+
+	read_natural_64 is
+			-- Read a new 64-bit natural.
+			-- Make result available in `last_natural_64'.
 		require
 			is_readable: readable
 		deferred
@@ -282,6 +434,8 @@ feature -- Input
 		require
 			is_readable: readable
 		deferred
+		ensure
+			last_string_not_void: last_string /= Void
 		end
 
 	read_line, readline is
@@ -291,6 +445,22 @@ feature -- Input
 		require
 			is_readable: readable
 		deferred
+		ensure
+			last_string_not_void: last_string /= Void
+		end
+
+	read_to_managed_pointer (p: MANAGED_POINTER; start_pos, nb_bytes: INTEGER) is
+			-- Read at most `nb_bytes' bound bytes and make result
+			-- available in `p' at position `start_pos'.
+		require
+			p_not_void: p /= Void
+			p_large_enough: p.count >= nb_bytes + start_pos
+			nb_bytes_non_negative: nb_bytes >= 0
+			is_readable: readable
+		deferred
+		ensure
+			bytes_read_non_negative: bytes_read >= 0
+			bytes_read_not_too_big: bytes_read <= nb_bytes
 		end
 
 feature -- Obsolete
@@ -325,38 +495,4 @@ feature -- Obsolete
 			Result := last_double
 		end
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class IO_MEDIUM
-
-
+end

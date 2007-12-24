@@ -1,8 +1,9 @@
 indexing
 
 	description: "Sequential, one-way linked lists"
+	legal: "See notice at end of class."
 
-	status: "See notice at end of class"
+	status: "See notice at end of class."
 	names: linked_list, sequence;
 	representation: linked;
 	access: index, cursor, membership;
@@ -149,13 +150,15 @@ feature -- Status report
 			-- Has `v' been inserted at the end by the most recent `put' or
 			-- `extend'?
 		do
-			check
-				put_constraint: (v /= last_element.item) implies not off
-					-- Because, if this routine has not been called by
-					-- `extend', it was called by `put' which replaces the
-					-- current item, which implies the cursor is not `off'.
+			if not is_empty then
+				check
+					put_constraint: (v /= last_element.item) implies not off
+						-- Because, if this routine has not been called by
+						-- `extend', it was called by `put' which replaces the
+						-- current item, which implies the cursor is not `off'.
+				end
+				Result := (v = last_element.item) or else (v = item)
 			end
-			Result := (v = last_element.item) or else (v = item)
 		end
 
 feature -- Cursor movement
@@ -680,36 +683,22 @@ invariant
 	after_constraint: after implies (active = last_element)
 
 indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
+	library:	"EiffelBase: Library of reusable components for Eiffel."
+	copyright:	"Copyright (c) 1984-2006, Eiffel Software and others"
+	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
+			 Eiffel Software
+			 356 Storke Road, Goleta, CA 93117 USA
+			 Telephone 805-685-1006, Fax 805-685-6869
+			 Website http://www.eiffel.com
+			 Customer support http://support.eiffel.com
+		]"
 
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
+
+
+
+
+
 
 end -- class LINKED_LIST
 

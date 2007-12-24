@@ -3,6 +3,9 @@ indexing
 		Set of features to access ISE runtime functionality.
 		To be used at your own risk.
 		]"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -71,7 +74,7 @@ feature -- Feature specific to ISE runtime.
 			"ediso"
 		end
 
-	frozen c_tagged_out (some: ANY): STRING is
+	frozen c_tagged_out (some: POINTER): STRING is
 			-- Printable representation of current object
 		external
 			"C use %"eif_out.h%""
@@ -116,6 +119,17 @@ feature -- Feature specific to ISE runtime.
 			"C signature (EIF_REFERENCE): EIF_INTEGER use %"eif_plug.h%""
 		end
 
+	frozen in_assertion: BOOLEAN is
+			-- Are we currently checking some assertions?
+		external
+			"C inline use %"eif_eiffel.h%""
+		alias
+			"[
+				GTCX;	/* Needed in multithreaded mode as `in_assertion' is a per-thread data. */
+				return EIF_TEST(in_assertion!=0);
+			]"
+		end
+
 feature -- Internal C routines
 
 	frozen type_id_from_name (s: POINTER): INTEGER is
@@ -133,5 +147,21 @@ feature -- Internal C routines
 		alias
 			"Dftype"
 		end
-		
-end -- class ISE_RUNTIME
+
+	frozen pre_ecma_mapping_status: BOOLEAN is
+			-- Do we map old name to new name by default?
+		external
+			"C inline use %"eif_cecil.h%""
+		alias
+			"return eif_pre_ecma_mapping();"
+		end
+
+	frozen set_pre_ecma_mapping (v: BOOLEAN) is
+			-- Set `pre_ecma_mapping_status' with `v'.
+		external
+			"C inline use %"eif_cecil.h%""
+		alias
+			"eif_set_pre_ecma_mapping($v)"
+		end
+
+end

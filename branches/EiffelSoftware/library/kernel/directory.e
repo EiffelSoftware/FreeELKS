@@ -1,8 +1,8 @@
 indexing
-
-	description:
-		"Directories, in the Unix sense, with creation and exploration features"
-	status: "See notice at end of class"
+	description: "Directories, in the Unix sense, with creation and exploration features"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -10,9 +10,6 @@ class DIRECTORY
 
 inherit
 	DISPOSABLE
-		export
-			{DIRECTORY} all
-		end
 
 create
 	make, make_open_read
@@ -20,7 +17,7 @@ create
 feature -- Initialization
 
 	make (dn: STRING) is
-			-- Create directory object for the directory
+			-- Create directory object for directory
 			-- of name `dn'.
 		require
 			string_exists: dn /= Void
@@ -30,7 +27,7 @@ feature -- Initialization
 		end
 
 	make_open_read (dn: STRING) is
-			-- Create directory object for the directory
+			-- Create directory object for directory
 			-- of name `dn' and open it for reading.
 		require
 			string_exists: dn /= Void
@@ -55,7 +52,7 @@ feature -- Access
 	readentry is
 			-- Read next directory entry
 			-- make result available in `lastentry'.
-			-- Make result void if all entries have been read.
+			-- Make result Void if all entries have been read.
 		require
 			is_opened: not is_closed
 		do
@@ -73,18 +70,22 @@ feature -- Access
 		require
 			string_exists: entry_name /= Void
 		local
-			ext_entry_name: ANY
 			dir_temp: DIRECTORY
 		do
 			create dir_temp.make_open_read (name)
-			ext_entry_name := entry_name.to_c
-			Result := dir_temp.dir_search (dir_temp.directory_pointer,
-							$ext_entry_name) /= default_pointer
+			from
+				dir_temp.readentry
+			until
+				Result or dir_temp.lastentry = Void
+			loop
+				Result := dir_temp.lastentry.is_equal (entry_name)
+				dir_temp.readentry
+			end
 			dir_temp.close
 		end
 
 	open_read is
-			-- Open directory `name' for reading.
+			-- Open directory for reading.
 		local
 			external_name: ANY
 		do
@@ -99,6 +100,7 @@ feature -- Access
 			is_open: not is_closed
 		do
 			dir_close (directory_pointer)
+			directory_pointer := default_pointer
 			mode := Close_directory
 		end
 
@@ -111,10 +113,10 @@ feature -- Access
 		end
 
 	change_name (new_name: STRING) is
-			-- Change file name to `new_name'
+			-- Change directory `name' to `new_name'.
 		require
 			new_name_not_void: new_name /= Void
-			file_exists: exists
+			directory_exists: exists
 		local
 			ext_old_name, ext_new_name: ANY
 		do
@@ -195,7 +197,7 @@ feature -- Status report
 				-- are symbolic representations but not effective directories.
 			Result := (count = 2)
 		end
-	
+
 	empty: BOOLEAN is
 			-- Is directory empty?
 		obsolete
@@ -249,7 +251,7 @@ feature -- Status report
 feature -- Removal
 
 	delete is
-			-- Delete directory if empty
+			-- Delete directory if empty.
 		require
 			directory_exists: exists
 			empty_directory: is_empty
@@ -261,8 +263,7 @@ feature -- Removal
 		end
 
 	delete_content is
-			-- Delete all files located in current directory and its
-			-- subdirectories.
+			-- Delete all files located in directory and subdirectories.
 		require
 			directory_exists: exists
 		local
@@ -278,8 +279,8 @@ feature -- Removal
 				l.after
 			loop
 				if
-					not l.item.is_equal (".") and
-					not l.item.is_equal ("..")
+					not l.item.same_string (".") and
+					not l.item.same_string ("..")
 				then
 					create file_name.make_from_string (name)
 					file_name.set_file_name (l.item)
@@ -303,10 +304,10 @@ feature -- Removal
 		end
 
 	recursive_delete is
-			-- Delete directory, its files and its subdirectories.
+			-- Delete directory and all content contained within.
 		require
 			directory_exists: exists
-		do	
+		do
 			delete_content
 			if is_empty then
 				delete
@@ -318,13 +319,12 @@ feature -- Removal
 			is_cancel_requested: FUNCTION [ANY, TUPLE, BOOLEAN]
 			file_number: INTEGER)
 		is
-			-- Delete all files located in current directory and its
-			-- subdirectories. 
+			-- Delete all files located in directory and subdirectories.
 			--
 			-- `action' is called each time `file_number' files has
 			-- been deleted and before the function exits.
 			-- `action' may be set to Void if you don't need it.
-			-- 
+			--
 			-- Same for `is_cancel_requested'.
 			-- Make it return `True' to cancel the operation.
 			-- `is_cancel_requested' may be set to Void if you don't need it.
@@ -412,7 +412,7 @@ feature -- Removal
 			is_cancel_requested: FUNCTION [ANY, TUPLE, BOOLEAN]
 			file_number: INTEGER)
 		is
-			-- Delete directory, its files and its subdirectories.
+			-- Delete directory and all content contained within.
 			--
 			-- `action' is called each time `file_number' files has
 			-- been deleted and before the function exits.
@@ -420,7 +420,7 @@ feature -- Removal
 			directory_exists: exists
 		local
 			deleted_files: ARRAYED_LIST [STRING]
-		do	
+		do
 			delete_content_with_action (action, is_cancel_requested, file_number)
 			if (is_cancel_requested = Void) or else (not is_cancel_requested.item (Void)) then
 				delete
@@ -447,22 +447,15 @@ feature {DIRECTORY} -- Implementation
 	directory_pointer: POINTER
 			-- Directory pointer as required in C
 
-	dir_search (dir_ptr: POINTER; entry: POINTER): POINTER is
-			-- Return the `DIRENTRY' structure corresponding
-			-- to the name `entry' of directory `dir_ptr'.
-		external
-			"C signature (EIF_POINTER, char *): EIF_POINTER use %"eif_dir.h%""
-		end
-
 feature {NONE} -- Implementation
 
 	mode: INTEGER
 			-- Status mode of the directory.
 			-- Possible values are the following:
 
-	Close_directory: INTEGER is unique
+	Close_directory: INTEGER is 1
 
-	Read_directory: INTEGER is unique
+	Read_directory: INTEGER is 2
 
 	file_mkdir (dir_name: POINTER) is
 			-- Make directory `dir_name'.
@@ -532,39 +525,4 @@ feature {NONE} -- Implementation
 			"file_rename"
 		end
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class DIRECTORY
-
-
-
+end

@@ -4,8 +4,9 @@ indexing
 		Constants used for signal handling.
 		This class may be used as ancestor by classes needing its facilities.
 		]"
-
-	status: "See notice at end of class"
+	library: "Free implementation of ELKS library"
+	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -26,7 +27,7 @@ feature -- Access
 	is_defined (sig: INTEGER): BOOLEAN is
 			-- Is `sig' a signal defined for this platform?
 		external
-			"C | %"eif_sig.h%""
+			"C use %"eif_sig.h%""
 		alias
 			"esigdefined"
 		end
@@ -268,17 +269,15 @@ feature -- Access
 			Result := c_signal_map (37)
 		end
 
-
 feature -- Status report
 
 	signal: INTEGER is
 			-- Code of last signal
 		external
-			"C | %"eif_sig.h%""
+			"C use %"eif_sig.h%""
 		alias
 			"esignum"
 		end
-
 
 feature -- Status setting
 
@@ -288,7 +287,7 @@ feature -- Status setting
 			-- (This is the default for all signals.)
 			-- No effect if signal not defined.
 		external
-			"C | %"eif_sig.h%""
+			"C use %"eif_sig.h%""
 		alias
 			"esigcatch"
 		end
@@ -298,7 +297,7 @@ feature -- Status setting
 			-- will be ignored. (This is not the default.)
 			-- No effect if signal not defined.
 		external
-			"C | %"eif_sig.h%""
+			"C use %"eif_sig.h%""
 		alias
 			"esigignore"
 		end
@@ -307,7 +306,7 @@ feature -- Status setting
 			-- Make sure that all exceptions will lead to their
 			-- default handling.
 		external
-			"C | %"eif_sig.h%""
+			"C use %"eif_sig.h%""
 		alias
 			"esigresall"
 		end
@@ -318,7 +317,7 @@ feature -- Status setting
 		require
 			is_defined (sig)
 		external
-			"C | %"eif_sig.h%""
+			"C use %"eif_sig.h%""
 		alias
 			"esigresdef"
 		end
@@ -328,57 +327,23 @@ feature {NONE} -- Implementation
 	is_caught (sig: INTEGER): BOOLEAN is
 			-- Is `sig' currently set to be caught?
 		external
-			"C | %"eif_sig.h%""
+			"C use %"eif_sig.h%""
 		alias
 			"esigiscaught"
 		end
 
 	c_signal_map (i: INTEGER): INTEGER is
 		external
-			"C | %"eif_sig.h%""
+			"C use %"eif_sig.h%""
 		alias
 			"esigmap"
 		end
 
 	c_signal_name (i: INTEGER): POINTER is
 		external
-			"C | %"eif_sig.h%""
+			"C use %"eif_sig.h%""
 		alias
 			"esigname"
 		end
 
-indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
-	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
-
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
-
-end -- class UNIX_SIGNALS
-
-
+end

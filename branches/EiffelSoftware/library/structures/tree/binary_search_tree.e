@@ -1,12 +1,13 @@
 indexing
 
-	description: 
+	description:
 		"[
 		Binary search trees; left child item is less than current item,
 		right child item is greater
 		]"
+	legal: "See notice at end of class."
 
-	status: "See notice at end of class"
+	status: "See notice at end of class."
 	names: binary_search_tree, tree;
 	representation: recursive, array;
 	access: cursor, membership;
@@ -29,10 +30,10 @@ class BINARY_SEARCH_TREE [G -> COMPARABLE] inherit
 
 create
 	make
-	
+
 create {BINARY_SEARCH_TREE}
 	bt_make
-	
+
 feature {NONE} -- Initialization
 
 	make (v: like item) is
@@ -46,7 +47,7 @@ feature {NONE} -- Initialization
 			is_root: is_root
 			is_leaf: is_leaf
 		end
-		
+
 
 feature -- Access
 
@@ -56,20 +57,41 @@ feature -- Access
  	has (v: like item): BOOLEAN is
 			-- Does tree contain a node whose item
 			-- is equal to `v' (object comparison)?
-		require else
-			argument_not_void: v /= Void
+		do
+			if v /= Void then
+				if items_equal (item, v) then
+					Result := True
+				elseif v < item then
+					if left_child /= Void then
+						set_comparison_mode (left_child)
+						Result := left_child.has (v)
+					end
+				else
+					if right_child /= Void then
+						set_comparison_mode (right_child)
+						Result := right_child.has (v)
+					end
+				end
+			end
+		end
+
+	tree_item (v: like item): like Current is
+			-- Node whose item is equal to `v' (object_comparison)
+			-- otherwise default value.
+		require
+			v_not_void: v /= Void
 		do
 			if items_equal (item, v) then
-				Result := True
+				Result := Current
 			elseif v < item then
 				if left_child /= Void then
 					set_comparison_mode (left_child)
-					Result := left_child.has (v)
+					Result := left_child.tree_item (v)
 				end
 			else
 				if right_child /= Void then
 					set_comparison_mode (right_child)
-					Result := right_child.has (v)
+					Result := right_child.tree_item (v)
 				end
 			end
 		end
@@ -439,7 +461,7 @@ feature {NONE} -- Implementation
 			-- (depending on `object_comparison')
 		do
 			if object_comparison then
-				Result := src /= Void and then src.is_equal (dest)
+				Result := equal (src, dest)
 			else
 				Result := (src = dest)
 			end
@@ -460,36 +482,22 @@ feature {NONE} -- Implementation
 		end
 
 indexing
-
-	library: "[
-			EiffelBase: Library of reusable components for Eiffel.
-			]"
-
-	status: "[
-			Copyright 1986-2001 Interactive Software Engineering (ISE).
-			For ISE customers the original versions are an ISE product
-			covered by the ISE Eiffel license and support agreements.
-			]"
-
-	license: "[
-			EiffelBase may now be used by anyone as FREE SOFTWARE to
-			develop any product, public-domain or commercial, without
-			payment to ISE, under the terms of the ISE Free Eiffel Library
-			License (IFELL) at http://eiffel.com/products/base/license.html.
-			]"
-
+	library:	"EiffelBase: Library of reusable components for Eiffel."
+	copyright:	"Copyright (c) 1984-2006, Eiffel Software and others"
+	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
-			Interactive Software Engineering Inc.
-			ISE Building
-			360 Storke Road, Goleta, CA 93117 USA
-			Telephone 805-685-1006, Fax 805-685-6869
-			Electronic mail <info@eiffel.com>
-			Customer support http://support.eiffel.com
-			]"
+			 Eiffel Software
+			 356 Storke Road, Goleta, CA 93117 USA
+			 Telephone 805-685-1006, Fax 805-685-6869
+			 Website http://www.eiffel.com
+			 Customer support http://support.eiffel.com
+		]"
 
-	info: "[
-			For latest info see award-winning pages: http://eiffel.com
-			]"
+
+
+
+
+
 
 end -- class BINARY_SEARCH_TREE
 
