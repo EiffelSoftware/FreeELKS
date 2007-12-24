@@ -19,140 +19,187 @@ feature -- Status report
 
 	meaning (except: INTEGER): STRING is
 			-- A message in English describing what `except' is
-		external
-			"C use %"eif_except.h%""
-		alias
-			"eename"
+		local
+			l_exception: EXCEPTION
+		do
+			l_exception := exception_manager.exception_from_code (except)
+			if l_exception /= Void then
+				Result := l_exception.meaning
+			end
 		end
 
 	assertion_violation: BOOLEAN is
 			-- Is last exception originally due to a violated
 			-- assertion or non-decreasing variant?
+		local
+			l_exception: ASSERTION_VIOLATION
 		do
-			Result :=
-				(original_exception = Check_instruction) or else
-				(original_exception = Class_invariant) or else
-				(original_exception = Loop_invariant) or else
-				(original_exception = Loop_variant) or else
-				(original_exception = Postcondition) or else
-				(original_exception = Precondition)
+			l_exception ?= exception_manager.last_exception
+			Result := (l_exception /= Void)
 		end
 
 	is_developer_exception: BOOLEAN is
 			-- Is the last exception originally due to
 			-- a developer exception?
+		local
+			l_exception: DEVELOPER_EXCEPTION
 		do
-			Result := (original_exception = Developer_exception)
+			l_exception ?= exception_manager.last_exception
+			Result := (l_exception /= Void)
 		end
 
 	is_developer_exception_of_name (name: STRING): BOOLEAN is
 			-- Is the last exception originally due to a developer
 			-- exception of name `name'?
+		local
+			l_exception: DEVELOPER_EXCEPTION
 		do
+			l_exception ?= exception_manager.last_exception
 			Result := is_developer_exception and then
-						equal (name, developer_exception_name)
+						equal (name, l_exception.message)
 		end
 
 	developer_exception_name: STRING is
 			-- Name of last developer-raised exception
 		require
 			applicable: is_developer_exception
+		local
+			l_exception: DEVELOPER_EXCEPTION
 		do
-			Result := original_tag_name
+			l_exception ?= exception_manager.last_exception
+			Result := l_exception.message
 		end
 
 	is_signal: BOOLEAN is
 			-- Is last exception originally due to an external
 			-- event (operating system signal)?
+		local
+			l_exception: OPERATING_SYSTEM_SIGNAL_FAILURE
 		do
-			Result := (original_exception = Signal_exception)
+			l_exception ?= exception_manager.last_exception
+			Result := (l_exception /= Void)
 		end
 
 	is_system_exception: BOOLEAN is
 			-- Is last exception originally due to an
 			-- external event (operating system error)?
+		local
+			l_external: EXTERNAL_FAILURE
+			l_system_failure: SYS_EXCEPTION
+			l_exception: EXCEPTION
 		do
-			Result :=
-				(original_exception = External_exception) or else
-				(original_exception = Operating_system_exception)
+			l_exception := exception_manager.last_exception
+			l_external ?= l_exception
+			Result := (l_external /= Void)
+			if not Result then
+				l_system_failure ?= l_exception
+				Result := (l_system_failure /= Void)
+			end
 		end
 
 	tag_name: STRING is
 			-- Tag of last violated assertion clause
-		external
-			"C use %"eif_except.h%""
-		alias
-			"eeltag"
+		local
+			l_exception: EXCEPTION
+		do
+			l_exception ?= exception_manager.last_exception
+			if l_exception /= Void then
+				Result := l_exception.message
+			end
 		end
 
 	recipient_name: STRING is
 			-- Name of the routine whose execution was
 			-- interrupted by last exception
-		external
-			"C use %"eif_except.h%""
-		alias
-			"eelrout"
+		local
+			l_exception: EXCEPTION
+		do
+			l_exception ?= exception_manager.last_exception
+			if l_exception /= Void then
+				Result := l_exception.recipient_name
+			end
 		end
 
 	class_name: STRING is
 			-- Name of the class that includes the recipient
 			-- of original form of last exception
-		external
-			"C use %"eif_except.h%""
-		alias
-			"eelclass"
+		local
+			l_exception: EXCEPTION
+		do
+			l_exception ?= exception_manager.last_exception
+			if l_exception /= Void then
+				Result := l_exception.type_name
+			end
 		end
 
 	exception: INTEGER is
 			-- Code of last exception that occurred
-		external
-			"C use %"eif_except.h%""
-		alias
-			"eelcode"
+		local
+			l_exception: EXCEPTION
+		do
+			l_exception ?= exception_manager.last_exception
+			if l_exception /= Void then
+				Result := l_exception.code
+			end
 		end
 
 	exception_trace: STRING is
 			-- String representation of the exception trace
-		external
-			"C use %"eif_except.h%""
-		alias
-			"stack_trace_string"
+		local
+			l_exception: EXCEPTION
+		do
+			l_exception ?= exception_manager.last_exception
+			if l_exception /= Void then
+				Result := l_exception.original.exception_trace
+			end
 		end
 
 	original_tag_name: STRING is
 			-- Assertion tag for original form of last
 			-- assertion violation.
-		external
-			"C use %"eif_except.h%""
-		alias
-			"eeotag"
+		local
+			l_exception: EXCEPTION
+		do
+			l_exception ?= exception_manager.last_exception
+			if l_exception /= Void then
+				Result := l_exception.original.message
+			end
 		end
 
 	original_exception: INTEGER is
 			-- Original code of last exception that triggered
 			-- current exception
-		external
-			"C use %"eif_except.h%""
-		alias
-			"eeocode"
+		local
+			l_exception: EXCEPTION
+		do
+			l_exception ?= exception_manager.last_exception
+			if l_exception /= Void then
+				Result := l_exception.original.code
+			end
 		end
 
 	original_recipient_name: STRING is
 			-- Name of the routine whose execution was
 			-- interrupted by original form of last exception
-		external
-			"C use %"eif_except.h%""
-		alias
-			"eeorout"
+		local
+			l_exception: EXCEPTION
+		do
+			l_exception ?= exception_manager.last_exception
+			if l_exception /= Void then
+				Result := l_exception.original.recipient_name
+			end
 		end
 
 	original_class_name: STRING is
 			-- Name of the class that includes the recipient
 			-- of original form of last exception
-		external
-			"C use %"eif_except.h%""
-		alias
-			"eeoclass"
+		local
+			l_exception: EXCEPTION
+		do
+			l_exception ?= exception_manager.last_exception
+			if l_exception /= Void then
+				Result := l_exception.original.type_name
+			end
 		end
 
 feature -- Status setting
@@ -160,41 +207,45 @@ feature -- Status setting
 	catch (code: INTEGER) is
 			-- Make sure that any exception of code `code' will be
 			-- caught. This is the default.
-		external
-			"C use %"eif_except.h%""
-		alias
-			"eecatch"
+		local
+			l_type: TYPE [EXCEPTION]
+		do
+			l_type := exception_manager.type_of_code (code)
+			if l_type /= Void then
+				exception_manager.catch (l_type)
+			end
 		end
 
 	ignore (code: INTEGER) is
 			-- Make sure that any exception of code `code' will be
 			-- ignored. This is not the default.
-		external
-			"C use %"eif_except.h%""
-		alias
-			"eeignore"
+		local
+			l_type: TYPE [EXCEPTION]
+		do
+			l_type := exception_manager.type_of_code (code)
+			if l_type /= Void then
+				exception_manager.ignore (l_type)
+			end
 		end
 
 	raise (name: STRING) is
 			-- Raise a developer exception of name `name'.
 		local
-			str: ANY
+			l_exception: DEVELOPER_EXCEPTION
 		do
-			if name /= Void then
-				str := name.to_c
-			end
-			eraise ($str, Developer_exception)
+			create l_exception
+			l_exception.set_message (name)
+			l_exception.raise
 		end
 
 	raise_retrieval_exception (name: STRING) is
 			-- Raise a retrieval exception of name `name'.
 		local
-			str: ANY
+			l_exception: SERIALIZATION_FAILURE
 		do
-			if name /= Void then
-				str := name.to_c
-			end
-			eraise ($str, Retrieve_exception)
+			create l_exception
+			l_exception.set_message (name)
+			l_exception.raise
 		end
 
 	die (code: INTEGER) is
@@ -232,10 +283,10 @@ feature -- Status setting
 
 feature {NONE} -- Implementation
 
-	eraise (str: POINTER; code: INTEGER) is
-			-- Raise an exception
-		external
-			"C signature (char *, long) use %"eif_except.h%""
+	exception_manager: EXCEPTION_MANAGER is
+			-- Exception manager
+		once
+			create Result
 		end
 
 	c_trace_exception (b: BOOLEAN) is

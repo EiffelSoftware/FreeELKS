@@ -12,9 +12,6 @@ indexing
 class
 	STORABLE
 
-inherit
-	EXCEPTIONS
-
 feature -- Access
 
 	retrieved (medium: IO_MEDIUM): ANY is
@@ -145,7 +142,7 @@ feature -- Element change
 			file_name_meaningful: not file_name.is_empty
 		local
 			file: RAW_FILE
-			a: ANY
+			io_exception: IO_FAILURE
 		do
 			create file.make (file_name)
 			if (file.exists and then file.is_writable) or else
@@ -154,8 +151,9 @@ feature -- Element change
 				file.independent_store (Current)
 				file.close
 			else
-				a := ("write permission failure").to_c
-				eraise ($a, Io_exception)
+				create io_exception
+				io_exception.set_message ("write permission failure")
+				io_exception.raise
 			end
 		end
 
