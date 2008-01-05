@@ -54,27 +54,24 @@ feature -- Access
 			Result := last_element.item
 		end
 
-	index: INTEGER is
+	index: INTEGER_32
 			-- Index of current position
 		local
-			p: LINKED_LIST_CURSOR [G]
+			l_active, l_active_iterator: like active
 		do
 			if after then
 				Result := count + 1
 			elseif not before then
-				p ?= cursor
-				check
-					p /= Void
-				end
 				from
-					start; Result := 1
+					Result := 1
+					l_active := active
+					l_active_iterator := first_element
 				until
-					p.active = active
+					l_active_iterator = l_active
 				loop
-					forth
+					l_active_iterator := l_active_iterator.right
 					Result := Result + 1
 				end
-				go_to (p)
 			end
 		end
 
@@ -658,7 +655,7 @@ feature {NONE} -- Implementation
 	frozen internal_wipe_out is
 			-- Remove all items.
 			--| Used by `copy' instead of `wipe_out' to ensure that it
-			--| will behave consistently even in descendants that 
+			--| will behave consistently even in descendants that
 			--| redefine `wipe_out'.
 		require
 			prunable
@@ -676,7 +673,7 @@ feature {NONE} -- Implementation
 invariant
 
 	prunable: prunable
-	empty_constraint: is_empty implies ((first_element = Void) and 
+	empty_constraint: is_empty implies ((first_element = Void) and
 				(active = Void))
 	not_void_unless_empty: (active = Void) implies is_empty
 	before_constraint: before implies (active = first_element)
