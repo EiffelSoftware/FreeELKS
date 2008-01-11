@@ -381,6 +381,7 @@ feature {NONE} -- Implementation
 			l_sig: OPERATING_SYSTEM_SIGNAL_FAILURE
 			l_io: IO_FAILURE
 			l_sys: OPERATING_SYSTEM_FAILURE
+			l_com: COM_FAILURE
 		do
 			l_data := exception_data
 			if l_data /= Void then
@@ -410,10 +411,16 @@ feature {NONE} -- Implementation
 									l_sys ?= Result
 									if l_sys /= Void then
 										l_sys.set_error_code (l_data.error_code)
+									else
+										l_com ?= Result
+										if l_com /= Void then
+											l_com.set_hresult_code (l_data.signal_code)
+											l_com.set_exception_information (l_data.tag)
+										end
 									end
 								end
 							end
-							
+
 						end
 						Result.set_throwing_exception (Result)
 					end
@@ -479,7 +486,7 @@ feature {NONE} -- Implementation
 			l_nomem.set_exception_trace (create {STRING_8}.make (4096))
 			no_memory_exception_object_cell.put (l_nomem)
 		end
-		
+
 	frozen free_preallocated_trace is
 		do
 			no_memory_exception_object_cell.item.set_message (Void)
