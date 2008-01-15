@@ -243,7 +243,7 @@ feature {ROUTINE} -- Implementation
 	frozen calc_rout_addr: POINTER
 			-- Address of the final routine
 
-	frozen open_map: SPECIAL [INTEGER]
+	frozen open_map: ARRAY [INTEGER]
 			-- Index map for open arguments
 
 	frozen encaps_rout_disp: POINTER
@@ -262,7 +262,7 @@ feature {ROUTINE} -- Implementation
 	frozen is_inline_agent: BOOLEAN
 
 	frozen set_rout_disp (a_rout_disp, a_encaps_rout_disp, a_calc_rout_addr: POINTER
-						  a_class_id, a_feature_id: INTEGER; a_open_map: SPECIAL [INTEGER]
+						  a_class_id, a_feature_id: INTEGER; a_open_map: ARRAY [INTEGER]
 						  a_is_precompiled, a_is_basic, a_is_target_closed, a_is_inline_agent: BOOLEAN
 						  a_closed_operands: TUPLE; a_open_count: INTEGER) is
 			-- Initialize object.
@@ -287,7 +287,7 @@ feature {ROUTINE} -- Implementation
 		end
 
 	frozen set_rout_disp_int (a_rout_disp, a_encaps_rout_disp, a_calc_rout_addr: POINTER
-						  	  a_class_id, a_feature_id: INTEGER; a_open_map: SPECIAL [INTEGER]
+						  	  a_class_id, a_feature_id: INTEGER; a_open_map: ARRAY [INTEGER]
 	 						  a_is_precompiled, a_is_basic, a_is_target_closed, a_is_inline_agent: BOOLEAN
 							  a_closed_operands: TUPLE; a_open_count: INTEGER) is
 			-- Initialize object.
