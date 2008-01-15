@@ -51,7 +51,7 @@ feature -- Status setting
 			Result.right_adjust
 
 			if Result.is_empty and then hresult_code > 0 then
-				Result := error_message (hresult_code)
+				Result := error_message (hresult_code).out
 			end
 			if Result = Void then
 				create Result.make (0)

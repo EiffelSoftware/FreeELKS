@@ -24,7 +24,7 @@ feature -- Raise
 feature -- Access
 
 	meaning: STRING is
-			-- A message in English describing what `except' is
+			-- A message in English describing what current exception is
 		do
 			Result := internal_meaning
 		end
@@ -104,7 +104,7 @@ feature -- Status report
 		end
 
 	frozen is_ignored: BOOLEAN is
-			-- If set, no exception is raised.
+			-- If set, current exception is not raised.
 		local
 			l_internal: INTERNAL
 			l_type: TYPE [EXCEPTION]
@@ -118,7 +118,7 @@ feature -- Status report
 		end
 
 	frozen is_caught: BOOLEAN is
-			-- If set, exception is raised.
+			-- If set, current exception is raised.
 		do
 			Result := not is_ignored
 		ensure
