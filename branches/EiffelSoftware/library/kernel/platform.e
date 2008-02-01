@@ -40,7 +40,7 @@ feature -- Platform
 			"built_in static"
 		end
 
-	is_mac: BOOLEAN is
+	is_mac_os: BOOLEAN is
 			-- Are we running on Mac OS?
 		external
 			"built_in static"
