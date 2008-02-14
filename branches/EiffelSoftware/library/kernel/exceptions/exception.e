@@ -11,6 +11,9 @@ indexing
 class
 	EXCEPTION
 
+inherit
+	EXCEPTION_MANAGER_FACTORY
+
 feature -- Raise
 
 	raise is
@@ -187,11 +190,6 @@ feature {EXCEPTION_MANAGER} -- Implementation
 
 	frozen internal_is_ignorable: BOOLEAN
 			-- Internal `is_ignorable'
-
-	frozen exception_manager: EXCEPTION_MANAGER is
-		once
-			create Result
-		end
 
 	frozen set_exception_trace (a_trace: like exception_trace) is
 			-- Set `exception_trace' with `a_trace'.
