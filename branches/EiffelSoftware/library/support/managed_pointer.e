@@ -263,9 +263,9 @@ feature -- Access: Platform specific
 			-- Read CHARACTER at position `pos'.
 		require
 			pos_nonnegative: pos >= 0
-			valid_position: (pos + Character_bytes) <= count
+			valid_position: (pos + Character_8_bytes) <= count
 		do
-			($Result).memory_copy (item + pos, Character_bytes)
+			($Result).memory_copy (item + pos, Character_8_bytes)
 		end
 
 	read_real (pos: INTEGER): REAL is
@@ -444,9 +444,9 @@ feature -- Element change: Platform specific
 			-- Insert `c' at position `pos'.
 		require
 			pos_nonnegative: pos >= 0
-			valid_position: (pos + Character_bytes) <= count
+			valid_position: (pos + Character_8_bytes) <= count
 		do
-			(item + pos).memory_copy ($c, Character_bytes)
+			(item + pos).memory_copy ($c, Character_8_bytes)
 		ensure
 			inserted: c = read_character (pos)
 		end
