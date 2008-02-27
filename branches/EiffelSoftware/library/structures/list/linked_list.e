@@ -54,7 +54,7 @@ feature -- Access
 			Result := last_element.item
 		end
 
-	index: INTEGER_32
+	index: INTEGER
 			-- Index of current position
 		local
 			l_active, l_active_iterator: like active
