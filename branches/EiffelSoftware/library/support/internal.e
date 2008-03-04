@@ -758,6 +758,28 @@ feature -- Measurement
 			Result := c_size ($object)
 		end
 
+	deep_physical_size (object: ANY): INTEGER is
+			-- Space occupied by `object' and its children in bytes
+		require
+			object_not_void: object /= Void
+		local
+			l_traverse: SED_OBJECT_GRAPH_BREADTH_FIRST_TRAVERSABLE
+			l_objects: ARRAYED_LIST [ANY]
+		do
+			create l_traverse
+			l_traverse.set_root_object (object)
+			l_traverse.traverse
+			l_objects := l_traverse.visited_objects
+			from
+				l_objects.start
+			until
+				l_objects.after
+			loop
+				Result := Result + physical_size (l_objects.item)
+				l_objects.forth
+			end
+		end
+
 feature -- Marking
 
 	mark (obj: ANY) is
