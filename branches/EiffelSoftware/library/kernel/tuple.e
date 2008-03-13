@@ -404,6 +404,7 @@ feature -- Element change
 			-- Put `v' at position `index' in Current.
 		require
 			valid_index: valid_index (index)
+			valid_type_for_index: valid_type_for_index (v, index)
 			valid_type: is_reference_item (index)
 		do
 			eif_put_reference_item_with_object ($Current, index, $v)
