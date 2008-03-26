@@ -4,7 +4,7 @@ indexing
 		This class may be used as ancestor by classes needing its facilities.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -19,13 +19,10 @@ inherit
 
 feature -- Status report
 
-	meaning (except: INTEGER): STRING is
+	meaning (except: INTEGER): ?STRING is
 			-- A message in English describing what `except' is
-		local
-			l_exception: EXCEPTION
 		do
-			l_exception := exception_manager.exception_from_code (except)
-			if l_exception /= Void then
+			if {l_exception: EXCEPTION} exception_manager.exception_from_code (except) then
 				Result := l_exception.meaning
 			end
 		end
@@ -33,138 +30,109 @@ feature -- Status report
 	assertion_violation: BOOLEAN is
 			-- Is last exception originally due to a violated
 			-- assertion or non-decreasing variant?
-		local
-			l_exception: ASSERTION_VIOLATION
 		do
-			l_exception ?= exception_manager.last_exception
-			Result := (l_exception /= Void)
+			Result := {l_exception: ASSERTION_VIOLATION} exception_manager.last_exception
 		end
 
 	is_developer_exception: BOOLEAN is
 			-- Is the last exception originally due to
 			-- a developer exception?
-		local
-			l_exception: DEVELOPER_EXCEPTION
 		do
-			l_exception ?= exception_manager.last_exception
-			Result := (l_exception /= Void)
+			Result := {l_exception: DEVELOPER_EXCEPTION} exception_manager.last_exception
 		end
 
 	is_developer_exception_of_name (name: STRING): BOOLEAN is
 			-- Is the last exception originally due to a developer
 			-- exception of name `name'?
-		local
-			l_exception: DEVELOPER_EXCEPTION
 		do
-			l_exception ?= exception_manager.last_exception
-			Result := is_developer_exception and then
-						equal (name, l_exception.message)
+			if
+				{l_exception: DEVELOPER_EXCEPTION} exception_manager.last_exception and then
+				{m: STRING} l_exception.message
+			then
+				Result := is_developer_exception and then
+							equal (name, m)
+			end
 		end
 
-	developer_exception_name: STRING is
+	developer_exception_name: ?STRING is
 			-- Name of last developer-raised exception
 		require
 			applicable: is_developer_exception
-		local
-			l_exception: DEVELOPER_EXCEPTION
 		do
-			l_exception ?= exception_manager.last_exception
-			Result := l_exception.message
+			if {l_exception: DEVELOPER_EXCEPTION} exception_manager.last_exception then
+				Result := l_exception.message
+			end
 		end
 
 	is_signal: BOOLEAN is
 			-- Is last exception originally due to an external
 			-- event (operating system signal)?
-		local
-			l_exception: OPERATING_SYSTEM_SIGNAL_FAILURE
 		do
-			l_exception ?= exception_manager.last_exception
-			Result := (l_exception /= Void)
+			Result := {l_exception: OPERATING_SYSTEM_SIGNAL_FAILURE} exception_manager.last_exception
 		end
 
 	is_system_exception: BOOLEAN is
 			-- Is last exception originally due to an
 			-- external event (operating system error)?
-		local
-			l_system_failure: SYS_EXCEPTION
-			l_exception, l_external: EXCEPTION
 		do
-			l_exception := exception_manager.last_exception
-			l_external := exception_manager.exception_from_code (external_exception)
-			if l_exception /= Void and then l_external /= Void then
+			if
+				{l_exception: EXCEPTION} exception_manager.last_exception and then
+				{l_external: EXCEPTION} exception_manager.exception_from_code (external_exception)
+			then
 				Result := l_exception.conforms_to (l_external)
 				if not Result then
-					l_system_failure ?= l_exception
-					Result := (l_system_failure /= Void)
+					Result := {l_system_failure: SYS_EXCEPTION} l_exception
 				end
 			end
 		end
 
-	tag_name: STRING is
+	tag_name: ?STRING is
 			-- Tag of last violated assertion clause
-		local
-			l_exception: EXCEPTION
 		do
-			l_exception ?= exception_manager.last_exception
-			if l_exception /= Void then
+			if {l_exception: EXCEPTION} exception_manager.last_exception then
 				Result := l_exception.message
 			end
 		end
 
-	recipient_name: STRING is
+	recipient_name: ?STRING is
 			-- Name of the routine whose execution was
 			-- interrupted by last exception
-		local
-			l_exception: EXCEPTION
 		do
-			l_exception ?= exception_manager.last_exception
-			if l_exception /= Void then
+			if {l_exception: EXCEPTION} exception_manager.last_exception then
 				Result := l_exception.recipient_name
 			end
 		end
 
-	class_name: STRING is
+	class_name: ?STRING is
 			-- Name of the class that includes the recipient
 			-- of original form of last exception
-		local
-			l_exception: EXCEPTION
 		do
-			l_exception ?= exception_manager.last_exception
-			if l_exception /= Void then
+			if {l_exception: EXCEPTION} exception_manager.last_exception then
 				Result := l_exception.type_name
 			end
 		end
 
 	exception: INTEGER is
 			-- Code of last exception that occurred
-		local
-			l_exception: EXCEPTION
 		do
-			l_exception ?= exception_manager.last_exception
-			if l_exception /= Void then
+			if {l_exception: EXCEPTION} exception_manager.last_exception then
 				Result := l_exception.code
 			end
 		end
 
-	exception_trace: STRING is
+	exception_trace: ?STRING is
 			-- String representation of the exception trace
-		local
-			l_exception: EXCEPTION
 		do
-			l_exception ?= exception_manager.last_exception
-			if l_exception /= Void then
+			if {l_exception: EXCEPTION} exception_manager.last_exception then
 				Result := l_exception.original.exception_trace
 			end
 		end
 
-	original_tag_name: STRING is
+	original_tag_name: ?STRING is
 			-- Assertion tag for original form of last
 			-- assertion violation.
-		local
-			l_exception: EXCEPTION
 		do
-			l_exception ?= exception_manager.last_exception
-			if l_exception /= Void then
+			if {l_exception: EXCEPTION} exception_manager.last_exception then
 				Result := l_exception.original.message
 			end
 		end
@@ -172,35 +140,26 @@ feature -- Status report
 	original_exception: INTEGER is
 			-- Original code of last exception that triggered
 			-- current exception
-		local
-			l_exception: EXCEPTION
 		do
-			l_exception ?= exception_manager.last_exception
-			if l_exception /= Void then
+			if {l_exception: EXCEPTION} exception_manager.last_exception then
 				Result := l_exception.original.code
 			end
 		end
 
-	original_recipient_name: STRING is
+	original_recipient_name: ?STRING is
 			-- Name of the routine whose execution was
 			-- interrupted by original form of last exception
-		local
-			l_exception: EXCEPTION
 		do
-			l_exception ?= exception_manager.last_exception
-			if l_exception /= Void then
+			if {l_exception: EXCEPTION} exception_manager.last_exception then
 				Result := l_exception.original.recipient_name
 			end
 		end
 
-	original_class_name: STRING is
+	original_class_name: ?STRING is
 			-- Name of the class that includes the recipient
 			-- of original form of last exception
-		local
-			l_exception: EXCEPTION
 		do
-			l_exception ?= exception_manager.last_exception
-			if l_exception /= Void then
+			if {l_exception: EXCEPTION} exception_manager.last_exception then
 				Result := l_exception.original.type_name
 			end
 		end
@@ -210,11 +169,8 @@ feature -- Status setting
 	catch (code: INTEGER) is
 			-- Make sure that any exception of code `code' will be
 			-- caught. This is the default.
-		local
-			l_type: TYPE [EXCEPTION]
 		do
-			l_type := exception_manager.type_of_code (code)
-			if l_type /= Void then
+			if {l_type: TYPE [EXCEPTION]} exception_manager.type_of_code (code) then
 				exception_manager.catch (l_type)
 			end
 		end
@@ -222,11 +178,8 @@ feature -- Status setting
 	ignore (code: INTEGER) is
 			-- Make sure that any exception of code `code' will be
 			-- ignored. This is not the default.
-		local
-			l_type: TYPE [EXCEPTION]
 		do
-			l_type := exception_manager.type_of_code (code)
-			if l_type /= Void then
+			if {l_type: TYPE [EXCEPTION]} exception_manager.type_of_code (code) then
 				exception_manager.ignore (l_type)
 			end
 		end
@@ -243,12 +196,11 @@ feature -- Status setting
 
 	raise_retrieval_exception (name: STRING) is
 			-- Raise a retrieval exception of name `name'.
-		local
-			l_exception: EXCEPTION
 		do
-			l_exception := exception_manager.exception_from_code (serialization_exception)
-			l_exception.set_message (name)
-			l_exception.raise
+			if {l_exception: EXCEPTION} exception_manager.exception_from_code (serialization_exception) then
+				l_exception.set_message (name)
+				l_exception.raise
+			end
 		end
 
 	die (code: INTEGER) is

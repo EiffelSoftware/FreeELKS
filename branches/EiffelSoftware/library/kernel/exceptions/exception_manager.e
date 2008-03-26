@@ -3,7 +3,7 @@ indexing
 		Common exception operations and management.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -96,13 +96,13 @@ feature -- Status report
 
 feature {EXCEPTIONS} -- Backward compatibility support
 
-	type_of_code (a_code: INTEGER): TYPE [EXCEPTION]
+	type_of_code (a_code: INTEGER): ?TYPE [EXCEPTION]
 			-- Exception type of `a_code'
 		external
 			"built_in"
 		end
 
-	exception_from_code (a_code: INTEGER): EXCEPTION is
+	exception_from_code (a_code: INTEGER): ?EXCEPTION is
 			-- Create exception object from `a_code'
 		external
 			"built_in"

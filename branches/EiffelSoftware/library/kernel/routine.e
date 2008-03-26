@@ -4,7 +4,7 @@ indexing
 		with some operands possibly still open
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -51,8 +51,8 @@ feature -- Access
 		do
 			if is_target_closed then
 				Result := closed_operands.item (1)
-			elseif operands /= Void and then operands.count > 0 then
-				Result := operands.item (1)
+			elseif {o: like operands} operands and then o.count > 0 then
+				Result := o.item (1)
 			end
 		end
 
@@ -112,7 +112,6 @@ feature -- Status report
 			-- Are `args' valid operands for this routine?
 		local
 			i, arg_type_code: INTEGER
-			arg: ANY
 			int: INTERNAL
 			open_type_codes: STRING
 		do
@@ -132,8 +131,7 @@ feature -- Status report
 					arg_type_code := args.item_code (i)
 					Result := arg_type_code = open_type_codes.item (i + 1).code
 					if Result and then arg_type_code = {TUPLE}.reference_code then
-						arg := args.item (i)
-						Result := arg = Void or else
+						Result := not {arg: ANY} args.item (i) or else
 							int.type_conforms_to (int.dynamic_type (arg), open_operand_type (i))
 					end
 					i := i + 1

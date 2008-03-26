@@ -3,7 +3,7 @@ indexing
 		Ancestor of all exception classes.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -32,7 +32,7 @@ feature -- Access
 			Result := internal_meaning
 		end
 
-	message: STRING
+	message: ?STRING
 			-- Message(Tag) of current exception
 
 	exception_trace: STRING is
@@ -49,8 +49,9 @@ feature -- Access
 	frozen original: EXCEPTION is
 			-- The original exception caused current exception
 		do
+			Result := Current
 			if throwing_exception = Current or else throwing_exception = Void then
-				Result := Current
+				-- Result := Current
 			else
 				Result := throwing_exception.original
 			end
@@ -88,33 +89,33 @@ feature -- Status report
 			-- Is current exception ignorable?
 		local
 			l_internal: INTERNAL
-			l_type: TYPE [EXCEPTION]
 		do
 			create l_internal
-			l_type ?= l_internal.type_of (Current)
-			Result := exception_manager.is_ignorable (l_type)
+			if {l_type: TYPE [EXCEPTION]} l_internal.type_of (Current) then
+				Result := exception_manager.is_ignorable (l_type)
+			end
 		end
 
 	frozen is_raisable: BOOLEAN is
 			-- Is current exception raisable by `raise'?
 		local
 			l_internal: INTERNAL
-			l_type: TYPE [EXCEPTION]
 		do
 			create l_internal
-			l_type ?= l_internal.type_of (Current)
-			Result := exception_manager.is_raisable (l_type)
+			if {l_type: TYPE [EXCEPTION]} l_internal.type_of (Current) then
+				Result := exception_manager.is_raisable (l_type)
+			end
 		end
 
 	frozen is_ignored: BOOLEAN is
 			-- If set, current exception is not raised.
 		local
 			l_internal: INTERNAL
-			l_type: TYPE [EXCEPTION]
 		do
 			create l_internal
-			l_type ?= l_internal.type_of (Current)
-			Result := exception_manager.is_ignored (l_type)
+			if {l_type: TYPE [EXCEPTION]} l_internal.type_of (Current) then
+				Result := exception_manager.is_ignored (l_type)
+			end
 		ensure
 			is_ignored_implies_is_ignorable: Result implies is_ignorable
 			not_is_caught: Result = not is_caught
