@@ -155,7 +155,7 @@ feature -- Conversion
 			"built_in"
 		end
 
-	as_integer_32: INTEGER is
+	as_integer_32: INTEGER_32 is
 			-- Convert `item' into an INTEGER_32 value.
 		external
 			"built_in"
