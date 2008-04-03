@@ -156,7 +156,7 @@ feature -- Access
 			Result := eif_integer_16_item ($Current, index)
 		end
 
-	integer_item, integer_32_item (index: INTEGER): INTEGER is
+	integer_item, integer_32_item (index: INTEGER): INTEGER_32 is
 			-- INTEGER_32 item at `index'.
 		require
 			valid_index: valid_index (index)
@@ -484,7 +484,7 @@ feature -- Element change
 			eif_put_natural_64_item ($Current, index, v)
 		end
 
-	put_integer, put_integer_32 (v: INTEGER; index: INTEGER) is
+	put_integer, put_integer_32 (v: INTEGER_32; index: INTEGER) is
 			-- Put `v' at position `index' in Current.
 		require
 			valid_index: valid_index (index)
@@ -1238,7 +1238,7 @@ feature {NONE} -- Externals: Access
 			"C macro use %"eif_rout_obj.h%""
 		end
 
-	eif_integer_32_item (obj: POINTER; pos: INTEGER): INTEGER is
+	eif_integer_32_item (obj: POINTER; pos: INTEGER): INTEGER_32 is
 			-- INTEGER_32 item at position `pos' in tuple `obj'.
 		external
 			"C macro use %"eif_rout_obj.h%""
@@ -1420,7 +1420,7 @@ feature {NONE} -- Externals: Setting
 			"C macro use %"eif_rout_obj.h%""
 		end
 
-	eif_put_integer_32_item (obj: POINTER; pos: INTEGER; v: INTEGER) is
+	eif_put_integer_32_item (obj: POINTER; pos: INTEGER; v: INTEGER_32) is
 			-- Set integer_32 item at position `pos' in tuple `obj' with `v'.
 		external
 			"C macro use %"eif_rout_obj.h%""
