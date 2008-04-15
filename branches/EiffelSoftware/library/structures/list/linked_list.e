@@ -128,21 +128,18 @@ feature -- Status report
 	valid_cursor (p: CURSOR): BOOLEAN is
 			-- Can the cursor be moved to position `p'?
 		local
-			sought: like first_element
-			temp: LINKABLE [like item]
+			temp, sought: like first_element
 		do
 			if {ll_c: like cursor} p then
-				Result := ll_c.after or else ll_c.before
-				if not Result and then {t: like first_element} first_element then
-					from
-						temp := t
-						sought := ll_c.active
-					until
-						(temp = sought) or else not {q: like first_element} temp.right
-					loop
-						temp := q
-					end
-					Result := temp = sought
+				from
+					temp := first_element
+					sought := ll_c.active
+					Result := ll_c.after or else ll_c.before
+				until
+					Result or else temp = Void
+				loop
+					Result := (temp = sought)
+					temp := temp.right
 				end
 			end
 		end
@@ -634,17 +631,15 @@ feature {LINKED_LIST} -- Implementation
 	last_element: like first_element is
 			-- Tail of list
 		local
-			l: LINKABLE [like item]
+			p: like first_element
 		do
-			if {a: like first_element} active then
-				from
-					l := a
-				until
-					not {p: like first_element} l.right
-				loop
-					l := p
-				end
-				Result := l
+			from
+				p := active
+			until
+				p = Void
+			loop
+				Result := p
+				p := p.right
 			end
 		end
 
