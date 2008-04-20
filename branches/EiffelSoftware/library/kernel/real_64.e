@@ -111,13 +111,13 @@ feature -- Basic operations
 			"built_in"
 		end
 
-	prefix "+": like Current is
+	prefix "+": REAL_64 is
 			-- Unary plus
 		external
 			"built_in"
 		end
 
-	prefix "-": like Current is
+	prefix "-": REAL_64 is
 			-- Unary minus
 		external
 			"built_in"
