@@ -31,14 +31,16 @@ feature -- Status report
 			-- Is last exception originally due to a violated
 			-- assertion or non-decreasing variant?
 		do
-			Result := {l_exception: ASSERTION_VIOLATION} exception_manager.last_exception
+			Result := {l_exception: EXCEPTION} exception_manager.last_exception and then
+						{l_av: ASSERTION_VIOLATION} l_exception.original
 		end
 
 	is_developer_exception: BOOLEAN is
 			-- Is the last exception originally due to
 			-- a developer exception?
 		do
-			Result := {l_exception: DEVELOPER_EXCEPTION} exception_manager.last_exception
+			Result := {l_exception: EXCEPTION} exception_manager.last_exception and then
+						{l_de: DEVELOPER_EXCEPTION} l_exception.original
 		end
 
 	is_developer_exception_of_name (name: STRING): BOOLEAN is
@@ -46,11 +48,10 @@ feature -- Status report
 			-- exception of name `name'?
 		do
 			if
-				{l_exception: DEVELOPER_EXCEPTION} exception_manager.last_exception and then
-				{m: STRING} l_exception.message
+				is_developer_exception and then
+				{m: STRING} developer_exception_name
 			then
-				Result := is_developer_exception and then
-							equal (name, m)
+				Result := equal (name, m)
 			end
 		end
 
@@ -59,8 +60,8 @@ feature -- Status report
 		require
 			applicable: is_developer_exception
 		do
-			if {l_exception: DEVELOPER_EXCEPTION} exception_manager.last_exception then
-				Result := l_exception.message
+			if {l_exception: EXCEPTION} exception_manager.last_exception then
+				Result := l_exception.original.message
 			end
 		end
 
@@ -68,7 +69,8 @@ feature -- Status report
 			-- Is last exception originally due to an external
 			-- event (operating system signal)?
 		do
-			Result := {l_exception: OPERATING_SYSTEM_SIGNAL_FAILURE} exception_manager.last_exception
+			Result := {l_exception: EXCEPTION} exception_manager.last_exception and then
+						{l_failure: OPERATING_SYSTEM_SIGNAL_FAILURE} l_exception.original
 		end
 
 	is_system_exception: BOOLEAN is
@@ -79,9 +81,9 @@ feature -- Status report
 				{l_exception: EXCEPTION} exception_manager.last_exception and then
 				{l_external: EXCEPTION} exception_manager.exception_from_code (external_exception)
 			then
-				Result := l_exception.conforms_to (l_external)
+				Result := l_exception.original.conforms_to (l_external)
 				if not Result then
-					Result := {l_system_failure: SYS_EXCEPTION} l_exception
+					Result := {l_system_failure: OPERATING_SYSTEM_FAILURE} l_exception.original
 				end
 			end
 		end
