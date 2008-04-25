@@ -14,6 +14,25 @@ class
 inherit
 	EXCEPTION_MANAGER_FACTORY
 
+create
+	default_create,
+	make_with_tag_and_trace
+
+feature {NONE} -- Initialization
+
+	make_with_tag_and_trace (a_tag, a_trace_string: STRING) is
+			-- Make `Current' with `tag' set to `a_tag'.
+		obsolete
+			"Use `default_create' and `set_message' instead."
+		require
+			tag_not_void: a_tag /= Void
+			trace_string_not_void: a_trace_string /= Void
+		do
+			set_message (a_tag)
+		ensure
+			tag_set: tag.is_equal (a_tag)
+		end
+
 feature -- Raise
 
 	raise is
@@ -72,6 +91,24 @@ feature -- Access
 
 	frozen line_number: INTEGER
 			-- Line number
+
+feature -- Access obselete
+
+	tag: STRING is
+			-- Exception tag of `Current'
+		obsolete
+			"Use `message' instead."
+		do
+			Result := message
+		end
+
+	trace_as_string: STRING is
+			-- Exception trace represented as a string
+		obsolete
+			"Use `exception_trace' instead."
+		do
+			Result := exception_trace
+		end
 
 feature -- Status settings
 
