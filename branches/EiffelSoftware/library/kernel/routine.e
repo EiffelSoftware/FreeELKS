@@ -154,6 +154,9 @@ feature -- Status report
 			end
 		end
 
+	is_target_closed: BOOLEAN
+			-- Is target for current agent closed, i.e. specified at creation time?
+
 feature -- Measurement
 
 	open_count: INTEGER
@@ -170,6 +173,19 @@ feature -- Settings
 		ensure
 			operands_set: (operands /= Void implies equal (operands, args)) or
 				(operands = Void implies (args = Void or else args.is_empty))
+		end
+
+	set_target (a_target: like target) is
+			-- Set `a_target' as the next `target' for remaining calls to Current.
+		require
+			a_target_not_void: a_target /= Void
+			is_target_closed: is_target_closed
+			target_not_void: target /= Void
+			same_target_type: target.same_type (a_target)
+		do
+			closed_operands.put (a_target, 1)
+		ensure
+			target_set: target = a_target
 		end
 
 feature -- Duplication
@@ -254,8 +270,6 @@ feature {ROUTINE} -- Implementation
 	frozen is_precompiled: BOOLEAN
 
 	frozen is_basic: BOOLEAN
-
-	frozen is_target_closed: BOOLEAN
 
 	frozen is_inline_agent: BOOLEAN
 
