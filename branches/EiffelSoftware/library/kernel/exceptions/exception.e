@@ -30,7 +30,7 @@ feature {NONE} -- Initialization
 		do
 			set_message (a_tag)
 		ensure
-			tag_set: tag.is_equal (a_tag)
+			tag_set: equal (tag, a_tag)
 		end
 
 feature -- Raise
@@ -54,7 +54,7 @@ feature -- Access
 	message: ?STRING
 			-- Message(Tag) of current exception
 
-	exception_trace: STRING is
+	exception_trace: ?STRING is
 			-- String representation of current exception trace
 		do
 			Result := internal_trace
@@ -67,25 +67,27 @@ feature -- Access
 
 	frozen original: EXCEPTION is
 			-- The original exception caused current exception
+		local
+			t: like throwing_exception
 		do
-			Result := Current
-			if throwing_exception = Current or else throwing_exception = Void then
-				-- Result := Current
+			t := throwing_exception
+			if t = Current or else t = Void then
+				Result := Current
 			else
-				Result := throwing_exception.original
+				Result := t.original
 			end
 		ensure
 			original_not_void: Result /= Void
 		end
 
-	frozen throwing_exception: EXCEPTION
+	frozen throwing_exception: ?EXCEPTION
 			-- The exception throwing current exception
 
-	frozen recipient_name: STRING
+	frozen recipient_name: ?STRING
 			-- Name of the routine whose execution was
 			-- interrupted by current exception
 
-	frozen type_name: STRING
+	frozen type_name: ?STRING
 			-- Name of the class that includes the recipient
 			-- of original form of current exception
 
@@ -94,7 +96,7 @@ feature -- Access
 
 feature -- Access obselete
 
-	tag: STRING is
+	tag: ?STRING is
 			-- Exception tag of `Current'
 		obsolete
 			"Use `message' instead."
@@ -102,7 +104,7 @@ feature -- Access obselete
 			Result := message
 		end
 
-	trace_as_string: STRING is
+	trace_as_string: ?STRING is
 			-- Exception trace represented as a string
 		obsolete
 			"Use `exception_trace' instead."
@@ -185,7 +187,7 @@ feature {EXCEPTION_MANAGER} -- Implementation
 		require
 			a_exception_not_viod: a_exception /= Void
 		local
-			l_exception: EXCEPTION
+			l_exception: ?EXCEPTION
 		do
 			if a_exception /= Current and then a_exception.throwing_exception /= a_exception then
 				from
@@ -235,7 +237,7 @@ feature {EXCEPTION_MANAGER} -- Implementation
 			internal_trace := a_trace
 		end
 
-	internal_trace: STRING
+	internal_trace: ?STRING
 			-- String representation of the exception trace
 
 end

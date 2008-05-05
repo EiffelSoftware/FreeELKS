@@ -18,13 +18,13 @@ deferred class
 
 feature -- Access
 
-	root_object: ANY
+	root_object: ?ANY
 			-- Starting point of graph traversing
 
-	object_action: PROCEDURE [ANY, TUPLE [ANY]]
+	object_action: ?PROCEDURE [ANY, TUPLE [ANY]]
 			-- Action called on every object in object graph
 
-	visited_objects: ARRAYED_LIST [ANY]
+	visited_objects: ?ARRAYED_LIST [ANY]
 			-- List referencing objects of object graph that have been visited in `traverse'.
 
 feature -- Status report
@@ -72,7 +72,7 @@ feature -- Basic operations
 		require
 			root_object_available: is_root_object_set
 		local
-			l_int: INTERNAL
+			l_int: ?INTERNAL
 			retried, l_has_lock: BOOLEAN
 		do
 			if not retried then
@@ -82,7 +82,7 @@ feature -- Basic operations
 				internal_traverse
 				l_int.unlock_marking
 			else
-				if l_has_lock then
+				if l_has_lock and then l_int /= Void then
 					l_int.unlock_marking
 				end
 			end
@@ -122,7 +122,8 @@ feature {NONE} -- Implementation
 			root_object_available: is_root_object_set
 		local
 			i, nb: INTEGER
-			l_object, l_field: ANY
+			l_object: ANY
+			l_field: ?ANY
 			l_int: INTERNAL
 			l_objects_to_visit: like new_dispenser
 			l_visited: like visited_objects
@@ -130,15 +131,18 @@ feature {NONE} -- Implementation
 			l_tuple: TUPLE [ANY]
 			l_dtype: INTEGER
 			l_spec: SPECIAL [ANY]
-			l_arr: ARRAY [ANY]
-			l_tuple_obj: TUPLE
+			l_arr: ?ARRAY [ANY]
+			r: like root_object
 		do
 			from
 				create l_int
 				create l_visited.make (default_size)
 				l_objects_to_visit := new_dispenser
-				l_objects_to_visit.put (root_object)
-				l_int.mark (root_object)
+				r := root_object
+				if r /= Void then
+					l_objects_to_visit.put (r)
+					l_int.mark (r)
+				end
 				l_action := object_action
 				create l_tuple
 			until
@@ -164,37 +168,39 @@ feature {NONE} -- Implementation
 				l_dtype := l_int.dynamic_type (l_object)
 				if l_int.is_special_type (l_dtype) then
 					if l_int.is_special_any_type (l_dtype) then
-						l_spec ?= l_object
-						from
-							i := 0
-							nb := l_spec.count
-						until
-							i = nb
-						loop
-							l_field := l_spec.item (i)
-							if l_field /= Void and then not l_int.is_marked (l_field) then
-								l_int.mark (l_field)
-								l_objects_to_visit.put (l_field)
+						if {l_sp: SPECIAL [ANY]} l_object then
+							from
+								i := 0
+								nb := l_sp.count
+							until
+								i = nb
+							loop
+								l_field := l_sp.item (i)
+								if l_field /= Void and then not l_int.is_marked (l_field) then
+									l_int.mark (l_field)
+									l_objects_to_visit.put (l_field)
+								end
+								i := i + 1
 							end
-							i := i + 1
 						end
 					end
 				elseif l_int.is_tuple (l_object) then
-					l_tuple_obj ?= l_object
-					from
-						i := 1
-						nb := l_tuple_obj.count + 1
-					until
-						i = nb
-					loop
-						if l_tuple_obj.is_reference_item (i) then
-							l_field := l_tuple_obj.reference_item (i)
-							if l_field /= Void and then not l_int.is_marked (l_field) then
-								l_int.mark (l_field)
-								l_objects_to_visit.put (l_field)
+					if {l_tuple_obj: TUPLE} l_object then
+						from
+							i := 1
+							nb := l_tuple_obj.count + 1
+						until
+							i = nb
+						loop
+							if l_tuple_obj.is_reference_item (i) then
+								l_field := l_tuple_obj.reference_item (i)
+								if l_field /= Void and then not l_int.is_marked (l_field) then
+									l_int.mark (l_field)
+									l_objects_to_visit.put (l_field)
+								end
 							end
+							i := i + 1
 						end
-						i := i + 1
 					end
 				else
 					from
@@ -237,7 +243,7 @@ feature {NONE} -- Implementation
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2006, Eiffel Software and others"
+	copyright:	"Copyright (c) 1984-2008, Eiffel Software and others"
 	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			 Eiffel Software

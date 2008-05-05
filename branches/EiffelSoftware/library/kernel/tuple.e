@@ -1038,7 +1038,6 @@ feature -- Conversion
 			"Will be removed in future releases"
 		local
 			i, cnt: INTEGER
-			s: ?STRING
 		do
 			from
 				i := 1
@@ -1047,8 +1046,9 @@ feature -- Conversion
 			until
 				i > cnt
 			loop
-				s ?= item (i)
-				Result.put (s, i)
+				if {s: STRING} item (i) then
+					Result.put (s, i)
+				end
 				i := i + 1
 			end
 		ensure
