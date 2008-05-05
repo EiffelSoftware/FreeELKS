@@ -46,13 +46,18 @@ feature -- Access
 
 	frozen operands: OPEN_ARGS
 
-	target: ANY is
+	target: ?ANY is
 			-- Target of call.
+		local
+			o: like operands
 		do
 			if is_target_closed then
 				Result := closed_operands.item (1)
-			elseif {o: like operands} operands and then o.count > 0 then
-				Result := o.item (1)
+			else
+				o := operands
+				if o /= Void and then o.count > 0 then
+					Result := o.item (1)
+				end
 			end
 		end
 
@@ -108,10 +113,11 @@ feature -- Status report
 				and then (calc_rout_addr = other.calc_rout_addr)
 		end
 
-	valid_operands (args: TUPLE): BOOLEAN is
+	valid_operands (args: ?TUPLE): BOOLEAN is
 			-- Are `args' valid operands for this routine?
 		local
 			i, arg_type_code: INTEGER
+			arg: ?ANY
 			int: INTERNAL
 			open_type_codes: STRING
 		do
@@ -131,18 +137,19 @@ feature -- Status report
 					arg_type_code := args.item_code (i)
 					Result := arg_type_code = open_type_codes.item (i + 1).code
 					if Result and then arg_type_code = {TUPLE}.reference_code then
-						Result := not {arg: ANY} args.item (i) or else
+						arg := args.item (i)
+						Result := arg = Void or else
 							int.type_conforms_to (int.dynamic_type (arg), open_operand_type (i))
 					end
 					i := i + 1
 				end
 			end
-			if Result and then not is_target_closed then
+			if Result and then not is_target_closed and then args /= Void then
 				Result := args.item (1) /= Void
 			end
 		end
 
-	valid_target (args: TUPLE): BOOLEAN is
+	valid_target (args: ?TUPLE): BOOLEAN is
 			-- Is the first element of tuple `args' a valid target
 		do
 			if args /= Void and then args.count > 0 then

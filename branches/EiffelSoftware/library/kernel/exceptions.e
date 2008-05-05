@@ -21,8 +21,11 @@ feature -- Status report
 
 	meaning (except: INTEGER): ?STRING is
 			-- A message in English describing what `except' is
+		local
+			l_exception: ?EXCEPTION
 		do
-			if {l_exception: EXCEPTION} exception_manager.exception_from_code (except) then
+			l_exception := exception_manager.exception_from_code (except)
+			if l_exception /= Void then
 				Result := l_exception.meaning
 			end
 		end
@@ -46,12 +49,14 @@ feature -- Status report
 	is_developer_exception_of_name (name: STRING): BOOLEAN is
 			-- Is the last exception originally due to a developer
 			-- exception of name `name'?
+		local
+			m: ?STRING
 		do
-			if
-				is_developer_exception and then
-				{m: STRING} developer_exception_name
-			then
-				Result := equal (name, m)
+			if is_developer_exception then
+				m := developer_exception_name
+				if m /= Void then
+					Result := equal (name, m)
+				end
 			end
 		end
 
@@ -76,10 +81,13 @@ feature -- Status report
 	is_system_exception: BOOLEAN is
 			-- Is last exception originally due to an
 			-- external event (operating system error)?
+		local
+			l_exception, l_external: ?EXCEPTION
 		do
+			l_exception := exception_manager.last_exception
+			l_external := exception_manager.exception_from_code (external_exception)
 			if
-				{l_exception: EXCEPTION} exception_manager.last_exception and then
-				{l_external: EXCEPTION} exception_manager.exception_from_code (external_exception)
+				l_exception /= Void and then l_external /= Void
 			then
 				Result := l_exception.original.conforms_to (l_external)
 				if not Result then
@@ -171,8 +179,11 @@ feature -- Status setting
 	catch (code: INTEGER) is
 			-- Make sure that any exception of code `code' will be
 			-- caught. This is the default.
+		local
+			l_type: ?TYPE [EXCEPTION]
 		do
-			if {l_type: TYPE [EXCEPTION]} exception_manager.type_of_code (code) then
+			l_type := exception_manager.type_of_code (code)
+			if l_type /= Void then
 				exception_manager.catch (l_type)
 			end
 		end
@@ -180,8 +191,11 @@ feature -- Status setting
 	ignore (code: INTEGER) is
 			-- Make sure that any exception of code `code' will be
 			-- ignored. This is not the default.
+		local
+			l_type: ?TYPE [EXCEPTION]
 		do
-			if {l_type: TYPE [EXCEPTION]} exception_manager.type_of_code (code) then
+			l_type := exception_manager.type_of_code (code)
+			if l_type /= Void then
 				exception_manager.ignore (l_type)
 			end
 		end
@@ -198,8 +212,11 @@ feature -- Status setting
 
 	raise_retrieval_exception (name: STRING) is
 			-- Raise a retrieval exception of name `name'.
+		local
+			l_exception: ?EXCEPTION
 		do
-			if {l_exception: EXCEPTION} exception_manager.exception_from_code (serialization_exception) then
+			l_exception := exception_manager.exception_from_code (serialization_exception)
+			if l_exception /= Void then
 				l_exception.set_message (name)
 				l_exception.raise
 			end

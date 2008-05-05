@@ -144,7 +144,7 @@ feature -- Comparison
 		ensure
 			shallow_implies_deep: standard_equal (some, other) implies Result
 			both_or_none_void: (some = Void) implies (Result = (other = Void))
-			same_type: (Result and (some /= Void)) implies some.same_type (other)
+			same_type: (Result and (some /= Void)) implies (other /= Void and then some.same_type (other))
 			symmetric: Result implies deep_equal (other, some)
 		end
 
