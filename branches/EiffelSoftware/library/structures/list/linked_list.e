@@ -200,16 +200,16 @@ feature -- Cursor movement
 		local
 			p: ?like new_cell
 		do
-				from
-					p := active
-				until
-					p = Void
-				loop
-					active := p
-					p := p.right
-				end
-				after := False
-				before := (active = Void)
+			from
+				p := active
+			until
+				p = Void
+			loop
+				active := p
+				p := p.right
+			end
+			after := False
+			before := (active = Void)
 		ensure then
 			Empty_convention: is_empty implies before
 		end
