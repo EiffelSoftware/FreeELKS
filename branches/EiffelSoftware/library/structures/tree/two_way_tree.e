@@ -200,7 +200,6 @@ feature -- Element change
 			-- Do not move cursor.
 		local
 			c: like child
-			s: like right_sibling
 		do
 			if object_comparison then
 				n.compare_objects
