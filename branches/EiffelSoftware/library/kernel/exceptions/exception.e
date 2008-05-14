@@ -51,8 +51,13 @@ feature -- Access
 			Result := internal_meaning
 		end
 
-	message: ?STRING
+	message: ?STRING is
 			-- Message(Tag) of current exception
+		do
+			if c_message /= Void then
+				Result := c_message.substring (1, c_message.count)
+			end
+		end
 
 	exception_trace: ?STRING is
 			-- String representation of current exception trace
@@ -117,9 +122,13 @@ feature -- Status settings
 	set_message (a_message: like message) is
 			-- Set `message' with `a_message'.
 		do
-			message := a_message
+			if a_message /= Void then
+				create c_message.make (a_message)
+			else
+				c_message := Void
+			end
 		ensure
-			message_set: message = a_message
+			message_set: equal (message, a_message)
 		end
 
 feature -- Status report
@@ -215,6 +224,9 @@ feature {EXCEPTION_MANAGER} -- Implementation
 		do
 			line_number := a_number
 		end
+
+	c_message: ?C_STRING
+			-- Message, stored as C string to keep it alive and usable by the runtime trace printing.		
 
 	internal_meaning: STRING is
 			-- Internal `meaning'
