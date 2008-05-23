@@ -13,6 +13,9 @@ class
 
 inherit
 	EXCEPTION_MANAGER_FACTORY
+		undefine
+			out
+		end
 
 create
 	default_create,
@@ -176,6 +179,17 @@ feature -- Status report
 		ensure
 			not_is_caught_implies_is_ignorable: not Result implies is_ignorable
 			not_is_ignored: Result = not is_ignored
+		end
+
+feature -- Output
+
+	out: STRING is
+			-- New string containing terse printable representation
+			-- of current object
+		do
+			Result := generating_type
+			Result.append_character ('%N')
+			Result.append_string (exception_trace)
 		end
 
 feature {EXCEPTION_MANAGER} -- Implementation
