@@ -7,7 +7,7 @@ indexing
 			ACM, volume 35, number 4, April 1992 (Technical Correspondance).
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -167,58 +167,60 @@ feature -- Search
 					Result := substring_index (a_string, a_pattern, start_pos, end_pos)
 				else
 					initialize_fuzzy_deltas (a_pattern, fuzzy)
-					from
-						l_pattern_count := a_pattern.count
-						l_deltas_array := deltas_array
-						i := start_pos
-						l_end_pos := end_pos + 1
-					until
-						i + l_pattern_count > l_end_pos
-					loop
+					l_deltas_array := deltas_array
+					if l_deltas_array /= Void then
 						from
-							j := 0
-							l_nb_mismatched := 0
-							l_matched := True
+							l_pattern_count := a_pattern.count
+							i := start_pos
+							l_end_pos := end_pos + 1
 						until
-							j = l_pattern_count
+							i + l_pattern_count > l_end_pos
 						loop
-							if a_string.code (i + j) /= a_pattern.code (j + 1) then
-								l_nb_mismatched := l_nb_mismatched + 1;
-								if l_nb_mismatched > fuzzy then
-										-- Too many mismatched, so we stop
-									j := l_pattern_count - 1	-- Jump out of loop
-									l_matched := False
-								end
-							end
-							j := j + 1
-						end
-
-						if l_matched then
-								-- We got the substring
-							Result := i
-							i := l_end_pos	-- Jump out of loop
-						else
-							if i + l_pattern_count <= end_pos then
-									-- Pattern was not found, compute shift to next location
-								from
-									j := 0
-									l_min_offset := l_pattern_count + 1
-								until
-									j > fuzzy
-								loop
-									l_char_code := a_string.code (i + l_pattern_count - j).to_integer_32
-									if l_char_code > max_ascii_character_value then
-											-- No optimization for a non-extended ASCII character.
-										l_min_offset := 1
-										j := fuzzy + 1 -- Jump out of loop
-									else
-										l_min_offset := l_min_offset.min (l_deltas_array.item (j).item (l_char_code))
+							from
+								j := 0
+								l_nb_mismatched := 0
+								l_matched := True
+							until
+								j = l_pattern_count
+							loop
+								if a_string.code (i + j) /= a_pattern.code (j + 1) then
+									l_nb_mismatched := l_nb_mismatched + 1;
+									if l_nb_mismatched > fuzzy then
+											-- Too many mismatched, so we stop
+										j := l_pattern_count - 1	-- Jump out of loop
+										l_matched := False
 									end
-									j := j + 1
 								end
-								i := i + l_min_offset
+								j := j + 1
+							end
+
+							if l_matched then
+									-- We got the substring
+								Result := i
+								i := l_end_pos	-- Jump out of loop
 							else
-								i := i + 1
+								if i + l_pattern_count <= end_pos then
+										-- Pattern was not found, compute shift to next location
+									from
+										j := 0
+										l_min_offset := l_pattern_count + 1
+									until
+										j > fuzzy
+									loop
+										l_char_code := a_string.code (i + l_pattern_count - j).to_integer_32
+										if l_char_code > max_ascii_character_value then
+												-- No optimization for a non-extended ASCII character.
+											l_min_offset := 1
+											j := fuzzy + 1 -- Jump out of loop
+										else
+											l_min_offset := l_min_offset.min (l_deltas_array.item (j).item (l_char_code))
+										end
+										j := j + 1
+									end
+									i := i + l_min_offset
+								else
+									i := i + 1
+								end
 							end
 						end
 					end
@@ -232,7 +234,7 @@ feature {NONE} -- Implementation: Access
 	deltas: SPECIAL [INTEGER]
 			-- Record shifting deltas.
 
-	deltas_array: SPECIAL [like deltas]
+	deltas_array: ?SPECIAL [like deltas]
 			-- Record shifting deltas for fuzzy search.
 
 feature {NONE} -- Implementation
@@ -282,7 +284,7 @@ feature {NONE} -- Implementation
 			fuzzy_positive: fuzzy > 0
 		local
 			l_deltas: like deltas
-			l_deltas_array: like deltas_array
+			l_deltas_array: SPECIAL [like deltas]
 			i, l_fuzzy: INTEGER
 			l_pattern_count: INTEGER
 		do
@@ -302,7 +304,7 @@ feature {NONE} -- Implementation
 			deltas_array := l_deltas_array
 		ensure
 			deltas_array_not_void: deltas_array /= Void
-			deltas_array_count_set: deltas_array.count = fuzzy + 1
+			deltas_array_count_set:  {delta: SPECIAL [like deltas]} deltas_array and then delta.count = fuzzy + 1
 		end
 
 invariant

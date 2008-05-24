@@ -12,7 +12,7 @@ indexing
 		translation is in effect.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 2005, Eiffel Software and others"
+	copyright: "Copyright (c) 2005-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -46,7 +46,9 @@ feature -- Access
 			check
 				has_class_entry: has (Class_key)
 			end
-			Result ?= item (Class_key)
+			if {l_result: STRING} item (Class_key) then
+				Result := l_result
+			end
 		ensure
 			result_exists: Result /= Void
 		end

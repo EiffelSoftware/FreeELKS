@@ -1,7 +1,7 @@
 indexing
 	description: "References to objects containing an integer value coded on 8 bits"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2005, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -68,7 +68,7 @@ feature -- Access
 			Result.set_item (0)
 		end
 
-	ascii_char: CHARACTER is
+	ascii_char: CHARACTER_8 is
 			-- Returns corresponding ASCII character to `item' value.
 		obsolete
 			"Use to_character_8 instead."
@@ -119,19 +119,12 @@ feature -- Status report
 
 	exponentiable (other: NUMERIC): BOOLEAN is
 			-- May current object be elevated to the power `other'?
-		local
-			integer_value: INTEGER_REF
-			double_value: DOUBLE_REF
-			real_value: REAL_REF
 		do
-			integer_value ?= other
-			real_value ?= other
-			double_value ?= other
-			if integer_value /= Void then
+			if {integer_value: INTEGER_32_REF} other then
 				Result := integer_value.item >= 0 or item /= 0
-			elseif real_value /= Void then
+			elseif {real_value: REAL_32_REF} other then
 				Result := real_value.item >= 0.0 or item /= 0
-			elseif double_value /= Void then
+			elseif {double_value: REAL_64_REF} other then
 				Result := double_value.item >= 0.0 or item /= 0
 			end
 		ensure then
@@ -191,7 +184,7 @@ feature -- Basic operations
 			Result.set_item (item * other.item)
 		end
 
-	infix "/" (other: like Current): DOUBLE is
+	infix "/" (other: like Current): REAL_64 is
 			-- Division by `other'
 		require
 			other_exists: other /= Void
@@ -210,6 +203,7 @@ feature -- Basic operations
 	unapplicable_minus_prefix: like Current is
 			-- Unary minus
 		do
+			Result := Current
 		ensure then
 			not_applicable: False
 		end
@@ -233,7 +227,7 @@ feature -- Basic operations
 			result_exists: Result /= Void
 		end
 
-	infix "^" (other: DOUBLE): DOUBLE is
+	infix "^" (other: REAL_64): REAL_64 is
 			-- Integer power of Current by `other'
 		do
 			Result := item ^ other
@@ -311,7 +305,7 @@ feature -- Conversion
 			Result := item.as_integer_16
 		end
 
-	as_integer_32: INTEGER is
+	as_integer_32: INTEGER_32 is
 			-- Convert `item' into an INTEGER_32 value.
 		do
 			Result := item.as_integer_32
@@ -361,7 +355,7 @@ feature -- Conversion
 			Result := as_integer_16
 		end
 
-	frozen to_integer_32: INTEGER is
+	frozen to_integer_32: INTEGER_32 is
 			-- Convert `item' into an INTEGER_32 value.
 		do
 			Result := as_integer_32
@@ -373,14 +367,14 @@ feature -- Conversion
 			Result := as_integer_64
 		end
 
-	to_real_32: REAL is
-			-- Convert `item' into a REAL
+	to_real_32: REAL_32 is
+			-- Convert `item' into a REAL_32
 		do
 			Result := item.to_real_32
 		end
 
-	to_real_64: DOUBLE is
-			-- Convert `item' into a DOUBLE
+	to_real_64: REAL_64 is
+			-- Convert `item' into a REAL_64
 		do
 			Result := item.to_real_64
 		end

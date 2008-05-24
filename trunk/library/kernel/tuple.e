@@ -1,7 +1,7 @@
 indexing
 	description: "Implementation of TUPLE"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -33,7 +33,7 @@ feature -- Creation
 
 feature -- Access
 
-	item alias "[]", infix "@" (index: INTEGER): ANY assign put is
+	item alias "[]", infix "@" (index: INTEGER): ?ANY assign put is
 			-- Entry of key `index'.
 		require
 			valid_index: valid_index (index)
@@ -57,7 +57,7 @@ feature -- Access
 			end
 		end
 
-	reference_item (index: INTEGER): ANY is
+	reference_item (index: INTEGER): ?ANY is
 			-- Reference item at `index'.
 		require
 			valid_index: valid_index (index)
@@ -93,7 +93,7 @@ feature -- Access
 			Result := eif_character_32_item ($Current, index)
 		end
 
-	real_64_item, double_item (index: INTEGER): DOUBLE is
+	real_64_item, double_item (index: INTEGER): REAL_64 is
 			-- Double item at `index'.
 		require
 			valid_index: valid_index (index)
@@ -156,7 +156,7 @@ feature -- Access
 			Result := eif_integer_16_item ($Current, index)
 		end
 
-	integer_item, integer_32_item (index: INTEGER): INTEGER is
+	integer_item, integer_32_item (index: INTEGER): INTEGER_32 is
 			-- INTEGER_32 item at `index'.
 		require
 			valid_index: valid_index (index)
@@ -183,7 +183,7 @@ feature -- Access
 			Result := eif_pointer_item ($Current, index)
 		end
 
-	real_32_item, real_item (index: INTEGER): REAL is
+	real_32_item, real_item (index: INTEGER): REAL_32 is
 			-- real item at `index'.
 		require
 			valid_index: valid_index (index)
@@ -255,7 +255,6 @@ feature -- Status report
 			-- Hash code value
 		local
 			i, nb, l_hash: INTEGER
-			l_key: HASHABLE
 		do
 			from
 				i := 1
@@ -279,8 +278,7 @@ feature -- Status report
 				when integer_32_code then l_hash := eif_integer_32_item ($Current, i).hash_code
 				when integer_64_code then l_hash := eif_integer_64_item ($Current, i).hash_code
 				when reference_code then
-					l_key ?= eif_reference_item ($Current, i)
-					if l_key /= Void then
+					if {l_key: HASHABLE} eif_reference_item ($Current, i) then
 						l_hash := l_key.hash_code
 					else
 						l_hash := 0
@@ -299,25 +297,11 @@ feature -- Status report
 			Result := k >= 1 and then k <= count
 		end
 
-	valid_type_for_index (v: ANY; index: INTEGER): BOOLEAN is
+	valid_type_for_index (v: ?ANY; index: INTEGER): BOOLEAN is
 			-- Is object `v' a valid target for element at position `index'?
 		require
 			valid_index: valid_index (index)
 		local
-			l_b: BOOLEAN_REF
-			l_c: CHARACTER_REF
-			l_wc: CHARACTER_32_REF
-			l_d: DOUBLE_REF
-			l_r: REAL_REF
-			l_p: POINTER_REF
-			l_ui8: NATURAL_8_REF
-			l_ui16: NATURAL_16_REF
-			l_ui32: NATURAL_32_REF
-			l_ui64: NATURAL_64_REF
-			l_i8: INTEGER_8_REF
-			l_i16: INTEGER_16_REF
-			l_i32: INTEGER_REF
-			l_i64: INTEGER_64_REF
 			l_int: INTERNAL
 		do
 			if v = Void then
@@ -325,20 +309,20 @@ feature -- Status report
 				Result := True
 			else
 				inspect eif_item_type ($Current, index)
-				when boolean_code then l_b ?= v; Result := l_b /= Void
-				when character_8_code then l_c ?= v; Result := l_c /= Void
-				when character_32_code then l_wc ?= v; Result := l_wc /= Void
-				when real_64_code then l_d ?= v; Result := l_d /= Void
-				when real_32_code then l_r ?= v; Result := l_r /= Void
-				when pointer_code then l_p ?= v; Result := l_p /= Void
-				when natural_8_code then l_ui8 ?= v; Result := l_ui8 /= Void
-				when natural_16_code then l_ui16 ?= v; Result := l_ui16 /= Void
-				when natural_32_code then l_ui32 ?= v; Result := l_ui32 /= Void
-				when natural_64_code then l_ui64 ?= v; Result := l_ui64 /= Void
-				when integer_8_code then l_i8 ?= v; Result := l_i8 /= Void
-				when integer_16_code then l_i16 ?= v; Result := l_i16 /= Void
-				when integer_32_code then l_i32 ?= v; Result := l_i32 /= Void
-				when integer_64_code then l_i64 ?= v; Result := l_i64 /= Void
+				when boolean_code then Result := {l_b: BOOLEAN_REF} v
+				when character_8_code then Result := {l_c: CHARACTER_8_REF} v
+				when character_32_code then Result := {l_wc: CHARACTER_32_REF} v
+				when real_64_code then Result := {l_d: REAL_64_REF} v
+				when real_32_code then Result := {l_r: REAL_32_REF} v
+				when pointer_code then Result := {l_p: POINTER_REF} v
+				when natural_8_code then Result := {l_ui8: NATURAL_8_REF} v
+				when natural_16_code then Result := {l_ui16: NATURAL_16_REF} v
+				when natural_32_code then Result := {l_ui32: NATURAL_32_REF} v
+				when natural_64_code then Result := {l_ui64: NATURAL_64_REF} v
+				when integer_8_code then Result := {l_i8: INTEGER_8_REF} v
+				when integer_16_code then Result := {l_i16: INTEGER_16_REF} v
+				when integer_32_code then Result := {l_i32: INTEGER_32_REF} v
+				when integer_64_code then Result := {l_i64: INTEGER_64_REF} v
 				when Reference_code then
 						-- Let's check that type of `v' conforms to specified type of `index'-th
 						-- arguments of current TUPLE.
@@ -375,7 +359,7 @@ feature -- Status report
 
 feature -- Element change
 
-	put (v: ANY; index: INTEGER) is
+	put (v: ?ANY; index: INTEGER) is
 			-- Insert `v' at position `index'.
 		require
 			valid_index: valid_index (index)
@@ -404,6 +388,7 @@ feature -- Element change
 			-- Put `v' at position `index' in Current.
 		require
 			valid_index: valid_index (index)
+			valid_type_for_index: valid_type_for_index (v, index)
 			valid_type: is_reference_item (index)
 		do
 			eif_put_reference_item_with_object ($Current, index, $v)
@@ -436,7 +421,7 @@ feature -- Element change
 			eif_put_character_32_item ($Current, index, v)
 		end
 
-	put_real_64, put_double (v: DOUBLE; index: INTEGER) is
+	put_real_64, put_double (v: REAL_64; index: INTEGER) is
 			-- Put `v' at position `index' in Current.
 		require
 			valid_index: valid_index (index)
@@ -445,7 +430,7 @@ feature -- Element change
 			eif_put_real_64_item ($Current, index, v)
 		end
 
-	put_real_32, put_real (v: REAL; index: INTEGER) is
+	put_real_32, put_real (v: REAL_32; index: INTEGER) is
 			-- Put `v' at position `index' in Current.
 		require
 			valid_index: valid_index (index)
@@ -499,7 +484,7 @@ feature -- Element change
 			eif_put_natural_64_item ($Current, index, v)
 		end
 
-	put_integer, put_integer_32 (v: INTEGER; index: INTEGER) is
+	put_integer, put_integer_32 (v: INTEGER_32; index: INTEGER) is
 			-- Put `v' at position `index' in Current.
 		require
 			valid_index: valid_index (index)
@@ -562,7 +547,7 @@ feature -- Type queries
 		end
 
 	is_double_item (index: INTEGER): BOOLEAN is
-			-- Is item at `index' a DOUBLE?
+			-- Is item at `index' a REAL_64?
 		require
 			valid_index: valid_index (index)
 		do
@@ -642,7 +627,7 @@ feature -- Type queries
 		end
 
 	is_real_item (index: INTEGER): BOOLEAN is
-			-- Is item at `index' a REAL?
+			-- Is item at `index' a REAL_32?
 		require
 			valid_index: valid_index (index)
 		do
@@ -711,7 +696,7 @@ feature -- Type queries
 		end
 
 	is_uniform_double: BOOLEAN is
-			-- Are all items of type DOUBLE?
+			-- Are all items of type REAL_64?
 		do
 			Result := is_tuple_uniform (real_64_code)
 		ensure
@@ -791,7 +776,7 @@ feature -- Type queries
 		end
 
 	is_uniform_real: BOOLEAN is
-			-- Are all items of type REAL?
+			-- Are all items of type REAL_32?
 		do
 			Result := is_tuple_uniform (real_32_code)
 		ensure
@@ -872,7 +857,7 @@ feature -- Type conversion queries
 
 feature -- Conversion
 
-	arrayed: ARRAY [ANY] is
+	arrayed: ARRAY [?ANY] is
 			-- Items of Current as array
 		obsolete
 			"Will be removed in future releases"
@@ -945,7 +930,7 @@ feature -- Conversion
 			same_items: -- Items are the same in same order
 		end
 
-	double_arrayed: ARRAY [DOUBLE] is
+	double_arrayed: ARRAY [REAL_64] is
 			-- Items of Current as array
 		obsolete
 			"Will be removed in future releases"
@@ -1020,7 +1005,7 @@ feature -- Conversion
 			same_items: -- Items are the same in same order
 		end
 
-	real_arrayed: ARRAY [REAL] is
+	real_arrayed: ARRAY [REAL_32] is
 			-- Items of Current as array
 		obsolete
 			"Will be removed in future releases"
@@ -1045,7 +1030,7 @@ feature -- Conversion
 			same_items: -- Items are the same in same order
 		end
 
-	string_arrayed: ARRAY [STRING] is
+	string_arrayed: ARRAY [?STRING] is
 			-- Items of Current as array
 			-- NOTE: Items with a type not cconforming to
 			--       type STRING are set to Void.
@@ -1053,7 +1038,6 @@ feature -- Conversion
 			"Will be removed in future releases"
 		local
 			i, cnt: INTEGER
-			s: STRING
 		do
 			from
 				i := 1
@@ -1062,8 +1046,9 @@ feature -- Conversion
 			until
 				i > cnt
 			loop
-				s ?= item (i)
-				Result.put (s, i)
+				if {s: STRING} item (i) then
+					Result.put (s, i)
+				end
 				i := i + 1
 			end
 		ensure
@@ -1076,15 +1061,13 @@ feature -- Retrieval
 	correct_mismatch is
 			-- Attempt to correct object mismatch using `mismatch_information'.
 		local
-			l_area: SPECIAL [ANY]
 			i, nb: INTEGER
 			l_any: ANY
 		do
 				-- Old version of TUPLE had a SPECIAL [ANY] to store all values.
 				-- If we can get access to it, then most likely we can recover this
 				-- old TUPLE implementation.
-			l_area ?= Mismatch_information.item (area_name)
-			if l_area /= Void then
+			if {l_area: SPECIAL [ANY]} Mismatch_information.item (area_name) then
 				from
 					i := 1
 					nb := l_area.count
@@ -1201,13 +1184,13 @@ feature {NONE} -- Externals: Access
 			"C macro use %"eif_rout_obj.h%""
 		end
 
-	eif_real_64_item (obj: POINTER; pos: INTEGER): DOUBLE is
+	eif_real_64_item (obj: POINTER; pos: INTEGER): REAL_64 is
 			-- Double item at position `pos' in tuple `obj'.
 		external
 			"C macro use %"eif_rout_obj.h%""
 		end
 
-	eif_real_32_item (obj: POINTER; pos: INTEGER): REAL is
+	eif_real_32_item (obj: POINTER; pos: INTEGER): REAL_32 is
 			-- Real item at position `pos' in tuple `obj'.
 		external
 			"C macro use %"eif_rout_obj.h%""
@@ -1255,7 +1238,7 @@ feature {NONE} -- Externals: Access
 			"C macro use %"eif_rout_obj.h%""
 		end
 
-	eif_integer_32_item (obj: POINTER; pos: INTEGER): INTEGER is
+	eif_integer_32_item (obj: POINTER; pos: INTEGER): INTEGER_32 is
 			-- INTEGER_32 item at position `pos' in tuple `obj'.
 		external
 			"C macro use %"eif_rout_obj.h%""
@@ -1267,7 +1250,7 @@ feature {NONE} -- Externals: Access
 			"C macro use %"eif_rout_obj.h%""
 		end
 
-	eif_reference_item (obj: POINTER; pos: INTEGER): ANY is
+	eif_reference_item (obj: POINTER; pos: INTEGER): ?ANY is
 			-- Reference item at position `pos' in tuple `obj'.
 		external
 			"C macro use %"eif_rout_obj.h%""
@@ -1383,13 +1366,13 @@ feature {NONE} -- Externals: Setting
 			"C macro use %"eif_rout_obj.h%""
 		end
 
-	eif_put_real_64_item (obj: POINTER; pos: INTEGER; v: DOUBLE) is
+	eif_put_real_64_item (obj: POINTER; pos: INTEGER; v: REAL_64) is
 			-- Set double item at position `pos' in tuple `obj' with `v'.
 		external
 			"C macro use %"eif_rout_obj.h%""
 		end
 
-	eif_put_real_32_item (obj: POINTER; pos: INTEGER; v: REAL) is
+	eif_put_real_32_item (obj: POINTER; pos: INTEGER; v: REAL_32) is
 			-- Set real item at position `pos' in tuple `obj' with `v'.
 		external
 			"C macro use %"eif_rout_obj.h%""
@@ -1437,7 +1420,7 @@ feature {NONE} -- Externals: Setting
 			"C macro use %"eif_rout_obj.h%""
 		end
 
-	eif_put_integer_32_item (obj: POINTER; pos: INTEGER; v: INTEGER) is
+	eif_put_integer_32_item (obj: POINTER; pos: INTEGER; v: INTEGER_32) is
 			-- Set integer_32 item at position `pos' in tuple `obj' with `v'.
 		external
 			"C macro use %"eif_rout_obj.h%""

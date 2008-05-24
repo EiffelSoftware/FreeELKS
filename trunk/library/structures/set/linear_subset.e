@@ -23,19 +23,19 @@ feature -- Access
 			-- Current index
 		deferred
 		end
-	 
+
 feature -- Status report
 
 	before: BOOLEAN is
 			-- Is cursor at left from first item?
 		deferred
 		end
-	
+
 	islast: BOOLEAN is
 			-- Is cursor at last item?
 		deferred
 		end
-	 
+
 	valid_index (n: INTEGER): BOOLEAN is
 			-- Is `n' a valid index?
 		deferred
@@ -74,6 +74,7 @@ feature -- Element change
 		local
 			idx: INTEGER
 			found: BOOLEAN
+			i: like item
 		do
 			idx := index
 			from
@@ -82,7 +83,8 @@ feature -- Element change
 				found or after
 			loop
 				if object_comparison then
-					found := equal (v, item)
+					i := item
+					found := i /= Void and then v.is_equal (i)
 				else
 					found := (v = item)
 				end
@@ -101,15 +103,12 @@ feature -- Element change
 
 feature {NONE} -- Implementation
 
-	subset_strategy_selection (v: G; other: TRAVERSABLE_SUBSET [G]): 
+	subset_strategy_selection (v: G; other: TRAVERSABLE_SUBSET [G]):
 								SUBSET_STRATEGY [G] is
 			-- Strategy to calculate several subset features selected depending
 			-- on the dynamic type of `v' and `other'
-		local
-			h: HASHABLE
 		do
-			h ?= v
-			if h /= Void then
+			if {h: HASHABLE} v then
 				create {SUBSET_STRATEGY_HASHABLE [G]} Result
 			else
 				create {SUBSET_STRATEGY_GENERIC [G]} Result
@@ -122,7 +121,7 @@ invariant
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2006, Eiffel Software and others"
+	copyright:	"Copyright (c) 1984-2008, Eiffel Software and others"
 	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			 Eiffel Software

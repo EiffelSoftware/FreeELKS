@@ -4,7 +4,7 @@ indexing
 			This class may be used as ancestor by classes needing its facilities.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 2005, Eiffel Software and others"
+	copyright: "Copyright (c) 2005-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -99,24 +99,28 @@ feature -- Creation
 			count_set: Result.count = count
 		end
 
-	type_of (object: ANY): TYPE [ANY]
+	type_of (object: ?ANY): ?TYPE [ANY]
 			-- Type object for `object'.
 		do
 			if object /= Void then
 				Result := type_of_type (dynamic_type (object))
 			else
-				Result ?= new_instance_of (dynamic_type_from_string ("TYPE [NONE]"))
+				if {l_result: TYPE [ANY]} new_instance_of (dynamic_type_from_string ("TYPE [NONE]")) then
+					Result := l_result
+				end
 			end
 		ensure
 			result_not_void: Result /= Void
 		end
 
-	type_of_type (type_id: INTEGER): TYPE [ANY]
+	type_of_type (type_id: INTEGER): ?TYPE [ANY]
 			-- Return type for type id `type_id'.
 		require
 			type_id_nonnegative: type_id >= 0
 		do
-			Result ?= new_instance_of (dynamic_type_from_string ("TYPE [" + type_name_of_type (type_id) + "]"))
+			if {l_result: TYPE [ANY]} new_instance_of (dynamic_type_from_string ("TYPE [" + type_name_of_type (type_id) + "]")) then
+				Result := l_result
+			end
 		ensure
 			result_not_void: Result /= Void
 		end
@@ -300,7 +304,7 @@ feature -- Access
 			dynamic_type_nonnegative: Result >= 0
 		end
 
-	field (i: INTEGER; object: ANY): ANY is
+	field (i: INTEGER; object: ANY): ?ANY is
 			-- Object attached to the `i'-th field of `object'
 			-- (directly or through a reference)
 		require
@@ -758,6 +762,30 @@ feature -- Measurement
 			Result := c_size ($object)
 		end
 
+	deep_physical_size (object: ANY): INTEGER is
+			-- Space occupied by `object' and its children in bytes
+		require
+			object_not_void: object /= Void
+		local
+			l_traverse: OBJECT_GRAPH_BREADTH_FIRST_TRAVERSABLE
+			l_objects: ?ARRAYED_LIST [ANY]
+		do
+			create l_traverse
+			l_traverse.set_root_object (object)
+			l_traverse.traverse
+			l_objects := l_traverse.visited_objects
+			if l_objects /= Void then
+				from
+					l_objects.start
+				until
+					l_objects.after
+				loop
+					Result := Result + physical_size (l_objects.item)
+					l_objects.forth
+				end
+			end
+		end
+
 feature -- Marking
 
 	mark (obj: ANY) is
@@ -824,7 +852,7 @@ feature {NONE} -- Implementation
 			"RTRA"
 		end
 
-	c_field (i: INTEGER; object: POINTER): ANY is
+	c_field (i: INTEGER; object: POINTER): ?ANY is
 			-- Object referenced by the `i'-th field of `object'
 		external
 			"C (long, EIF_REFERENCE): EIF_REFERENCE | %"eif_internal.h%""
