@@ -6,7 +6,7 @@ indexing
 		]"
 
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2005, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -154,6 +154,7 @@ feature -- Measurement
 			-- Number of times `v' appears in structure
 		local
 			i: INTEGER
+			x: G
 		do
 			if object_comparison and then v /= Void then
 				from
@@ -161,7 +162,8 @@ feature -- Measurement
 				until
 					i > upper
 				loop
-					if item (i) /= Void and then v.is_equal (item (i)) then
+					x := item (i)
+					if x /= Void and then v.is_equal (x) then
 						Result := Result + 1
 					end
 					i := i + 1
@@ -213,7 +215,7 @@ feature -- Comparison
 						i := i + 1
 					end
 				else
-					Result := area.same_items (other.area, upper - lower)
+					Result := area.same_items (other.area, 0, upper - lower)
 				end
 			end
 		end
@@ -223,11 +225,10 @@ feature -- Status report
 	all_default: BOOLEAN is
 			-- Are all items set to default values?
 		do
-			Result := area.all_default (upper - lower)
+			Result := area.all_default (0, upper - lower)
 		ensure
 			definition: Result = (count = 0 or else
-				((item (upper) = Void or else
-				item (upper) = item (upper).default) and
+				((not {i: like item} item (upper) or else i = i.default) and
 				subarray (lower, upper - 1).all_default))
 		end
 
@@ -243,7 +244,7 @@ feature -- Status report
 			other_not_void: other /= Void
 		do
 			if count = other.count then
-				Result := area.same_items (other.area, upper - lower)
+				Result := area.same_items (other.area, 0, upper - lower)
 			end
 		ensure
 			definition: Result = ((count = other.count) and then

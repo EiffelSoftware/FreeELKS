@@ -59,10 +59,9 @@ feature -- Element change
 		local
 			l: like s
 		do
+			l := s
 			if s = Current then
-				l := s.twin
-			else
-				l := s
+				l := twin
 			end
 			from
 				l.start
@@ -114,7 +113,7 @@ feature -- Removal
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2006, Eiffel Software and others"
+	copyright:	"Copyright (c) 1984-2008, Eiffel Software and others"
 	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			 Eiffel Software

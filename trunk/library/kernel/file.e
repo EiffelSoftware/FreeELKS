@@ -2,7 +2,7 @@ indexing
 	description:
 		"Sequential files, viewed as persistent sequences of characters"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -1256,14 +1256,17 @@ feature -- Removal
 			-- file descriptor and all information.
 		require
 			valid_file_name: fn /= Void
+		local
+			l: like last_string
 		do
 			name := fn
 			if mode /= Closed_file then
 				close
 			end
 			last_integer := 0
-			if last_string /= Void then
-				last_string.wipe_out
+			l := last_string
+			if l /= Void then
+				l.wipe_out
 			end
 			last_real := 0.0
 			last_character := '%U'
@@ -1319,35 +1322,39 @@ feature -- Input
 			read: INTEGER	-- Amount of bytes already read
 			str_area: ANY
 			done: BOOLEAN
+			l: like last_string
 		do
-			from
-				if last_string = Void then
-					create_last_string (0)
-				end
-				str_area := last_string.area
-				str_cap := last_string.capacity
-			until
-				done
-			loop
-				read := read + file_gs (file_pointer, $str_area, str_cap, read)
-				if read > str_cap then
-						-- End of line not reached yet
-						--|The string must be consistently set before
-						--|resizing.
-					last_string.set_count (str_cap)
-					if str_cap < 2048 then
-						last_string.grow (str_cap + 1024)
+			if last_string = Void then
+				create_last_string (0)
+			end
+			l := last_string
+			if l /= Void then
+				from
+					str_area := l.area
+					str_cap := l.capacity
+				until
+					done
+				loop
+					read := read + file_gs (file_pointer, $str_area, str_cap, read)
+					if read > str_cap then
+							-- End of line not reached yet
+							--|The string must be consistently set before
+							--|resizing.
+						l.set_count (str_cap)
+						if str_cap < 2048 then
+							l.grow (str_cap + 1024)
+						else
+								-- Increase capacity by `Growth_percentage' as
+								-- defined in RESIZABLE.
+							l.automatic_grow
+						end
+						str_cap := l.capacity
+						read := read - 1		-- True amount of byte read
+						str_area := l.area
 					else
-							-- Increase capacity by `Growth_percentage' as
-							-- defined in RESIZABLE.
-						last_string.automatic_grow
+						l.set_count (read)
+						done := True
 					end
-					str_cap := last_string.capacity
-					read := read - 1		-- True amount of byte read
-					str_area := last_string.area
-				else
-					last_string.set_count (read)
-					done := True
 				end
 			end
 		end
@@ -1361,15 +1368,18 @@ feature -- Input
 		local
 			new_count: INTEGER
 			str_area: ANY
+			l: like last_string
 		do
 			if last_string = Void then
 				create_last_string (nb_char)
-			else
-				last_string.grow (nb_char)
 			end
-			str_area := last_string.area
-			new_count := file_gss (file_pointer, $str_area, nb_char)
-			last_string.set_count (new_count)
+			l := last_string
+			if l /= Void then
+				l.grow (nb_char)
+				str_area := l.area
+				new_count := file_gss (file_pointer, $str_area, nb_char)
+				l.set_count (new_count)
+			end
 		end
 
 	read_to_managed_pointer (p: MANAGED_POINTER; start_pos, nb_bytes: INTEGER) is
@@ -1395,33 +1405,37 @@ feature -- Input
 			str_area: ANY
 			str_cap: INTEGER
 			read: INTEGER	-- Amount of bytes already read
+			l: like last_string
 		do
-			from
-				if last_string = Void then
-					create_last_string (0)
-				end
-				str_area := last_string.area
-				str_cap := last_string.capacity
-			until
-				read > str_cap
-			loop
-				read := read +
-					file_gw (file_pointer, $str_area, str_cap, read)
-				if read > str_cap then
-						-- End of word not reached yet.
-					if str_cap < 2048 then
-						last_string.grow (str_cap + 1024)
+			if last_string = Void then
+				create_last_string (0)
+			end
+			l := last_string
+			if l /= Void then
+				from
+					str_area := l.area
+					str_cap := l.capacity
+				until
+					read > str_cap
+				loop
+					read := read +
+						file_gw (file_pointer, $str_area, str_cap, read)
+					if read > str_cap then
+							-- End of word not reached yet.
+						if str_cap < 2048 then
+							l.grow (str_cap + 1024)
+						else
+								-- Increase capacity by `Growth_percentage' as
+								-- defined in RESIZABLE.
+							l.automatic_grow
+						end
+						str_area := l.area
+						str_cap := l.capacity
+						read := read - 1		-- True amount of byte read
 					else
-							-- Increase capacity by `Growth_percentage' as
-							-- defined in RESIZABLE.
-						last_string.automatic_grow
+						l.set_count (read)
+						read := str_cap + 1	-- End of loop
 					end
-					str_area := last_string.area
-					str_cap := last_string.capacity
-					read := read - 1		-- True amount of byte read
-				else
-					last_string.set_count (read)
-					read := str_cap + 1	-- End of loop
 				end
 			end
 			separator := file_lh (file_pointer) -- Look ahead
@@ -1442,7 +1456,8 @@ feature -- Convenience
 		local
 			l_modulo, l_read, nb: INTEGER
 			l_pos: INTEGER
-			l_old_last_string: STRING
+			l_old_last_string: like last_string
+			l: like last_string
 		do
 			from
 				l_read := 0
@@ -1458,7 +1473,10 @@ feature -- Convenience
 				l_read >= nb
 			loop
 				read_stream (l_modulo)
-				file.put_string (last_string)
+				l := last_string
+				if l /= Void then
+					file.put_string (l)
+				end
 				l_read := l_read + l_modulo
 			end
 				-- Restore previous status of Current file.
@@ -1479,8 +1497,8 @@ feature {NONE} -- Implementation
 		do
 			create last_string.make (default_last_string_size.max (a_min_size))
 		ensure
-			last_string_not_void: last_string /= Void
-			capacity_set: last_string.capacity >= a_min_size
+			last_string_attached: last_string /= Void
+			capacity_set: {l: like last_string} last_string and then l.capacity >= a_min_size
 		end
 
 	default_last_string_size: INTEGER is 256

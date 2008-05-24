@@ -4,7 +4,7 @@ indexing
 		with some operands possibly still open
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -46,13 +46,18 @@ feature -- Access
 
 	frozen operands: OPEN_ARGS
 
-	target: ANY is
+	target: ?ANY is
 			-- Target of call.
+		local
+			o: like operands
 		do
 			if is_target_closed then
 				Result := closed_operands.item (1)
-			elseif operands /= Void and then operands.count > 0 then
-				Result := operands.item (1)
+			else
+				o := operands
+				if o /= Void and then o.count > 0 then
+					Result := o.item (1)
+				end
 			end
 		end
 
@@ -108,11 +113,11 @@ feature -- Status report
 				and then (calc_rout_addr = other.calc_rout_addr)
 		end
 
-	valid_operands (args: TUPLE): BOOLEAN is
+	valid_operands (args: ?TUPLE): BOOLEAN is
 			-- Are `args' valid operands for this routine?
 		local
 			i, arg_type_code: INTEGER
-			arg: ANY
+			arg: ?ANY
 			int: INTERNAL
 			open_type_codes: STRING
 		do
@@ -139,12 +144,12 @@ feature -- Status report
 					i := i + 1
 				end
 			end
-			if Result and then not is_target_closed then
+			if Result and then not is_target_closed and then args /= Void then
 				Result := args.item (1) /= Void
 			end
 		end
 
-	valid_target (args: TUPLE): BOOLEAN is
+	valid_target (args: ?TUPLE): BOOLEAN is
 			-- Is the first element of tuple `args' a valid target
 		do
 			if args /= Void and then args.count > 0 then
@@ -155,6 +160,9 @@ feature -- Status report
 				end
 			end
 		end
+
+	is_target_closed: BOOLEAN
+			-- Is target for current agent closed, i.e. specified at creation time?
 
 feature -- Measurement
 
@@ -172,6 +180,19 @@ feature -- Settings
 		ensure
 			operands_set: (operands /= Void implies equal (operands, args)) or
 				(operands = Void implies (args = Void or else args.is_empty))
+		end
+
+	set_target (a_target: like target) is
+			-- Set `a_target' as the next `target' for remaining calls to Current.
+		require
+			a_target_not_void: a_target /= Void
+			is_target_closed: is_target_closed
+			target_not_void: target /= Void
+			same_target_type: target.same_type (a_target)
+		do
+			closed_operands.put (a_target, 1)
+		ensure
+			target_set: target = a_target
 		end
 
 feature -- Duplication
@@ -243,7 +264,7 @@ feature {ROUTINE} -- Implementation
 	frozen calc_rout_addr: POINTER
 			-- Address of the final routine
 
-	frozen open_map: SPECIAL [INTEGER]
+	frozen open_map: ARRAY [INTEGER]
 			-- Index map for open arguments
 
 	frozen encaps_rout_disp: POINTER
@@ -257,12 +278,10 @@ feature {ROUTINE} -- Implementation
 
 	frozen is_basic: BOOLEAN
 
-	frozen is_target_closed: BOOLEAN
-
 	frozen is_inline_agent: BOOLEAN
 
 	frozen set_rout_disp (a_rout_disp, a_encaps_rout_disp, a_calc_rout_addr: POINTER
-						  a_class_id, a_feature_id: INTEGER; a_open_map: SPECIAL [INTEGER]
+						  a_class_id, a_feature_id: INTEGER; a_open_map: ARRAY [INTEGER]
 						  a_is_precompiled, a_is_basic, a_is_target_closed, a_is_inline_agent: BOOLEAN
 						  a_closed_operands: TUPLE; a_open_count: INTEGER) is
 			-- Initialize object.
@@ -287,7 +306,7 @@ feature {ROUTINE} -- Implementation
 		end
 
 	frozen set_rout_disp_int (a_rout_disp, a_encaps_rout_disp, a_calc_rout_addr: POINTER
-						  	  a_class_id, a_feature_id: INTEGER; a_open_map: SPECIAL [INTEGER]
+						  	  a_class_id, a_feature_id: INTEGER; a_open_map: ARRAY [INTEGER]
 	 						  a_is_precompiled, a_is_basic, a_is_target_closed, a_is_inline_agent: BOOLEAN
 							  a_closed_operands: TUPLE; a_open_count: INTEGER) is
 			-- Initialize object.
