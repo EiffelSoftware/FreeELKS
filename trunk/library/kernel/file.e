@@ -1714,7 +1714,7 @@ feature {NONE} -- Implementation
 	file_gc (file: POINTER): CHARACTER is
 			-- Access the next character
 		external
-			"C signature (FILE *): EIF_CHARACTER use %"eif_file.h%""
+			"C blocking signature (FILE *): EIF_CHARACTER use %"eif_file.h%""
 		end
 
 	file_gs (file: POINTER; a_string: POINTER; length, begin: INTEGER): INTEGER is
