@@ -18,13 +18,13 @@ feature -- Access
 
 	frozen code: INTEGER is
 			-- Exception code
-		once
+		do
 			Result := {EXCEP_CONST}.signal_exception
 		end
-		
+
 	signal_code: INTEGER
 			-- Signal code
-		
+
 feature {EXCEPTION_MANAGER} -- Status setting
 
 	set_signal_code (a_code: like signal_code) is

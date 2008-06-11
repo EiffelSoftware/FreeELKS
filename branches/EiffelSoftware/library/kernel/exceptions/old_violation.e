@@ -18,7 +18,7 @@ feature -- Access
 
 	frozen code: INTEGER is
 			-- Exception code
-		once
+		do
 			Result := {EXCEP_CONST}.old_exception
 		end
 
