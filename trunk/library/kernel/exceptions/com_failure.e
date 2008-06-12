@@ -22,9 +22,9 @@ feature -- Access
 	hresult_code: INTEGER
 			-- Error code of COM
 
-	code: INTEGER is
+	frozen code: INTEGER is
 			-- Exception code
-		once
+		do
 			Result := {EXCEP_CONST}.com_exception
 		end
 
