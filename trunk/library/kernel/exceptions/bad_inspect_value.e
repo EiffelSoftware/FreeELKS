@@ -19,7 +19,7 @@ feature -- Access
 
 	frozen code: INTEGER is
 			-- Exception code
-		once
+		do
 			Result := {EXCEP_CONST}.incorrect_inspect_value
 		end
 
