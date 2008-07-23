@@ -300,7 +300,7 @@ feature -- Removal
 						create dir.make (file_name)
 						dir.recursive_delete
 					else
-						if file.is_symlink or else (file.exists and then file.is_writable) then
+						if file.exists and then file.is_writable then
 							file.delete
 						end
 					end
@@ -377,7 +377,7 @@ feature -- Removal
 						create dir.make (file_name)
 						dir.recursive_delete_with_action (action, is_cancel_requested, file_number)
 					else
-						if file.is_symlink or else (file.exists and then file.is_writable) then
+						if file.exists and then file.is_writable then
 							file.delete
 						end
 					end
