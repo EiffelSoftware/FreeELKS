@@ -22,7 +22,7 @@ feature -- Access
 	hresult_code: INTEGER
 			-- Error code of COM
 
-	frozen code: INTEGER is
+	code: INTEGER is
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.com_exception
