@@ -130,6 +130,15 @@ feature -- Feature specific to ISE runtime.
 			]"
 		end
 
+	frozen once_objects (a_result_type: INTEGER): SPECIAL [ANY] is
+			-- Once objects initialized in current system.
+			-- `a_result_type' is the dynamic type of `SPECIAL [ANY]'.
+		external
+			"C signature (EIF_INTEGER): EIF_REFERENCE use %"eif_memory_analyzer.h%""
+		alias
+			"eif_once_objects_of_result_type"
+		end
+
 feature -- Internal C routines
 
 	frozen type_id_from_name (s: POINTER): INTEGER is
