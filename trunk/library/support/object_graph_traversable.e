@@ -206,8 +206,6 @@ feature {NONE} -- Implementation
 					from
 						i := 1
 						nb := l_int.field_count_of_type (l_dtype) + 1
-					variant
-						nb - i
 					until
 						i = nb
 					loop
@@ -219,6 +217,8 @@ feature {NONE} -- Implementation
 							end
 						end
 						i := i + 1
+					variant
+						nb - i
 					end
 				end
 			end
