@@ -31,4 +31,24 @@ feature -- Conversion
 		do
 		end
 
+	read_system_string_into_area_8 (a_str: SYSTEM_STRING; a_area: SPECIAL [CHARACTER_8]) is
+			-- Fill `a_result' with `a_str' content.
+		require
+			is_dotnet: {PLATFORM}.is_dotnet
+			a_str_not_void: a_str /= Void
+			a_area_not_void: a_area /= Void
+			a_area_valid: a_area.count >= a_str.length
+		do
+		end
+
+	read_system_string_into_area_32 (a_str: SYSTEM_STRING; a_area: SPECIAL [CHARACTER_32]) is
+			-- Fill `a_area' with `a_str' content.
+		require
+			is_dotnet: {PLATFORM}.is_dotnet
+			a_str_not_void: a_str /= Void
+			a_area_not_void: a_area /= Void
+			a_area_valid: a_area.count >= a_str.length
+		do
+		end
+
 end
