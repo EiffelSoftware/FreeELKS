@@ -101,8 +101,8 @@ feature -- Access
 			-- Address of element at position `0'
 		require
 			not_dotnet: not {PLATFORM}.is_dotnet
-		do
-			Result := $Current
+		external
+			"built_in"
 		ensure
 			base_address_not_null: Result /= default_pointer
 		end
@@ -180,14 +180,21 @@ feature -- Status report
 		local
 			i: INTEGER
 		do
-			from
+			if other = Current then
 				Result := True
-				i := start_index
-			until
-				i > end_index or else not Result
-			loop
-				Result := item (i) = other.item (i)
-				i := i + 1
+			else
+				from
+					Result := True
+					i := start_index
+				until
+					i > end_index
+				loop
+					if item (i) /= other.item (i) then
+						Result := False
+						i := end_index
+					end
+					i := i + 1
+				end
 			end
 		ensure
 			valid_on_empty_area: (end_index < start_index) implies Result
