@@ -24,7 +24,7 @@ create
 
 feature --{NONE} -- Initialization
 
-	make (a_string: STRING_GENERAL) is
+	make (a_string: READABLE_STRING_GENERAL) is
 			-- Make a C string from `a_string'.
 		require
 			a_string_not_void: a_string /= Void
@@ -269,7 +269,7 @@ feature -- Measurement
 
 feature -- Element change
 
-	set_string (a_string: STRING_GENERAL) is
+	set_string (a_string: READABLE_STRING_GENERAL) is
 			-- Set `string' with `a_string'.
 		require
 			a_string_not_void: a_string /= Void
@@ -278,7 +278,7 @@ feature -- Element change
 			set_substring (a_string, 1, a_string.count)
 		end
 
-	set_substring (a_string: STRING_GENERAL; start_pos, end_pos: INTEGER) is
+	set_substring (a_string: READABLE_STRING_GENERAL; start_pos, end_pos: INTEGER) is
 			-- Set `string' with `a_string'.
 		require
 			a_string_not_void: a_string /= Void
