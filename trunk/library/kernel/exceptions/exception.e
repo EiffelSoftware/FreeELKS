@@ -56,9 +56,12 @@ feature -- Access
 
 	message: ?STRING is
 			-- Message(Tag) of current exception
+		local
+			m: ?C_STRING
 		do
-			if c_message /= Void then
-				Result := c_message.substring (1, c_message.count)
+			m := c_message
+			if m /= Void then
+				Result := m.substring (1, m.count)
 			end
 		end
 
@@ -186,10 +189,15 @@ feature -- Output
 	out: STRING is
 			-- New string containing terse printable representation
 			-- of current object
+		local
+			t: ?STRING
 		do
 			Result := generating_type
-			Result.append_character ('%N')
-			Result.append_string (exception_trace)
+			t := exception_trace
+			if t /= Void then
+				Result.append_character ('%N')
+				Result.append_string (t)
+			end
 		end
 
 feature {EXCEPTION_MANAGER} -- Implementation
