@@ -167,37 +167,39 @@ feature -- Status report
 			valid_on_empty_area: (end_index < start_index) implies Result
 		end
 
-	same_items (other: like Current; start_index, end_index: INTEGER): BOOLEAN
+	same_items (other: like Current; source_index, destination_index, n: INTEGER): BOOLEAN
 			-- Do all items between index `start_index' and `end_index' have
 			-- same value?
 			-- (Use reference equality for comparison.)
 		require
-			start_index_non_negative: start_index >= 0
-			start_index_not_too_big: start_index <= end_index + 1
-			end_index_valid: end_index < count
 			other_not_void: other /= Void
-			other_has_enough_items: end_index < other.count
+			source_index_non_negative: source_index >= 0
+			destination_index_non_negative: destination_index >= 0
+			n_non_negative: n >= 0
+			n_is_small_enough_for_source: source_index + n <= other.count
+			n_is_small_enough_for_destination: destination_index + n <= count
 		local
-			i: INTEGER
+			i, j, nb: INTEGER
 		do
-			if other = Current then
-				Result := True
-			else
+			Result := True
+			if other /= Current then
 				from
-					Result := True
-					i := start_index
+					i := source_index
+					j := destination_index
+					nb := source_index + n
 				until
-					i > end_index
+					i = nb
 				loop
-					if item (i) /= other.item (i) then
+					if other.item (i) /= item (j) then
 						Result := False
-						i := end_index
+						i := nb - 1
 					end
 					i := i + 1
+					j := j + 1
 				end
 			end
 		ensure
-			valid_on_empty_area: (end_index < start_index) implies Result
+			valid_on_empty_area: (n = 0) implies Result
 		end
 
 	valid_index (i: INTEGER): BOOLEAN
@@ -274,8 +276,7 @@ feature -- Element change
 				end
 			end
 		ensure
-			copied:	-- For every `i' in `destination_index' .. `destination_index' + `n' - 1
-					-- `item' (`i') = `other'.`item' (`source_index' + `i' - `destination_index')
+			copied:	same_items (other, source_index, destination_index, n)
 		end
 
 	move_data (source_index, destination_index, n: INTEGER)
@@ -303,8 +304,7 @@ feature -- Element change
 				end
 			end
 		ensure
-			moved:	-- For every `i' in `destination_index' .. `destination_index' + `n' - 1
-					-- `item' (`i') = old `item' (`source_index' + `i' - `destination_index')
+			moved: same_items (old twin, source_index, destination_index, n)
 		end
 
 	overlapping_move (source_index, destination_index, n: INTEGER)
@@ -354,8 +354,7 @@ feature -- Element change
 				end
 			end
 		ensure
-			moved:	-- For every `i' in `destination_index' .. `destination_index' + `n' - 1
-					-- `item' (`i') = old `item' (`source_index' + `i' - `destination_index')
+			moved: same_items (old twin, source_index, destination_index, n)
 		end
 
 	non_overlapping_move (source_index, destination_index, n: INTEGER)
@@ -386,8 +385,7 @@ feature -- Element change
 				i := i + 1
 			end
 		ensure
-			moved:	-- For every `i' in `destination_index' .. `destination_index' + `n' - 1
-					-- `item' (`i') = `item' (`source_index' + `i' - `destination_index')
+			moved: same_items (Current, source_index, destination_index, n)
 		end
 
 feature -- Resizing
@@ -403,8 +401,7 @@ feature -- Resizing
 			Result_not_void: Result /= Void
 			Result_different_from_current: Result /= Current
 			new_count: Result.count = n
-			preserved:	-- For every `i' in `0' .. (n - 1).min (old `upper')
-						-- `item' (`i') = old `item' (`i')
+			preserved: Result.same_items (Current, 0, 0, n.min (old count))
 		end
 
 	aliased_resized_area (n: INTEGER): like Current
@@ -417,8 +414,7 @@ feature -- Resizing
 		ensure
 			Result_not_void: Result /= Void
 			new_count: Result.count = n
-			preserved:	-- For every `i' in `0' .. old `upper'
-						-- `item' (`i') = old `item' (`i')
+			preserved: Result.same_items (old twin, 0, 0, old count)
 		end
 
 feature -- Removal
