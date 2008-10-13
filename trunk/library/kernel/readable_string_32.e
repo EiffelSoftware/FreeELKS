@@ -417,7 +417,7 @@ feature -- Comparison
 				Result := True
 			elseif other.count = count then
 				if same_type (other) then
-					Result := area.same_items (other.area, 0, count - 1)
+					Result := area.same_items (other.area, 0, 0, count)
 				else
 					Result := same_string_general (other)
 				end
