@@ -50,14 +50,15 @@ feature -- Initialization
 			-- (Make array empty if `min_index' = `max_index' + 1).
 		require
 			valid_bounds: min_index <= max_index + 1
+		local
+			n: INTEGER
 		do
 			lower := min_index
 			upper := max_index
 			if min_index <= max_index then
-				make_area (max_index - min_index + 1)
-			else
-				make_area (0)
+				n := max_index - min_index + 1
 			end
+			make_area (n)
 		ensure
 			lower_set: lower = min_index
 			upper_set: upper = max_index
