@@ -287,7 +287,7 @@ feature -- Access
 			object_generic: generic_count (object) > 0
 			i_valid: i > 0 and i <= generic_count (object)
 		do
-			Result := eif_gen_param_id (- 1, {ISE_RUNTIME}.dynamic_type ($object), i)
+			Result := eif_gen_param_id ({ISE_RUNTIME}.dynamic_type ($object), i)
 		ensure
 			dynamic_type_nonnegative: Result >= 0
 		end
@@ -299,7 +299,7 @@ feature -- Access
 			type_id_generic: generic_count_of_type (type_id) > 0
 			i_valid: i > 0 and i <= generic_count_of_type (type_id)
 		do
-			Result := eif_gen_param_id (- 1, type_id, i)
+			Result := eif_gen_param_id (type_id, i)
 		ensure
 			dynamic_type_nonnegative: Result >= 0
 		end
@@ -1155,10 +1155,10 @@ feature {NONE} -- Implementation
 			"C signature (int16): int use %"eif_gen_conf.h%""
 		end
 
-	eif_gen_param_id (stype: INTEGER; dftype: INTEGER; pos: INTEGER): INTEGER is
+	eif_gen_param_id (dftype: INTEGER; pos: INTEGER): INTEGER is
 			-- Type of generic parameter in `obj' at position `pos'.
 		external
-			"C (int16, int16, int): EIF_INTEGER | %"eif_gen_conf.h%""
+			"C (EIF_TYPE_INDEX, int): EIF_INTEGER | %"eif_gen_conf.h%""
 		end
 
 	c_new_instance_of (type_id: INTEGER): ANY is
