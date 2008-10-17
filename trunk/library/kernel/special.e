@@ -167,26 +167,26 @@ feature -- Status report
 			valid_on_empty_area: (end_index < start_index) implies Result
 		end
 
-	same_items (other: like Current; source_index, destination_index, n: INTEGER): BOOLEAN
-			-- Do all items between index `start_index' and `end_index' have
-			-- same value?
+	same_items (other: like Current; other_index, current_index, n: INTEGER): BOOLEAN
+			-- Are the `n' elements of `other' from `other_index' position the same as
+			-- the `n' elements of `Current' from `current_index'?
 			-- (Use reference equality for comparison.)
 		require
 			other_not_void: other /= Void
-			source_index_non_negative: source_index >= 0
-			destination_index_non_negative: destination_index >= 0
+			other_index_non_negative: other_index >= 0
+			current_index_non_negative: current_index >= 0
 			n_non_negative: n >= 0
-			n_is_small_enough_for_source: source_index + n <= other.count
-			n_is_small_enough_for_destination: destination_index + n <= count
+			n_is_small_enough_for_other: other_index + n <= other.count
+			n_is_small_enough_for_current: current_index + n <= count
 		local
 			i, j, nb: INTEGER
 		do
 			Result := True
 			if other /= Current then
 				from
-					i := source_index
-					j := destination_index
-					nb := source_index + n
+					i := other_index
+					j := current_index
+					nb := other_index + n
 				until
 					i = nb
 				loop
