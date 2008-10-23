@@ -40,7 +40,7 @@ feature -- Conversion
 			adapted: equal (Result, g)
 		end
 
-	attempt alias "#?" (obj: ANY): G is
+	attempt alias "#?" (obj: ANY): ?G is
 			-- Result of assignment attempt of `obj' to entity of type G
 		do
 			Result ?= obj
@@ -48,7 +48,7 @@ feature -- Conversion
 			assigned_or_void: Result = obj or Result = default_value
 		end
 
-	default_value: G is
+	default_value: ?G is
 		do
 		end
 
