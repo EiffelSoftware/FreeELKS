@@ -359,6 +359,14 @@ feature -- Basic operations
 			-- Result = Result.default
 		end
 
+	frozen as_attached: !like Current
+			-- Attached version of Current
+			-- (Can be used during transitional period to convert
+			-- non-void-safe classes to void-safe ones.)
+		do
+			Result := Current
+		end
+
 invariant
 	reflexive_equality: standard_is_equal (Current)
 	reflexive_conformance: conforms_to (Current)
