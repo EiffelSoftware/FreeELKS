@@ -4,7 +4,7 @@ indexing
 		used to represent arrays and strings
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2005, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -107,11 +107,12 @@ feature -- Access
 			base_address_not_null: Result /= default_pointer
 		end
 
-	native_array: ?NATIVE_ARRAY [T]
+	native_array: NATIVE_ARRAY [T]
 			-- Only for compatibility with .NET
 		require
 			is_dotnet: {PLATFORM}.is_dotnet
 		do
+			create Result
 		end
 
 feature -- Measurement
