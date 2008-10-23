@@ -86,12 +86,10 @@ feature -- Initialization
 		do
 			if a_system_string /= Void then
 				l_count := a_system_string.length
-				make_area (l_count + 1)
-				count := l_count
-				internal_hash_code := 0
+			end
+			make (l_count)
+			if l_count > 0 then
 				dotnet_convertor.read_system_string_into (a_system_string, Current)
-			else
-				make (0)
 			end
 		end
 
