@@ -65,12 +65,10 @@ feature {NONE} -- Initialization
 		do
 			if a_system_string /= Void then
 				l_count := a_system_string.length
-				create area.make (l_count + 1)
-				count := l_count
-				internal_hash_code := 0
+			end
+			make (l_count)
+			if l_count > 0 then
 				dotnet_convertor.read_system_string_into_area_8 (a_system_string, area)
-			else
-				make (0)
 			end
 		end
 
