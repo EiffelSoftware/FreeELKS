@@ -89,6 +89,7 @@ feature -- Initialization
 			end
 			make (l_count)
 			if l_count > 0 then
+				set_count (l_count)
 				dotnet_convertor.read_system_string_into (a_system_string, Current)
 			end
 		end
