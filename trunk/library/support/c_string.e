@@ -3,7 +3,7 @@ indexing
 		%collector problems (mainly objects moving around) when %
 		%interfacing with C APIs."
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -39,7 +39,7 @@ feature --{NONE} -- Initialization
 		require
 			a_length_positive: a_length >= 0
 		do
-			create managed_data.make ((a_length + 1))
+			create managed_data.make (a_length + 1)
 			count := 0
 		end
 
