@@ -3,7 +3,7 @@ indexing
 		Exception representing a routine failure.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -16,10 +16,10 @@ inherit
 
 feature -- Access
 
-	routine_name: STRING
+	routine_name: ?STRING
 			-- Name of the failing routine
 
-	class_name: STRING
+	class_name: ?STRING
 			-- Class of the failure
 
 	frozen code: INTEGER is

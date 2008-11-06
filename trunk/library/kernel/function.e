@@ -8,7 +8,7 @@ indexing
 			of `last_result' and `item'.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -24,26 +24,34 @@ inherit
 
 feature -- Access
 
-	last_result: RESULT_TYPE
-			-- Result of last call, if any.
+	last_result: ?RESULT_TYPE
+			-- Result of last call, if any
 
 	call (args: OPEN_ARGS) is
 		local
 			l_closed_count: INTEGER
+			c: like closed_operands
 		do
-			l_closed_count :=  closed_operands.count
+			c := closed_operands
+			if c/= Void then
+				l_closed_count :=  c.count
+			end
 			last_result := fast_item (encaps_rout_disp, calc_rout_addr, $closed_operands, $args, class_id, feature_id,
 				is_precompiled, is_basic, is_inline_agent, l_closed_count, open_count, $open_map)
 		end
 
-	item (args: OPEN_ARGS): RESULT_TYPE is
+	item (args: ?OPEN_ARGS): RESULT_TYPE is
 			-- Result of calling function with `args' as operands.
 		require
 			valid_operands: valid_operands (args)
 		local
 			l_closed_count: INTEGER
+			c: like closed_operands
 		do
-			l_closed_count :=  closed_operands.count
+			c := closed_operands
+			if c/= Void then
+				l_closed_count :=  c.count
+			end
 			Result := fast_item (encaps_rout_disp, calc_rout_addr, $closed_operands, $args, class_id, feature_id,
 				is_precompiled, is_basic, is_inline_agent, l_closed_count, open_count, $open_map)
 		end
@@ -52,8 +60,12 @@ feature -- Access
 			-- Call function with `operands' as last set.
 		local
 			l_closed_count: INTEGER
+			c: like closed_operands
 		do
-			l_closed_count :=  closed_operands.count
+			c := closed_operands
+			if c/= Void then
+				l_closed_count :=  c.count
+			end
 			last_result := fast_item (encaps_rout_disp, calc_rout_addr, $closed_operands, $operands, class_id, feature_id,
 				is_precompiled, is_basic, is_inline_agent, l_closed_count, open_count, $open_map)
 		end
@@ -92,9 +104,9 @@ feature -- Obsolete
 feature -- Removal
 
 	clear_last_result is
-			-- Reset content of `last_result' to its default value
+			-- Reset content of `last_result' to its default value.
 		local
-			l_result: RESULT_TYPE
+			l_result: ?RESULT_TYPE
 		do
 			last_result := l_result
 		end

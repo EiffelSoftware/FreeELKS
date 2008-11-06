@@ -44,15 +44,19 @@ feature -- Initialization
 
 feature -- Access
 
-	frozen operands: OPEN_ARGS
+	frozen operands: ?OPEN_ARGS
 
-	target: ?ANY is
-			-- Target of call.
+	target: ?ANY
+			-- Target of call
 		local
-			o: like operands
+			c: like closed_operands
+			o: ?OPEN_ARGS
 		do
 			if is_target_closed then
-				Result := closed_operands.item (1)
+				c := closed_operands
+				if c /= Void and then c.count > 0 then
+					Result := c.item (1)
+				end
 			else
 				o := operands
 				if o /= Void and then o.count > 0 then
@@ -188,9 +192,14 @@ feature -- Settings
 			a_target_not_void: a_target /= Void
 			is_target_closed: is_target_closed
 			target_not_void: target /= Void
-			same_target_type: target.same_type (a_target)
+--			same_target_type: {t: like target}  target and then t.same_type (a_target)
+		local
+			c: like closed_operands
 		do
-			closed_operands.put (a_target, 1)
+			c := closed_operands
+			if c /= Void then
+				c.put (a_target, 1)
+			end
 		ensure
 			target_set: target = a_target
 		end
@@ -218,7 +227,7 @@ feature -- Duplication
 
 feature -- Basic operations
 
-	call (args: OPEN_ARGS) is
+	call (args: ?OPEN_ARGS) is
 			-- Call routine with `args'.
 		require
 			valid_operands: valid_operands (args)
@@ -247,14 +256,17 @@ feature -- Obsolete
 
 feature {ROUTINE} -- Implementation
 
-	frozen closed_operands: TUPLE
+	frozen closed_operands: ?TUPLE
 			-- All closed arguments provided at creation time
 
 	closed_count: INTEGER is
 			-- The number of closed operands (including the target if it is closed)
+		local
+			c: ?TUPLE
 		do
-			if closed_operands /= Void then
-				Result := closed_operands.count
+			c := closed_operands
+			if c /= Void then
+				Result := c.count
 			end
 		end
 
@@ -264,7 +276,7 @@ feature {ROUTINE} -- Implementation
 	frozen calc_rout_addr: POINTER
 			-- Address of the final routine
 
-	frozen open_map: ARRAY [INTEGER]
+	frozen open_map: ?ARRAY [INTEGER]
 			-- Index map for open arguments
 
 	frozen encaps_rout_disp: POINTER
@@ -343,7 +355,7 @@ feature {ROUTINE} -- Implementation
 
 feature {NONE} -- Implementation
 
-	frozen open_types: ARRAY [INTEGER]
+	frozen open_types: ?ARRAY [INTEGER]
 			-- Types of open operands
 
 	open_operand_type (i: INTEGER): INTEGER is
@@ -353,16 +365,19 @@ feature {NONE} -- Implementation
 			within_bounds: i <= open_count
 		local
 			l_internal: INTERNAL
+			o: ?ARRAY [INTEGER]
 		do
-			if open_types = Void then
-				create open_types.make (1, open_count)
+			o := open_types
+			if o = Void then
+				create o.make (1, open_count)
+				open_types := o
 			end
-			Result := open_types.item (i)
+			Result := o.item (i)
 			if Result = 0 then
 				create l_internal
 				Result := l_internal.generic_dynamic_type_of_type (
 					l_internal.generic_dynamic_type (Current, 2), i)
-				open_types.force (Result, i)
+				o.force (Result, i)
 			end
 		end
 

@@ -13,7 +13,7 @@ class
 
 feature -- Access
 
-	last_exception: EXCEPTION
+	last_exception: ?EXCEPTION
 			-- Last exception
 		external
 			"built_in"

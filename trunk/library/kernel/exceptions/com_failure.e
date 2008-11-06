@@ -3,7 +3,7 @@ indexing
 		Exception for a COM error
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2006, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -44,17 +44,24 @@ feature -- Status setting
 
 	hresult_message: STRING is
 			-- Error message.
+		local
+			r: ?STRING
 		do
-			Result := exception_information.twin
-			Result.remove_head (10)
-			Result.left_adjust
-			Result.right_adjust
-
-			if Result.is_empty and then hresult_code > 0 then
-				Result := error_message (hresult_code).out
+			r := exception_information
+			if r /= Void then
+				r := r.twin
+				r.remove_head (10)
+				r.left_adjust
+				r.right_adjust
 			end
-			if Result = Void then
-				create Result.make (0)
+
+			if r = Void or else r.is_empty and then hresult_code > 0 then
+				r := error_message (hresult_code).out
+			end
+			if r = Void then
+				create Result.make_empty
+			else
+				Result := r
 			end
 		ensure
 			non_void_message: Result /= Void
@@ -77,7 +84,7 @@ feature -- Element Change
 
 feature {EXCEPTION_MANAGER} -- Implementation
 
-	exception_information: STRING
+	exception_information: ?STRING
 			-- Stream holding exception information.
 
 	set_exception_information(a_message: STRING) is
