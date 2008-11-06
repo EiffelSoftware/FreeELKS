@@ -8,7 +8,7 @@ indexing
 			redefinition of `is_equal' and `copy'.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -27,11 +27,15 @@ feature -- Calls
 			call (operands)
 		end
 
-	call (args: OPEN_ARGS) is
+	call (args: ?OPEN_ARGS) is
 		local
+			c: like closed_operands
 			l_closed_count: INTEGER
 		do
-			l_closed_count :=  closed_operands.count
+			c := closed_operands
+			if c /= Void then
+				l_closed_count :=  c.count
+			end
 			fast_call (encaps_rout_disp, calc_rout_addr, $closed_operands, $args, class_id, feature_id,
 				       is_precompiled, is_basic, is_inline_agent, l_closed_count, open_count, $open_map)
 		end
