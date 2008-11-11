@@ -478,7 +478,7 @@ feature -- Status report
 			debug ("prevent_hash_table_catcall")
 				if k /= l_default_key then
 					create l_internal
-					create l_cell.put (Void)
+					create l_cell.put (l_default_key)
 					from
 						i := 1
 						nb := l_internal.field_count (l_cell)
