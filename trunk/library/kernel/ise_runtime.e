@@ -173,4 +173,28 @@ feature -- Internal C routines
 			"eif_set_pre_ecma_mapping($v)"
 		end
 
+	frozen is_attached_type (a_type: INTEGER): BOOLEAN is
+			-- Is `a_type' an attached type?
+		external
+			"C inline  use %"eif_gen_conf.h%""
+		alias
+			"return eif_is_attached_type((EIF_TYPE_INDEX) $a_type)"
+		end
+
+	frozen detachable_type (a_type: INTEGER): INTEGER is
+			-- Detachable version of `a_type'
+		external
+			"C inline  use %"eif_gen_conf.h%""
+		alias
+			"return eif_non_attached_type((EIF_TYPE_INDEX) $a_type)"
+		end
+
+	frozen attached_type (a_type: INTEGER): INTEGER is
+			-- Attached version of `a_type'
+		external
+			"C inline  use %"eif_gen_conf.h%""
+		alias
+			"return eif_attached_type((EIF_TYPE_INDEX) $a_type)"
+		end
+
 end
