@@ -124,6 +124,7 @@ feature -- Status report
 			arg: ?ANY
 			int: INTERNAL
 			open_type_codes: STRING
+			l_type: INTEGER
 		do
 			create int
 			if args = Void then
@@ -142,8 +143,18 @@ feature -- Status report
 					Result := arg_type_code = open_type_codes.item (i + 1).code
 					if Result and then arg_type_code = {TUPLE}.reference_code then
 						arg := args.item (i)
-						Result := arg = Void or else
-							int.type_conforms_to (int.dynamic_type (arg), open_operand_type (i))
+						l_type := open_operand_type (i)
+							-- If expected type is attached, then we need to verify that the actual
+							-- is indeed attached.
+						if {ISE_RUNTIME}.is_attached_type (l_type) then
+								-- Conformance is done on the detachable version of the expected type
+								-- since objects have no attachment mark.
+							Result := arg /= Void and then
+								int.type_conforms_to (int.dynamic_type (arg), {ISE_RUNTIME}.detachable_type (l_type))
+						else
+							Result := arg = Void or else
+								int.type_conforms_to (int.dynamic_type (arg), l_type)
+						end
 					end
 					i := i + 1
 				end
