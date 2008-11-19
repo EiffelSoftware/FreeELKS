@@ -303,10 +303,19 @@ feature -- Status report
 			valid_index: valid_index (index)
 		local
 			l_int: INTERNAL
+			l_type: INTEGER
 		do
 			if v = Void then
-					-- A Void entry is always valid.
-				Result := True
+					-- A Void entry is valid only for references and as long as the expected type
+					-- is detachable.
+				if eif_item_type ($Current, index) = reference_code then
+					create l_int
+					if {ISE_RUNTIME}.is_attached_type (l_int.generic_dynamic_type (Current, index)) then
+						Result := False
+					else
+						Result := True
+					end
+				end
 			else
 				inspect eif_item_type ($Current, index)
 				when boolean_code then Result := {l_b: BOOLEAN_REF} v
@@ -327,8 +336,11 @@ feature -- Status report
 						-- Let's check that type of `v' conforms to specified type of `index'-th
 						-- arguments of current TUPLE.
 					create l_int
-					Result := l_int.type_conforms_to
-						(l_int.dynamic_type (v), l_int.generic_dynamic_type (Current, index))
+					l_type := l_int.generic_dynamic_type (Current, index)
+					if {ISE_RUNTIME}.is_attached_type (l_type) then
+						l_type := {ISE_RUNTIME}.detachable_type (l_type)
+					end
+					Result := l_int.type_conforms_to (l_int.dynamic_type (v), l_type)
 				end
 			end
 		end
