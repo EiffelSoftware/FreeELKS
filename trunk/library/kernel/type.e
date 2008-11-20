@@ -40,10 +40,12 @@ feature -- Conversion
 			adapted: equal (Result, g)
 		end
 
-	attempt alias "#?" (obj: ANY): ?G is
+	attempt alias "#?" (obj: ?ANY): ?G is
 			-- Result of assignment attempt of `obj' to entity of type G
 		do
-			Result ?= obj
+			if {l_g: G} obj then
+				Result := l_g
+			end
 		ensure
 			assigned_or_void: Result = obj or Result = default_value
 		end
