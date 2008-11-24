@@ -82,14 +82,14 @@ indexing
 
 class HASH_TABLE [G, K -> HASHABLE] inherit
 
-	UNBOUNDED [G]
+	UNBOUNDED [?G]
 		rename
 			has as has_item
 		redefine
 			has_item, copy, is_equal
 		end
 
-	TABLE [G, K]
+	TABLE [?G, ?K]
 		rename
 			has as has_item,
 			wipe_out as clear_all,
@@ -1414,12 +1414,12 @@ feature {NONE} -- Implementation
 
 feature {NONE} -- Inapplicable
 
-	prune (v: G) is
+	prune (v: ?G) is
 			-- Remove one occurrence of `v' if any.
 		do
 		end
 
-	collection_extend (v: G) is
+	collection_extend (v: ?G) is
 			-- Insert a new occurrence of `v'.
 		do
 		end

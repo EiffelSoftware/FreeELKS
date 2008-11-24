@@ -402,7 +402,7 @@ feature {NONE} -- Externals
 
 feature -- Obsolete
 
-	arguments: OPEN_ARGS is
+	arguments: ?OPEN_ARGS is
 		obsolete
 			"use operands"
 		do
