@@ -4,7 +4,7 @@ indexing
 		To be used at your own risk.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -13,14 +13,6 @@ class
 	ISE_RUNTIME
 
 feature -- Feature specific to ISE runtime.
-
-	frozen c_standard_clone (other: POINTER): ANY is
-			-- New object of same dynamic type as `other'
-		external
-			"C signature (EIF_REFERENCE): EIF_REFERENCE use %"eif_copy.h%""
-		alias
-			"eclone"
-		end
 
 	frozen c_conforms_to (obj1, obj2: POINTER): BOOLEAN is
 			-- Does dynamic type of object attached to `obj1' conform to
