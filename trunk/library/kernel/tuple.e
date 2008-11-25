@@ -347,11 +347,8 @@ feature -- Status report
 
 	count: INTEGER is
 			-- Number of element in Current.
-		do
-				-- `-1' because we always allocate one item more to avoid
-				-- to do `-1' each time we want to access or store an item
-				-- of current.
-			Result := {ISE_RUNTIME}.sp_count ($Current) - 1
+		external
+			"built_in"
 		end
 
 	lower: INTEGER is 1
