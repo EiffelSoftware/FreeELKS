@@ -27,7 +27,7 @@ feature -- Access
 	last_result: ?RESULT_TYPE
 			-- Result of last call, if any
 
-	call (args: OPEN_ARGS) is
+	call (args: ?OPEN_ARGS) is
 		local
 			l_closed_count: INTEGER
 			c: like closed_operands
@@ -91,7 +91,7 @@ feature -- Duplication
 
 feature -- Obsolete
 
-	eval (args: OPEN_ARGS): RESULT_TYPE is
+	eval (args: ?OPEN_ARGS): RESULT_TYPE is
 			-- Result of evaluating function for `args'.
 		obsolete
 			"Please use `item' instead"

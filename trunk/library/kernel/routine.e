@@ -186,7 +186,7 @@ feature -- Measurement
 
 feature -- Settings
 
-	frozen set_operands (args: OPEN_ARGS) is
+	frozen set_operands (args: ?OPEN_ARGS) is
 			-- Use `args' as operands for next call.
 		require
 			valid_operands: valid_operands (args)
@@ -376,7 +376,7 @@ feature {NONE} -- Implementation
 			within_bounds: i <= open_count
 		local
 			l_internal: INTERNAL
-			o: ?ARRAY [INTEGER]
+			o: like open_types
 		do
 			o := open_types
 			if o = Void then
@@ -409,14 +409,14 @@ feature -- Obsolete
 			Result := operands
 		end
 
-	set_arguments (args: OPEN_ARGS) is
+	set_arguments (args: ?OPEN_ARGS) is
 		obsolete
 			"use set_operands"
 		do
 			set_operands (args)
 		end
 
-	valid_arguments (args: OPEN_ARGS): BOOLEAN is
+	valid_arguments (args: ?OPEN_ARGS): BOOLEAN is
 		obsolete
 			"use valid_operands"
 		do
