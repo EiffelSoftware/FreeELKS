@@ -200,7 +200,7 @@ feature -- Access
 	found_item: ?G
 			-- Item, if any, yielded by last search operation
 
-	item alias "[]", infix "@" (key: ?K): ?G assign force is
+	item alias "[]", at alias "@" (key: ?K): ?G assign force is
 			-- Item associated with `key', if present
 			-- otherwise default value of type `G'
 		local
