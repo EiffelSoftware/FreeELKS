@@ -19,7 +19,7 @@ class ARRAYED_LIST [G] inherit
 		rename
 			force as force_i_th,
 			item as array_item,
-			infix "@" as array_infix_at,
+			at as array_infix_at,
 			make as array_make,
 			put as put_i_th,
 			count as array_count,
@@ -48,14 +48,14 @@ class ARRAYED_LIST [G] inherit
 			put_i_th,
 			force, is_inserted, copy
 		redefine
-			first, last, swap, wipe_out, i_th, infix "@",
+			first, last, swap, wipe_out, i_th, at,
 			go_i_th, move, prunable, start, finish,
 			count, prune, remove,
 			put_left, merge_left,
 			merge_right, duplicate, prune_all, has, search,
 			append, valid_index
 		select
-			count, index_set, i_th, infix "@"
+			count, index_set, i_th, at
 		end
 
 create
@@ -118,7 +118,7 @@ feature -- Access
 			Result := area.item (index - 1)
 		end
 
-	i_th alias "[]", infix "@" (i: INTEGER): like item assign put_i_th is
+	i_th alias "[]", at alias "@" (i: INTEGER): like item assign put_i_th is
 			-- Item at `i'-th position
 		do
 			Result := area.item (i - 1)

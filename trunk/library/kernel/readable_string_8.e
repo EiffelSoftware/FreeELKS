@@ -125,7 +125,7 @@ feature {NONE} -- Initialization
 
 feature -- Access
 
-	item, infix "@" (i: INTEGER): CHARACTER_8
+	item alias "[]", at alias "@" (i: INTEGER): CHARACTER_8
 			-- Character at position `i'
 		do
 			Result := area.item (i - 1)
@@ -440,7 +440,7 @@ feature -- Comparison
 			definition: Result = string.is_equal (other.string)
 		end
 
-	infix "<" (other: like Current): BOOLEAN
+	is_less alias "<" (other: like Current): BOOLEAN
 			-- Is string lexicographically lower than `other'?
 		local
 			other_count: INTEGER
@@ -823,7 +823,7 @@ feature {NONE} -- Element change
 
 feature -- Element change
 
-	infix "+" (s: READABLE_STRING_8): like Current
+	plus alias "+" (s: READABLE_STRING_8): like Current
 			-- Append a copy of 's' at the end of a copy of Current,
 			-- Then return the Result.
 		require

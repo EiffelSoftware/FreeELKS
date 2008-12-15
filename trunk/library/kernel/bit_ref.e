@@ -17,7 +17,7 @@ class BIT_REF inherit
 
 feature -- Access
 
-	item alias "[]", infix "@" (i: INTEGER): BOOLEAN assign put is
+	item alias "[]", at alias "@" (i: INTEGER): BOOLEAN assign put is
 			-- `i'-th bit
 		require
 			index_large_enough: i >= 1
@@ -66,7 +66,7 @@ feature -- Element change
 
 feature -- Basic operations
 
-	infix "^" (s: INTEGER): like Current is
+	shift alias "^" (s: INTEGER): like Current is
 			-- Result of shifting bit sequence by `s' positions
 			-- (Positive `s' shifts right, negative `s' shifts left;
 			-- bits falling off the sequence's bounds are lost.)
@@ -74,14 +74,14 @@ feature -- Basic operations
 			Result := b_shift ($Current, s)
 		end
 
-	infix "#" (s: INTEGER): like Current is
+	rotate alias "#" (s: INTEGER): like Current is
 			-- Result of rotating bit sequence by `s' positions
 			-- (Positive `s' rotates right, negative `s' rotates left.)
 		do
 			Result := b_rotate ($Current, s)
 		end
 
-	infix "and" (other: BIT_REF): like Current is
+	conjuncted alias "and", bit_and alias "&" (other: BIT_REF): like Current is
 			-- Bit-by-bit boolean conjunction with `other'
 		require
 			other_exists: other /= Void
@@ -90,7 +90,7 @@ feature -- Basic operations
 			Result := b_and ($Current, $other)
 		end
 
-	infix "implies" (other: BIT_REF): like Current is
+	implication alias "implies" (other: BIT_REF): like Current is
 			-- Bit-by-bit boolean implication of `other'
 		require
 			other_exists: other /= Void
@@ -99,7 +99,7 @@ feature -- Basic operations
 			Result := b_implies ($Current, $other)
 		end
 
-	infix "or", infix "|" (other: BIT_REF): like Current is
+	disjuncted alias "or", bit_or alias "|" (other: BIT_REF): like Current is
 			-- Bit-by-bit boolean disjunction with `other'
 		require
 			other_exists: other /= Void
@@ -108,7 +108,7 @@ feature -- Basic operations
 			Result := b_or ($Current, $other)
 		end
 
-	infix "xor" (other: BIT_REF): like Current is
+	disjuncted_exclusive alias "xor" (other: BIT_REF): like Current is
 			-- Bit-by-bit exclusive or with `other'
 		require
 			other_exists: other /= Void
@@ -117,7 +117,7 @@ feature -- Basic operations
 			Result := b_xor ($Current, $other)
 		end
 
-	prefix "not": like Current is
+	negated alias "not": like Current is
 			-- Bit-by-bit negation
 		do
 			Result := b_not ($Current)
