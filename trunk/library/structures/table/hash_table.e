@@ -318,6 +318,16 @@ feature -- Comparison
 				(has_default = other.has_default)
 		end
 
+	same_keys (a_search_key, a_key: K): BOOLEAN is
+			-- Does `a_search_key' equal to `a_key'?
+			--| Default implementation is using ~.
+		require
+			valid_search_key: valid_key (a_search_key)
+			valid_key: valid_key (a_key)
+		do
+			Result := a_search_key ~ a_key
+		end
+
 feature -- Status report
 
 	full: BOOLEAN is False
@@ -418,7 +428,7 @@ feature -- Status report
 						nb := l_internal.field_count (l_cell)
 						l_name := "item"
 					until
-						i >= nb
+						i > nb
 					loop
 						if l_internal.field_name (i, l_cell) ~ l_name then
 							l_index := i
@@ -426,7 +436,7 @@ feature -- Status report
 						end
 						i := i + 1
 					end
-					if k /= Void then
+					if l_index > 0 and then k /= Void then
 						Result := l_internal.field_static_type_of_type (
 							l_index, l_internal.dynamic_type (l_cell)) = l_internal.dynamic_type (k)
 					end
@@ -706,7 +716,7 @@ feature -- Element change
 		ensure
 			same_count: count = old count
 			replaced_or_conflict_or_not_found: replaced or conflict or not_found
-			old_absent: (replaced and new_key /~ old_key) implies (not has (old_key))
+			old_absent: (replaced and not same_keys (new_key, old_key)) implies (not has (old_key))
 			new_present: (replaced or conflict) = has (new_key)
 			new_item: replaced implies (item (new_key) = old (item (old_key)))
 			not_found_implies_no_old_key: not_found implies old (not has (old_key))
@@ -1106,7 +1116,7 @@ feature {NONE} -- Implementation
 								catcall_detected: l_key.same_type (key)
 							end
 						end
-						if l_key ~ key then
+						if same_keys (l_key, key) then
 							stop := True
 							control := found_constant
 						end
