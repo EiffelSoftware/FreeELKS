@@ -107,9 +107,9 @@ feature -- Status report
 			-- associated with `other'.
 		do
 			--| Do not compare implementation data
-			Result := equal (closed_operands, other.closed_operands)
-				and then equal (operands, other.operands)
-				and then equal (open_map, other.open_map)
+			Result := closed_operands ~ other.closed_operands
+				and then operands ~ other.operands
+				and then open_map ~ other.open_map
 				and then (rout_disp = other.rout_disp)
 				and then (class_id = other.class_id)
 				and then (feature_id = other.feature_id)
@@ -193,7 +193,7 @@ feature -- Settings
 		do
 			operands := args
 		ensure
-			operands_set: (operands /= Void implies equal (operands, args)) or
+			operands_set: (operands /= Void implies (operands ~ args)) or
 				(operands = Void implies (args = Void or else args.is_empty))
 		end
 

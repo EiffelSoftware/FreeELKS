@@ -76,8 +76,7 @@ feature -- Comparison
 			-- Is associated function the same as the one
 			-- associated with `other'?
 		do
-			Result := Precursor (other) and then
-					 equal (last_result, other.last_result)
+			Result := Precursor (other) and then (last_result ~ other.last_result)
 		end
 
 feature -- Duplication

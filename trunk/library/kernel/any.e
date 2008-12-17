@@ -71,7 +71,7 @@ feature -- Comparison
 		do
 			Result := standard_is_equal (other)
 		ensure
-			symmetric: Result implies other.is_equal (Current)
+			symmetric: Result implies other ~ Current
 			consistent: standard_is_equal (other) implies Result
 		end
 
@@ -157,7 +157,7 @@ feature -- Duplication
 			"built_in"
 		ensure
 			twin_not_void: Result /= Void
-			is_equal: Result.is_equal (Current)
+			is_equal: Result ~ Current
 		end
 
 	copy (other: like Current) is
@@ -169,7 +169,7 @@ feature -- Duplication
 		external
 			"built_in"
 		ensure
-			is_equal: is_equal (other)
+			is_equal: Current ~ other
 		end
 
 	frozen standard_copy (other: like Current) is
@@ -197,7 +197,7 @@ feature -- Duplication
 				Result := other.twin
 			end
 		ensure
-			equal: equal (Result, other)
+			equal: Result ~ other
 		end
 
 	frozen standard_clone (other: ?ANY): like other is

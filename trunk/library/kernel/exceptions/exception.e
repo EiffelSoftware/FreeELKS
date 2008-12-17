@@ -33,7 +33,7 @@ feature {NONE} -- Initialization
 		do
 			set_message (a_tag)
 		ensure
-			tag_set: equal (tag, a_tag)
+			tag_set: tag ~ a_tag
 		end
 
 feature -- Raise
@@ -134,7 +134,7 @@ feature -- Status settings
 				c_message := Void
 			end
 		ensure
-			message_set: equal (message, a_message)
+			message_set: message ~ a_message
 		end
 
 feature -- Status report

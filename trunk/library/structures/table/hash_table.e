@@ -203,7 +203,7 @@ feature -- Access
 					until
 						i = capacity or else Result
 					loop
-						Result := occupied (i) and then equal (v, l_content.item (i))
+						Result := occupied (i) and then (v ~ l_content.item (i))
 						i := i + 1
 					end
 				else
@@ -286,7 +286,7 @@ feature -- Measurement
 				until
 					off
 				loop
-					if equal (item_for_iteration, v) then
+					if item_for_iteration ~ v then
 						Result := Result + 1
 					end
 					forth
@@ -312,9 +312,9 @@ feature -- Comparison
 			-- Does table contain the same information as `other'?
 		do
 			Result :=
-				equal (keys, other.keys) and
-				equal (content, other.content) and
-				equal (deleted_marks, other.deleted_marks) and
+				keys ~ other.keys and
+				content ~ other.content and
+				deleted_marks ~ other.deleted_marks and
 				(has_default = other.has_default)
 		end
 
@@ -420,7 +420,7 @@ feature -- Status report
 					until
 						i >= nb
 					loop
-						if l_internal.field_name (i, l_cell).is_equal (l_name) then
+						if l_internal.field_name (i, l_cell) ~ l_name then
 							l_index := i
 							i := nb + 1
 						end
@@ -706,8 +706,7 @@ feature -- Element change
 		ensure
 			same_count: count = old count
 			replaced_or_conflict_or_not_found: replaced or conflict or not_found
-			old_absent: (replaced and not equal (new_key, old_key))
-								implies (not has (old_key))
+			old_absent: (replaced and new_key /~ old_key) implies (not has (old_key))
 			new_present: (replaced or conflict) = has (new_key)
 			new_item: replaced implies (item (new_key) = old (item (old_key)))
 			not_found_implies_no_old_key: not_found implies old (not has (old_key))
@@ -1107,7 +1106,7 @@ feature {NONE} -- Implementation
 								catcall_detected: l_key.same_type (key)
 							end
 						end
-						if l_key.is_equal (key) then
+						if l_key ~ key then
 							stop := True
 							control := found_constant
 						end

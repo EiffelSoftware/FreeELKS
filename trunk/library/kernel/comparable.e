@@ -35,7 +35,7 @@ feature -- Comparison
 		do
 			Result := not (other < Current)
 		ensure then
-			definition: Result = ((Current < other) or is_equal (other))
+			definition: Result = ((Current < other) or (Current ~ other))
 		end
 
 	is_greater alias ">" (other: like Current): BOOLEAN is
@@ -75,7 +75,7 @@ feature -- Comparison
 				Result := 1
 			end
 		ensure
-			equal_zero: (Result = 0) = is_equal (other)
+			equal_zero: (Result = 0) = (Current ~ other)
 			smaller_negative: (Result = -1) = (Current < other)
 			greater_positive: (Result = 1) = (Current > other)
 		end

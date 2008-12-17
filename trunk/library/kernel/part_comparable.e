@@ -23,7 +23,7 @@ feature -- Comparison
 		require
 			other_exists: other /= Void
 		do
-			Result := (Current < other) or is_equal (other)
+			Result := (Current < other) or (Current ~ other)
 		end
 
 	is_greater alias ">" (other: like Current): BOOLEAN is
@@ -39,7 +39,7 @@ feature -- Comparison
 		require
 			other_exists: other /= Void
 		do
-			Result := (other < Current) or is_equal (other)
+			Result := (other < Current) or (Current ~ other)
 		end
 
 end

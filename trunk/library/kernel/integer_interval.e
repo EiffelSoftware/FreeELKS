@@ -165,7 +165,7 @@ feature -- Measurement
 		do
 			Result := Current
 		ensure then
-			index_set_is_range: equal (Result, Current)
+			index_set_is_range: Result ~ Current
 		end
 
 feature -- Comparison
@@ -464,7 +464,7 @@ feature {NONE} -- Inapplicable
 
 invariant
 	count_definition: upper_defined and lower_defined implies count = upper - lower + 1
-	index_set_is_range: equal (index_set, Current)
+	index_set_is_range: index_set ~ Current
 	not_infinite: upper_defined and lower_defined
 
 end
