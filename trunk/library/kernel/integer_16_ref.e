@@ -601,7 +601,7 @@ feature {NONE} -- Implementation
 			end
 		ensure
 			result_exists: Result /= Void
-			same_absolute_value: equal (Result, Current) or equal (Result, - Current)
+			same_absolute_value: (Result ~ Current) or (Result ~ -Current)
 		end
 
 invariant

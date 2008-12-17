@@ -111,7 +111,6 @@ feature -- Access
 		local
 			i, nb: INTEGER
 			l_area: like area
-			l_item: G
 		do
 			l_area := area
 			nb := upper - lower
@@ -120,8 +119,7 @@ feature -- Access
 				until
 					i > nb or Result
 				loop
-					l_item := l_area.item (i)
-					Result := l_item /= Void and then l_item.is_equal (v)
+					Result := l_area.item (i) ~ v
 					i := i + 1
 				end
 			else
@@ -155,16 +153,14 @@ feature -- Measurement
 			-- Number of times `v' appears in structure
 		local
 			i: INTEGER
-			x: G
 		do
-			if object_comparison and then v /= Void then
+			if object_comparison then
 				from
 					i := lower
 				until
 					i > upper
 				loop
-					x := item (i)
-					if x /= Void and then v.is_equal (x) then
+					if item (i) ~ v then
 						Result := Result + 1
 					end
 					i := i + 1
@@ -212,7 +208,7 @@ feature -- Comparison
 					until
 						not Result or i > upper
 					loop
-						Result := equal (item (i), other.item (i))
+						Result := item (i) ~ other.item (i)
 						i := i + 1
 					end
 				else
@@ -645,7 +641,7 @@ feature -- Duplication
 				set_area (other.area.twin)
 			end
 		ensure then
-			equal_areas: area.is_equal (other.area)
+			equal_areas: area ~ other.area
 		end
 
 	subarray (start_pos, end_pos: INTEGER): ARRAY [G] is

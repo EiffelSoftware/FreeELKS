@@ -37,7 +37,7 @@ feature -- Conversion
 		do
 			Result := g
 		ensure
-			adapted: equal (Result, g)
+			adapted: Result ~ g
 		end
 
 	attempt alias "#?" (obj: ?ANY): ?G is

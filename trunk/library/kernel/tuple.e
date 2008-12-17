@@ -219,7 +219,7 @@ feature -- Comparison
 						until
 							i > nb or not Result
 						loop
-							Result := equal (item (i), other.item (i))
+							Result := item (i) ~ other.item (i)
 							i := i + 1
 						end
 					end

@@ -62,7 +62,7 @@ feature -- Basic operations
 		deferred
 		ensure
 			result_exists: Result /= Void
-			commutative: equal (Result, other + Current)
+			commutative: Result ~ (other + Current)
 		end
 
 	minus alias "-" (other: like Current): like Current is

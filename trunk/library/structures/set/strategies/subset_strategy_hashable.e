@@ -53,9 +53,9 @@ feature -- Comparison
 								-- Because `has' has been queried before.
 						end
 						if set1.object_comparison then
-							Result := not equal (hash.found_item, set1.item)
+							Result := set1.item /~ hash.found_item
 						else
-							Result := (set1.item /= hash.found_item)
+							Result := set1.item /= hash.found_item
 						end
 					end
 					set1.forth
@@ -76,9 +76,9 @@ feature -- Comparison
 						hash.put (set2.item, c)
 					else
 						if set1.object_comparison then
-							Result := not equal (hash.found_item, set2.item)
+							Result := set2.item /~ hash.found_item
 						else
-							Result := (set2.item /= hash.found_item)
+							Result := set2.item /= hash.found_item
 						end
 					end
 					set2.forth
@@ -119,9 +119,9 @@ feature -- Basic operations
 					hash.search (c)
 					if hash.found then
 						if set1.object_comparison then
-							eq := equal (hash.found_item, set2.item)
+							eq := set2.item ~ hash.found_item
 						else
-							eq := (set2.item = hash.found_item)
+							eq := set2.item = hash.found_item
 						end
 						if eq then hash.remove (c) end
 					else
