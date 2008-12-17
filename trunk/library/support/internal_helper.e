@@ -134,7 +134,7 @@ feature {NONE} -- Implementation: status report
 						i := i + 1
 					end
 				else
-					i := 2
+					i := 1
 				end
 				if s.item (i).is_alpha then
 					from
