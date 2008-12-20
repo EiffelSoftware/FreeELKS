@@ -68,8 +68,8 @@ feature -- Comparison
 			-- equal to current object?
 		require
 			other_not_void: other /= Void
-		do
-			Result := standard_is_equal (other)
+		external
+			"built_in"
 		ensure
 			symmetric: Result implies other ~ Current
 			consistent: standard_is_equal (other) implies Result
