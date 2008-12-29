@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Exception represents an assertion violation.
 		]"

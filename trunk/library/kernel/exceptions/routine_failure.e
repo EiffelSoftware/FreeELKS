@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Exception representing a routine failure.
 		]"
@@ -22,7 +22,7 @@ feature -- Access
 	class_name: ?STRING
 			-- Class of the failure
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.routine_failure
@@ -30,7 +30,7 @@ feature -- Access
 
 feature {EXCEPTION_MANAGER} -- Element change
 
-	frozen set_routine_name (a_routine_name: like routine_name) is
+	frozen set_routine_name (a_routine_name: like routine_name)
 			-- Set `routine_name' with `a_routine_name'
 		do
 			routine_name := a_routine_name
@@ -38,7 +38,7 @@ feature {EXCEPTION_MANAGER} -- Element change
 			routine_name_set: routine_name = a_routine_name
 		end
 
-	frozen set_class_name (a_class_name: like class_name) is
+	frozen set_class_name (a_class_name: like class_name)
 			-- Set `class_name' with `a_class_name'
 		do
 			class_name := a_class_name
@@ -48,6 +48,6 @@ feature {EXCEPTION_MANAGER} -- Element change
 
 feature {NONE} -- Accesss
 
-	frozen internal_meaning: STRING is "Routine failure."
+	frozen internal_meaning: STRING = "Routine failure."
 
 end

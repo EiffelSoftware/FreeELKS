@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Facilities for adapting the exception handling mechanism.
 		This class may be used as ancestor by classes needing its facilities.
@@ -19,7 +19,7 @@ inherit
 
 feature -- Status report
 
-	meaning (except: INTEGER): ?STRING is
+	meaning (except: INTEGER): ?STRING
 			-- A message in English describing what `except' is
 		local
 			l_exception: ?EXCEPTION
@@ -30,7 +30,7 @@ feature -- Status report
 			end
 		end
 
-	assertion_violation: BOOLEAN is
+	assertion_violation: BOOLEAN
 			-- Is last exception originally due to a violated
 			-- assertion or non-decreasing variant?
 		do
@@ -38,7 +38,7 @@ feature -- Status report
 						{l_av: ASSERTION_VIOLATION} l_exception.original
 		end
 
-	is_developer_exception: BOOLEAN is
+	is_developer_exception: BOOLEAN
 			-- Is the last exception originally due to
 			-- a developer exception?
 		do
@@ -46,7 +46,7 @@ feature -- Status report
 						{l_de: DEVELOPER_EXCEPTION} l_exception.original
 		end
 
-	is_developer_exception_of_name (name: STRING): BOOLEAN is
+	is_developer_exception_of_name (name: STRING): BOOLEAN
 			-- Is the last exception originally due to a developer
 			-- exception of name `name'?
 		do
@@ -55,7 +55,7 @@ feature -- Status report
 			end
 		end
 
-	developer_exception_name: ?STRING is
+	developer_exception_name: ?STRING
 			-- Name of last developer-raised exception
 		require
 			applicable: is_developer_exception
@@ -65,7 +65,7 @@ feature -- Status report
 			end
 		end
 
-	is_signal: BOOLEAN is
+	is_signal: BOOLEAN
 			-- Is last exception originally due to an external
 			-- event (operating system signal)?
 		do
@@ -73,7 +73,7 @@ feature -- Status report
 						{l_failure: OPERATING_SYSTEM_SIGNAL_FAILURE} l_exception.original
 		end
 
-	is_system_exception: BOOLEAN is
+	is_system_exception: BOOLEAN
 			-- Is last exception originally due to an
 			-- external event (operating system error)?
 		local
@@ -91,7 +91,7 @@ feature -- Status report
 			end
 		end
 
-	tag_name: ?STRING is
+	tag_name: ?STRING
 			-- Tag of last violated assertion clause
 		do
 			if {l_exception: EXCEPTION} exception_manager.last_exception then
@@ -99,7 +99,7 @@ feature -- Status report
 			end
 		end
 
-	recipient_name: ?STRING is
+	recipient_name: ?STRING
 			-- Name of the routine whose execution was
 			-- interrupted by last exception
 		do
@@ -108,7 +108,7 @@ feature -- Status report
 			end
 		end
 
-	class_name: ?STRING is
+	class_name: ?STRING
 			-- Name of the class that includes the recipient
 			-- of original form of last exception
 		do
@@ -117,7 +117,7 @@ feature -- Status report
 			end
 		end
 
-	exception: INTEGER is
+	exception: INTEGER
 			-- Code of last exception that occurred
 		do
 			if {l_exception: EXCEPTION} exception_manager.last_exception then
@@ -125,7 +125,7 @@ feature -- Status report
 			end
 		end
 
-	exception_trace: ?STRING is
+	exception_trace: ?STRING
 			-- String representation of the exception trace
 		do
 			if {l_exception: EXCEPTION} exception_manager.last_exception then
@@ -133,7 +133,7 @@ feature -- Status report
 			end
 		end
 
-	original_tag_name: ?STRING is
+	original_tag_name: ?STRING
 			-- Assertion tag for original form of last
 			-- assertion violation.
 		do
@@ -142,7 +142,7 @@ feature -- Status report
 			end
 		end
 
-	original_exception: INTEGER is
+	original_exception: INTEGER
 			-- Original code of last exception that triggered
 			-- current exception
 		do
@@ -151,7 +151,7 @@ feature -- Status report
 			end
 		end
 
-	original_recipient_name: ?STRING is
+	original_recipient_name: ?STRING
 			-- Name of the routine whose execution was
 			-- interrupted by original form of last exception
 		do
@@ -160,7 +160,7 @@ feature -- Status report
 			end
 		end
 
-	original_class_name: ?STRING is
+	original_class_name: ?STRING
 			-- Name of the class that includes the recipient
 			-- of original form of last exception
 		do
@@ -171,7 +171,7 @@ feature -- Status report
 
 feature -- Status setting
 
-	catch (code: INTEGER) is
+	catch (code: INTEGER)
 			-- Make sure that any exception of code `code' will be
 			-- caught. This is the default.
 		local
@@ -183,7 +183,7 @@ feature -- Status setting
 			end
 		end
 
-	ignore (code: INTEGER) is
+	ignore (code: INTEGER)
 			-- Make sure that any exception of code `code' will be
 			-- ignored. This is not the default.
 		local
@@ -195,7 +195,7 @@ feature -- Status setting
 			end
 		end
 
-	raise (name: STRING) is
+	raise (name: STRING)
 			-- Raise a developer exception of name `name'.
 		local
 			l_exception: DEVELOPER_EXCEPTION
@@ -205,7 +205,7 @@ feature -- Status setting
 			l_exception.raise
 		end
 
-	raise_retrieval_exception (name: STRING) is
+	raise_retrieval_exception (name: STRING)
 			-- Raise a retrieval exception of name `name'.
 		local
 			l_exception: ?EXCEPTION
@@ -217,7 +217,7 @@ feature -- Status setting
 			end
 		end
 
-	die (code: INTEGER) is
+	die (code: INTEGER)
 			-- Terminate execution with exit status `code',
 			-- without triggering an exception.
 		external
@@ -226,7 +226,7 @@ feature -- Status setting
 			"esdie"
 		end
 
-	new_die (code: INTEGER) is obsolete "Use ``die''"
+	new_die (code: INTEGER) obsolete "Use ``die''"
 			-- Terminate execution with exit status `code',
 			-- without triggering an exception.
 		external
@@ -235,7 +235,7 @@ feature -- Status setting
 			"esdie"
 		end
 
-	message_on_failure is
+	message_on_failure
 			-- Print an exception history table
 			-- in case of failure.
 			-- This is the default.
@@ -243,7 +243,7 @@ feature -- Status setting
 			c_trace_exception (True)
 		end
 
-	no_message_on_failure is
+	no_message_on_failure
 			-- Do not print an exception history table
 			-- in case of failure.
 		do
@@ -252,7 +252,7 @@ feature -- Status setting
 
 feature {NONE} -- Implementation
 
-	c_trace_exception (b: BOOLEAN) is
+	c_trace_exception (b: BOOLEAN)
 		external
 			"C use %"eif_except.h%""
 		alias

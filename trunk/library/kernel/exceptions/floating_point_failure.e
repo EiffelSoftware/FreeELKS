@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Floating point failure
 		]"
@@ -16,7 +16,7 @@ inherit
 
 feature -- Access
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.floating_point_exception
@@ -24,6 +24,6 @@ feature -- Access
 
 feature {NONE} -- Accesss
 
-	frozen internal_meaning: STRING is "Floating point exception."
+	frozen internal_meaning: STRING = "Floating point exception."
 
 end

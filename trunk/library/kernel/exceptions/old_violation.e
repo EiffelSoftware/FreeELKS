@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Exception raised when an old expression evaluation failure was recorded and the expression access is attempted in postcondition.
 		]"
@@ -16,7 +16,7 @@ inherit
 
 feature -- Access
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.old_exception
@@ -24,6 +24,6 @@ feature -- Access
 
 feature {NONE} -- Accesss
 
-	frozen internal_meaning: STRING is "Old expression evaluation failed."
+	frozen internal_meaning: STRING = "Old expression evaluation failed."
 
 end

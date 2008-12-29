@@ -1,4 +1,4 @@
-indexing
+note
 	description: "Representation of an Eiffel type."
 	library: "Free implementation of ELKS library"
 	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
@@ -19,7 +19,7 @@ create {NONE}
 
 feature -- Comparison
 
-	is_equal (other: like Current): BOOLEAN is
+	is_equal (other: like Current): BOOLEAN
 			-- Is `other' attached to an object considered
 			-- equal to current object?
 		local
@@ -32,7 +32,7 @@ feature -- Comparison
 
 feature -- Conversion
 
-	adapt alias "[]" (g: ?G): ?G is
+	adapt alias "[]" (g: ?G): ?G
 			-- Adapts `g' or calls necessary conversion routine to adapt `g'
 		do
 			Result := g
@@ -40,7 +40,7 @@ feature -- Conversion
 			adapted: Result ~ g
 		end
 
-	attempt alias "#?" (obj: ?ANY): ?G is
+	attempt alias "#?" (obj: ?ANY): ?G
 			-- Result of assignment attempt of `obj' to entity of type G
 		do
 			if {l_g: G} obj then
@@ -50,7 +50,7 @@ feature -- Conversion
 			assigned_or_void: Result = obj or Result = default_value
 		end
 
-	default_value: ?G is
+	default_value: ?G
 		do
 		end
 

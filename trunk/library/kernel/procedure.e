@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Objects representing delayed calls to a procedure.
 		with some operands possibly still open.
@@ -21,13 +21,13 @@ inherit
 
 feature -- Calls
 
-	apply is
+	apply
 			-- Call procedure with `args' as last set.
 		do
 			call (operands)
 		end
 
-	call (args: ?OPEN_ARGS) is
+	call (args: ?OPEN_ARGS)
 		local
 			c: like closed_operands
 			l_closed_count: INTEGER

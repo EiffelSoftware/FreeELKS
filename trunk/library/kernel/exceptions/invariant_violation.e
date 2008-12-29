@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Exception representing an invariant violation
 		]"
@@ -16,7 +16,7 @@ inherit
 
 feature -- Access
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.class_invariant
@@ -24,7 +24,7 @@ feature -- Access
 
 feature {EXCEPTION_MANAGER} -- Element change
 
-	frozen set_is_entry (a_is_entry: BOOLEAN) is
+	frozen set_is_entry (a_is_entry: BOOLEAN)
 			-- Set `is_entry' with `a_is_entry'.
 		do
 			is_entry := a_is_entry
@@ -34,7 +34,7 @@ feature {EXCEPTION_MANAGER} -- Element change
 
 feature {NONE} -- Accesss
 
-	frozen internal_meaning: STRING is "Class invariant violated."
+	frozen internal_meaning: STRING = "Class invariant violated."
 
 feature -- Status report
 

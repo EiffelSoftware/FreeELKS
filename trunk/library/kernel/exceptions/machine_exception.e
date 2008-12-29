@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Deferred class for machine exception, operation exceptions and hardware exceptions
 		]"

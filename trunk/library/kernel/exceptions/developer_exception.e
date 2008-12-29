@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Ancestor of all developer exceptions
 		]"
@@ -20,7 +20,7 @@ inherit
 
 feature -- Access
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.developer_exception
@@ -28,7 +28,7 @@ feature -- Access
 
 feature {NONE} -- Access
 
-	internal_meaning: STRING is
+	internal_meaning: STRING
 		once
 			Result := "Developer exception."
 		end

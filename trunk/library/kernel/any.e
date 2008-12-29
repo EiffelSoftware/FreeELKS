@@ -1,4 +1,4 @@
-indexing
+note
 
 	description: "[
 		Project-wide universal properties.
@@ -19,7 +19,7 @@ feature -- Customization
 
 feature -- Access
 
-	generator: STRING is
+	generator: STRING
 			-- Name of current object's generating class
 			-- (base class of the type of which it is a direct instance)
 		external
@@ -29,7 +29,7 @@ feature -- Access
 			generator_not_empty: not Result.is_empty
 		end
 
- 	generating_type: STRING is
+ 	generating_type: STRING
 			-- Name of current object's generating type
 			-- (type of which it is a direct instance)
 		external
@@ -41,7 +41,7 @@ feature -- Access
 
 feature -- Status report
 
-	conforms_to (other: ANY): BOOLEAN is
+	conforms_to (other: ANY): BOOLEAN
 			-- Does type of current object conform to type
 			-- of `other' (as per Eiffel: The Language, chapter 13)?
 		require
@@ -50,7 +50,7 @@ feature -- Status report
 			"built_in"
 		end
 
-	same_type (other: ANY): BOOLEAN is
+	same_type (other: ANY): BOOLEAN
 			-- Is type of current object identical to type of `other'?
 		require
 			other_not_void: other /= Void
@@ -63,7 +63,7 @@ feature -- Status report
 
 feature -- Comparison
 
-	is_equal (other: like Current): BOOLEAN is
+	is_equal (other: like Current): BOOLEAN
 			-- Is `other' attached to an object considered
 			-- equal to current object?
 		require
@@ -75,7 +75,7 @@ feature -- Comparison
 			consistent: standard_is_equal (other) implies Result
 		end
 
-	frozen standard_is_equal (other: like Current): BOOLEAN is
+	frozen standard_is_equal (other: like Current): BOOLEAN
 			-- Is `other' attached to an object of the same type
 			-- as current object, and field-by-field identical to it?
 		require
@@ -87,7 +87,7 @@ feature -- Comparison
 			symmetric: Result implies other.standard_is_equal (Current)
 		end
 
-	frozen equal (some: ?ANY; other: like some): BOOLEAN is
+	frozen equal (some: ?ANY; other: like some): BOOLEAN
 			-- Are `some' and `other' either both void or attached
 			-- to objects considered equal?
 		do
@@ -103,7 +103,7 @@ feature -- Comparison
 						some.is_equal (other))
 		end
 
-	frozen standard_equal (some: ?ANY; other: like some): BOOLEAN is
+	frozen standard_equal (some: ?ANY; other: like some): BOOLEAN
 			-- Are `some' and `other' either both void or attached to
 			-- field-by-field identical objects of the same type?
 			-- Always uses default object comparison criterion.
@@ -120,7 +120,7 @@ feature -- Comparison
 						some.standard_is_equal (other))
 		end
 
-	frozen is_deep_equal (other: like Current): BOOLEAN is
+	frozen is_deep_equal (other: like Current): BOOLEAN
 			-- Are `Current' and `other' attached to isomorphic object structures?
 		require
 			other_not_void: other /= Void
@@ -132,7 +132,7 @@ feature -- Comparison
 			symmetric: Result implies other.is_deep_equal (Current)
 		end
 
-	frozen deep_equal (some: ?ANY; other: like some): BOOLEAN is
+	frozen deep_equal (some: ?ANY; other: like some): BOOLEAN
 			-- Are `some' and `other' either both void
 			-- or attached to isomorphic object structures?
 		do
@@ -150,7 +150,7 @@ feature -- Comparison
 
 feature -- Duplication
 
-	frozen twin: like Current is
+	frozen twin: like Current
 			-- New object equal to `Current'
 			-- `twin' calls `copy'; to change copying/twining semantics, redefine `copy'.
 		external
@@ -160,7 +160,7 @@ feature -- Duplication
 			is_equal: Result ~ Current
 		end
 
-	copy (other: like Current) is
+	copy (other: like Current)
 			-- Update current object using fields of object attached
 			-- to `other', so as to yield equal objects.
 		require
@@ -172,7 +172,7 @@ feature -- Duplication
 			is_equal: Current ~ other
 		end
 
-	frozen standard_copy (other: like Current) is
+	frozen standard_copy (other: like Current)
 			-- Copy every field of `other' onto corresponding field
 			-- of current object.
 		require
@@ -184,7 +184,7 @@ feature -- Duplication
 			is_standard_equal: standard_is_equal (other)
 		end
 
-	frozen clone (other: ?ANY): like other is
+	frozen clone (other: ?ANY): like other
 			-- Void if `other' is void; otherwise new object
 			-- equal to `other'
 			--
@@ -200,7 +200,7 @@ feature -- Duplication
 			equal: Result ~ other
 		end
 
-	frozen standard_clone (other: ?ANY): like other is
+	frozen standard_clone (other: ?ANY): like other
 			-- Void if `other' is void; otherwise new object
 			-- field-by-field identical to `other'.
 			-- Always uses default copying semantics.
@@ -214,7 +214,7 @@ feature -- Duplication
 			equal: standard_equal (Result, other)
 		end
 
-	frozen standard_twin: like Current is
+	frozen standard_twin: like Current
 			-- New object field-by-field identical to `other'.
 			-- Always uses default copying semantics.
 		external
@@ -224,7 +224,7 @@ feature -- Duplication
 			equal: standard_equal (Result, Current)
 		end
 
-	frozen deep_twin: like Current is
+	frozen deep_twin: like Current
 			-- New object structure recursively duplicated from Current.
 		external
 			"built_in"
@@ -233,7 +233,7 @@ feature -- Duplication
 			deep_equal: deep_equal (Current, Result)
 		end
 
-	frozen deep_clone (other: ?ANY): like other is
+	frozen deep_clone (other: ?ANY): like other
 			-- Void if `other' is void: otherwise, new object structure
 			-- recursively duplicated from the one attached to `other'
 		obsolete
@@ -246,7 +246,7 @@ feature -- Duplication
 			deep_equal: deep_equal (other, Result)
 		end
 
-	frozen deep_copy (other: like Current) is
+	frozen deep_copy (other: like Current)
 			-- Effect equivalent to that of:
 			--		`copy' (`other' . `deep_twin')
 		require
@@ -259,7 +259,7 @@ feature -- Duplication
 
 feature {NONE} -- Retrieval
 
-	frozen internal_correct_mismatch is
+	frozen internal_correct_mismatch
 			-- Called from runtime to perform a proper dynamic dispatch on `correct_mismatch'
 			-- from MISMATCH_CORRECTOR.
 		local
@@ -278,7 +278,7 @@ feature {NONE} -- Retrieval
 
 feature -- Output
 
-	io: STD_FILES is
+	io: STD_FILES
 			-- Handle to standard file setup
 		once
 			create Result
@@ -287,7 +287,7 @@ feature -- Output
 			io_not_void: Result /= Void
 		end
 
-	out: STRING is
+	out: STRING
 			-- New string containing terse printable representation
 			-- of current object
 		do
@@ -296,7 +296,7 @@ feature -- Output
 			out_not_void: Result /= Void
 		end
 
-	frozen tagged_out: STRING is
+	frozen tagged_out: STRING
 			-- New string containing terse printable representation
 			-- of current object
 		external
@@ -305,7 +305,7 @@ feature -- Output
 			tagged_out_not_void: Result /= Void
 		end
 
-	print (some: ?ANY) is
+	print (some: ?ANY)
 			-- Write terse external representation of `some'
 			-- on standard output.
 		do
@@ -316,7 +316,7 @@ feature -- Output
 
 feature -- Platform
 
-	Operating_environment: OPERATING_ENVIRONMENT is
+	Operating_environment: OPERATING_ENVIRONMENT
 			-- Objects available from the operating system
 		once
 			create Result
@@ -326,7 +326,7 @@ feature -- Platform
 
 feature {NONE} -- Initialization
 
-	default_create is
+	default_create
 			-- Process instances of classes with no creation clause.
 			-- (Default: do nothing.)
 		do
@@ -334,23 +334,23 @@ feature {NONE} -- Initialization
 
 feature -- Basic operations
 
-	default_rescue is
+	default_rescue
 			-- Process exception for routines with no Rescue clause.
 			-- (Default: do nothing.)
 		do
 		end
 
-	frozen do_nothing is
+	frozen do_nothing
 			-- Execute a null action.
 		do
 		end
 
-	frozen default: ?like Current is
+	frozen default: ?like Current
 			-- Default value of object's type
 		do
 		end
 
-	frozen default_pointer: POINTER is
+	frozen default_pointer: POINTER
 			-- Default value of type `POINTER'
 			-- (Avoid the need to write `p'.`default' for
 			-- some `p' of type `POINTER'.)

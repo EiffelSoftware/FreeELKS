@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Exception for feature applied to void reference
 		]"
@@ -16,7 +16,7 @@ inherit
 
 feature -- Access
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.void_call_target
@@ -24,6 +24,6 @@ feature -- Access
 
 feature {NONE} -- Accesss
 
-	frozen internal_meaning: STRING is "Feature call on void target."
+	frozen internal_meaning: STRING = "Feature call on void target."
 
 end

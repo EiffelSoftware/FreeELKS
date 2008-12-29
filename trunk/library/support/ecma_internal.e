@@ -1,4 +1,4 @@
-indexing
+note
 	description: "Version of INTERNAL which does not use the mapping of STRING to STRING_8, INTEGER to INTEGER_32, etc..."
 	library: "Free implementation of ELKS library"
 	copyright: "Copyright (c) 2005, Eiffel Software and others"
@@ -17,7 +17,7 @@ inherit
 
 feature -- Access
 
-	is_pre_ecma_mapping_disabled: BOOLEAN is
+	is_pre_ecma_mapping_disabled: BOOLEAN
 			-- Are we mapping old names to new ECMA names?
 			-- No, because we are only using the ECMA names.
 		do

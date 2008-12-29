@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Deferred class for exceptions of Eiffel language, runtime and so on.
 		]"

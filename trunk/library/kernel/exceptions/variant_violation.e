@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Loop variant violation
 		]"
@@ -16,7 +16,7 @@ inherit
 
 feature -- Access
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.loop_variant
@@ -24,6 +24,6 @@ feature -- Access
 
 feature {NONE} -- Accesss
 
-	frozen internal_meaning: STRING is "Non-decreasing loop variant or negative value reached."
+	frozen internal_meaning: STRING = "Non-decreasing loop variant or negative value reached."
 
 end

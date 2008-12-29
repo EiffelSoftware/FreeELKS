@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Operating system failure
 		]"
@@ -16,7 +16,7 @@ inherit
 
 feature -- Access
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.operating_system_exception
@@ -27,7 +27,7 @@ feature -- Access
 
 feature {EXCEPTION_MANAGER} -- Status setting
 
-	set_Error_code (a_code: like Error_code) is
+	set_Error_code (a_code: like Error_code)
 			-- Set `Error_code' with `a_code'
 		do
 			Error_code := a_code
@@ -35,6 +35,6 @@ feature {EXCEPTION_MANAGER} -- Status setting
 
 feature {NONE} -- Accesss
 
-	frozen internal_meaning: STRING is "Operating system error."
+	frozen internal_meaning: STRING = "Operating system error."
 
 end
