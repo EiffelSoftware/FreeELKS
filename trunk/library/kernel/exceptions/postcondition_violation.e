@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Exception representing a postcondition violation
 		]"
@@ -16,7 +16,7 @@ inherit
 
 feature -- Access
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.postcondition
@@ -24,6 +24,6 @@ feature -- Access
 
 feature {NONE} -- Accesss
 
-	frozen internal_meaning: STRING is "Postcondition violated."
+	frozen internal_meaning: STRING = "Postcondition violated."
 
 end

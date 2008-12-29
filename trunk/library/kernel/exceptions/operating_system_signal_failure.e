@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Operating system signal failure
 		]"
@@ -16,7 +16,7 @@ inherit
 
 feature -- Access
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.signal_exception
@@ -27,7 +27,7 @@ feature -- Access
 
 feature {EXCEPTION_MANAGER} -- Status setting
 
-	set_signal_code (a_code: like signal_code) is
+	set_signal_code (a_code: like signal_code)
 			-- Set `signal_code' with `a_code'
 		do
 			signal_code := a_code
@@ -35,6 +35,6 @@ feature {EXCEPTION_MANAGER} -- Status setting
 
 feature {NONE} -- Accesss
 
-	frozen internal_meaning: STRING is "Operating system signal."
+	frozen internal_meaning: STRING = "Operating system signal."
 
 end

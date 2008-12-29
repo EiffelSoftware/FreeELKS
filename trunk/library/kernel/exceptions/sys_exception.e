@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Deferred class of all systematic exceptions
 		]"

@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Exception for a COM error
 		]"
@@ -22,7 +22,7 @@ feature -- Access
 	hresult_code: INTEGER
 			-- Error code of COM
 
-	code: INTEGER is
+	code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.com_exception
@@ -30,19 +30,19 @@ feature -- Access
 
 feature -- Status setting
 
-	set_hresult_code(a_code: like hresult_code) is
+	set_hresult_code(a_code: like hresult_code)
 			-- Set `hresult_code' with `a_code'.
 		do
 			hresult_code := a_code
 		end
 
-	hresult_facility: INTEGER is
+	hresult_facility: INTEGER
 			-- Facility code.
 		do
 			Result := ccom_hresult_facility (hresult)
 		end
 
-	hresult_message: STRING is
+	hresult_message: STRING
 			-- Error message.
 		local
 			r: ?STRING
@@ -69,7 +69,7 @@ feature -- Status setting
 
 feature -- Element Change
 
-	trigger (a_code: INTEGER) is
+	trigger (a_code: INTEGER)
 			-- Raise exception with code `code'.
 			-- See class ECOM_EXCEPTION_CODES in EiffelCom for possible values.
 		local
@@ -87,7 +87,7 @@ feature {EXCEPTION_MANAGER} -- Implementation
 	exception_information: ?STRING
 			-- Stream holding exception information.
 
-	set_exception_information(a_message: STRING) is
+	set_exception_information(a_message: STRING)
 			-- Initialize current with stream of `a_message'.
 		require
 			a_message_not_void: a_message /= Void
@@ -109,28 +109,28 @@ feature {EXCEPTION_MANAGER} -- Implementation
 
 feature {NONE} -- Implementation
 
-	frozen ccom_hresult_to_string (a_code: INTEGER): STRING is
+	frozen ccom_hresult_to_string (a_code: INTEGER): STRING
 		do
 			Result := a_code.to_hex_string
 			Result := "0x" + Result
 		end
 
-	frozen ccom_hresult (an_exception_code: POINTER): INTEGER is
+	frozen ccom_hresult (an_exception_code: POINTER): INTEGER
 		external
 			"built_in"
 		end
 
-	frozen ccom_hresult_code (an_hresult: INTEGER): INTEGER is
+	frozen ccom_hresult_code (an_hresult: INTEGER): INTEGER
 		external
 			"built_in"
 		end
 
-	frozen ccom_hresult_facility (an_hresult: INTEGER): INTEGER is
+	frozen ccom_hresult_facility (an_hresult: INTEGER): INTEGER
 		external
 			"built_in"
 		end
 
-	frozen cwin_error_text (a_code: INTEGER): POINTER is
+	frozen cwin_error_text (a_code: INTEGER): POINTER
 			-- Get text from error `a_code'. It is up to the caller to free
 			-- the returned buffer using `cwin_local_free'.
 		external
@@ -187,6 +187,6 @@ feature {NONE} -- Accesss
 			error_message_not_void: Result /= Void
 		end
 
-	frozen internal_meaning: STRING is "COM error."
+	frozen internal_meaning: STRING = "COM error."
 
 end

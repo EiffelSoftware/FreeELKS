@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Exception raised for violated loop invariant
 		]"
@@ -16,7 +16,7 @@ inherit
 
 feature -- Access
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.loop_invariant
@@ -24,6 +24,6 @@ feature -- Access
 
 feature {NONE} -- Accesss
 
-	frozen internal_meaning: STRING is "Loop invariant violated."
+	frozen internal_meaning: STRING = "Loop invariant violated."
 
 end

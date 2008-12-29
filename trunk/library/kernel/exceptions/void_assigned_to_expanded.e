@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 			Exception for assignment of void value to expanded entity
 		]"
@@ -16,7 +16,7 @@ inherit
 
 feature -- Access
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.void_assigned_to_expanded
@@ -24,6 +24,6 @@ feature -- Access
 
 feature {NONE} -- Accesss
 
-	frozen internal_meaning: STRING is "Void assigned to expanded."
+	frozen internal_meaning: STRING = "Void assigned to expanded."
 
 end

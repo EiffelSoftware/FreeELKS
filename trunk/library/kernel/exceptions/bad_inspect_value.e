@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 		Exception raised by inspect value which is not one
 		of the inspect constants, if there is no Else_part.
@@ -17,7 +17,7 @@ inherit
 
 feature -- Access
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.incorrect_inspect_value
@@ -25,6 +25,6 @@ feature -- Access
 
 feature {NONE} -- Accesss
 
-	frozen internal_meaning: STRING is "Unmatched inspect value."
+	frozen internal_meaning: STRING = "Unmatched inspect value."
 
 end

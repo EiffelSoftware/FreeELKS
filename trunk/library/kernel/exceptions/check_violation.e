@@ -1,4 +1,4 @@
-indexing
+note
 	description: "[
 			Exception raised by violated checks
 		]"
@@ -16,7 +16,7 @@ inherit
 
 feature -- Access
 
-	frozen code: INTEGER is
+	frozen code: INTEGER
 			-- Exception code
 		do
 			Result := {EXCEP_CONST}.check_instruction
@@ -24,6 +24,6 @@ feature -- Access
 
 feature {NONE} -- Accesss
 
-	frozen internal_meaning: STRING is "Assertion violated."
+	frozen internal_meaning: STRING = "Assertion violated."
 
 end
