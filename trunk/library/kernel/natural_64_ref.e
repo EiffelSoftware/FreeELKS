@@ -13,7 +13,7 @@ inherit
 	NUMERIC
 		rename
 			quotient as integer_quotient alias "//",
-			opposite as opposite
+			opposite as unapplicable_opposite
 		redefine
 			out, is_equal
 		end
@@ -202,7 +202,7 @@ feature -- Basic operations
 			Result.set_item (+ item)
 		end
 
-	opposite: like Current
+	unapplicable_opposite: like Current
 			-- Unary minus
 		do
 			Result := Current
