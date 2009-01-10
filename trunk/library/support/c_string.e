@@ -274,7 +274,7 @@ feature -- Access
 			until
 				i > nb
 			loop
-				a_area.put (l_data.read_natural_32 (i).to_character_32, j)
+				a_area.put (l_data.read_natural_8 (i).to_character_32, j)
 				i := i + 1
 				j := j + 1
 			end
