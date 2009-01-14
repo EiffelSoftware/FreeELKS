@@ -35,6 +35,17 @@ feature -- Conformance
 			Result := c_type_conforms_to (type1, type2)
 		end
 
+	field_conforms_to (a_source_type, a_field_type: INTEGER): BOOLEAN
+			-- Does `a_source_type' conform to `a_field_type'?
+			--| Different from `type_conforms_to' since possible attachment mark of `a_field_type'
+			--| is discarded.
+		require
+			a_source_type_non_negative: a_source_type >= 0
+			a_field_type_non_negative: a_field_type >= 0
+		do
+			Result := c_type_conforms_to (a_source_type, {ISE_RUNTIME}.detachable_type (a_field_type))
+		end
+
 feature -- Creation
 
 	dynamic_type_from_string (class_type: STRING): INTEGER
@@ -176,6 +187,14 @@ feature -- Status report
 			object_exists: obj /= Void
 		do
 			Result := c_is_marked (obj)
+		end
+
+	is_attached_type (a_type_id: INTEGER): BOOLEAN
+			-- Is `a_type_id' an attached type?
+		require
+			a_type_non_negative: a_type_id >= 0
+		do
+			Result := {ISE_RUNTIME}.is_attached_type (a_type_id)
 		end
 
 feature -- Access
@@ -571,10 +590,9 @@ feature -- Element change
 			index_large_enough: i >= 1
 			index_small_enough: i <= field_count (object)
 			reference_field: field_type (i, object) = Reference_type
+			valid_value: is_attached_type (field_static_type_of_type (i, dynamic_type (object))) implies value /= Void
 			value_conforms_to_field_static_type:
-				value /= Void implies
-					type_conforms_to (dynamic_type (value),
-						field_static_type_of_type (i, dynamic_type (object)))
+				value /= Void implies field_conforms_to (dynamic_type (value), field_static_type_of_type (i, dynamic_type (object)))
 		do
 			c_set_reference_field (i - 1, object, value)
 		end
