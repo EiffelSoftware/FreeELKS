@@ -202,7 +202,7 @@ feature -- Output
 
 feature {EXCEPTION_MANAGER} -- Implementation
 
-	frozen set_throwing_exception (a_exception: EXCEPTION)
+	frozen set_throwing_exception (a_exception: ?EXCEPTION)
 			-- Set `throwing_exception' with `a_exception'.
 		require
 			not_throwing_a_exception: a_exception /= Void implies not is_throwing (a_exception)

@@ -46,7 +46,7 @@ feature -- Status report
 						{l_de: DEVELOPER_EXCEPTION} l_exception.original
 		end
 
-	is_developer_exception_of_name (name: STRING): BOOLEAN
+	is_developer_exception_of_name (name: ?STRING): BOOLEAN
 			-- Is the last exception originally due to a developer
 			-- exception of name `name'?
 		do
@@ -195,7 +195,7 @@ feature -- Status setting
 			end
 		end
 
-	raise (name: STRING)
+	raise (name: ?STRING)
 			-- Raise a developer exception of name `name'.
 		local
 			l_exception: DEVELOPER_EXCEPTION
@@ -205,7 +205,7 @@ feature -- Status setting
 			l_exception.raise
 		end
 
-	raise_retrieval_exception (name: STRING)
+	raise_retrieval_exception (name: ?STRING)
 			-- Raise a retrieval exception of name `name'.
 		local
 			l_exception: ?EXCEPTION
