@@ -343,7 +343,7 @@ feature -- Access
 			index_small_enough: i <= field_count (object)
 			not_special: not is_special (object)
 		do
-			create Result.make_from_c_pointer (c_field_name_of_type (i - 1, {ISE_RUNTIME}.dynamic_type (object)))
+			create Result.make_from_c (c_field_name_of_type (i - 1, {ISE_RUNTIME}.dynamic_type (object)))
 		ensure
 			Result_exists: Result /= Void
 		end
@@ -355,7 +355,7 @@ feature -- Access
 			index_large_enough: i >= 1
 			index_small_enought: i <= field_count_of_type (type_id)
 		do
-			create Result.make_from_c_pointer (c_field_name_of_type (i - 1, type_id))
+			create Result.make_from_c (c_field_name_of_type (i - 1, type_id))
 		end
 
 	field_offset (i: INTEGER; object: ANY): INTEGER
