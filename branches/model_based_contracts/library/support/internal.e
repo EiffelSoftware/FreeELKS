@@ -178,6 +178,14 @@ feature -- Status report
 			Result := c_is_marked (obj)
 		end
 
+	is_attached_type (a_type_id: INTEGER): BOOLEAN
+			-- Is `a_type_id' an attached type?require -- ToDo: remove this before merge
+		require
+			a_type_non_negative: a_type_id >= 0
+		do
+			Result := {ISE_RUNTIME}.is_attached_type (a_type_id)
+		end
+
 feature -- Access
 
 	none_type: INTEGER is -2

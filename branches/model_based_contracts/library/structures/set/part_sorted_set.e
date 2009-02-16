@@ -35,7 +35,7 @@ class PART_SORTED_SET [G -> PART_COMPARABLE] inherit
 			{ANY}
 				duplicate, forth, item, after, start,
 				put_left, finish, readable, writable, valid_cursor_index
-			{PART_SORTED_SET} cursor, go_to, first_element, last_element, valid_cursor
+			{PART_SORTED_SET} cursor, go_to, first_element, last_element, valid_cursor, sequence
 			{NONE} all
 		redefine
 			duplicate

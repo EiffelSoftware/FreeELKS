@@ -9,6 +9,7 @@ indexing
 
 	status: "See notice at end of class."
 	names: storage;
+	model: bag, full, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 

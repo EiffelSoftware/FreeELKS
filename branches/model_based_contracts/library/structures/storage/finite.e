@@ -6,6 +6,7 @@ indexing
 
 	status: "See notice at end of class."
 	names: finite, storage;
+	model: bag, full, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -18,6 +19,9 @@ feature -- Measurement
 	count: INTEGER is
 			-- Number of items
 		deferred
+		ensure
+		-- ensure: model
+			definition: Result = bag.count
 		end
 
 feature -- Status report

@@ -16,6 +16,21 @@ class
 	ANY
 
 feature -- Customization
+	infix "|=|" (other: ANY): BOOLEAN is
+			-- Is `other' mathematically equivalent ?
+		require
+			other_exists: other /= Void
+		do
+			Result := Current = other
+		end
+
+	frozen infix "|/=|" (other: ANY): BOOLEAN is
+			-- Is `other' mathematically not equivalent ?
+		require
+			other_exists: other /= Void
+		do
+			Result := not (Current |=| other)
+		end
 
 feature -- Access
 

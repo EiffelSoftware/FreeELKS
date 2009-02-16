@@ -8,6 +8,7 @@ indexing
 	names: table, access;
 	access: key, membership;
 	contents: generic;
+	model: relation, extendible, prunable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -25,6 +26,9 @@ feature -- Access
 		require
 			valid_key: valid_key (k)
 		deferred
+		ensure
+		-- ensure: model
+			related_to_k: relation.image_of (k).contains (Result) -- ToDo: what about object_comparison for keys?
 		end
 
 feature -- Status report
@@ -38,6 +42,7 @@ feature -- Element change
 
 	put (v: G; k: H) is
 			-- Associate value `v' with key `k'.
+			-- ToDo: what happens here?
 		require
 			valid_key: valid_key (k)
 		deferred
@@ -45,11 +50,14 @@ feature -- Element change
 
 	force (v: G; k: H) is
 			-- Associate value `v' with key `k'.
+			-- ToDo: what happens here?			
 		require
 			valid_key: valid_key (k)
 		deferred
 		ensure
 			inserted: item (k) = v
+		-- ensure: model
+			relation_contains: relation.contains_pair (k, v)
 		end
 
 feature {NONE} -- Inapplicable
@@ -58,6 +66,15 @@ feature {NONE} -- Inapplicable
 		do
 		end
 
+feature -- Model
+	relation: MML_RELATION [H, G] is
+			-- Matematical relation representing contents of the table
+		deferred
+		end
+
+invariant
+-- invariant: model
+--	relation_bag_constraint: bag.domain = relation.range -- Doesn't run if uncommented
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."
 	copyright:	"Copyright (c) 1984-2006, Eiffel Software and others"

@@ -1424,6 +1424,25 @@ feature {NONE} -- Inapplicable
 		do
 		end
 
+feature -- Model
+	relation: MML_RELATION [K, G] is
+			-- Matematical relation representing contents of the table
+		local
+			old_cursor: CURSOR
+		do
+			old_cursor := cursor
+			create {MML_DEFAULT_RELATION [K, G]} Result
+			from
+				start
+			until
+				after
+			loop
+				Result := Result.extended_by_pair (key_for_iteration, item_for_iteration)
+				forth
+			end
+			go_to (old_cursor)
+		end
+
 invariant
 
 	keys_not_void: keys /= Void

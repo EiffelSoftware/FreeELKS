@@ -10,6 +10,8 @@ indexing
 	names: hierarchical, traversing;
 	access: cursor;
 	contents: generic;
+	model: bag, relation, object_comparison;
+	model_links: item;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -24,6 +26,9 @@ feature -- Access
 		require
 			not_off: not off
 		deferred
+		ensure
+		-- ensure: model
+			definition: Result = relation.image_of (item).any_item.count
 		end
 
 feature -- Cursor movement
@@ -33,6 +38,9 @@ feature -- Cursor movement
 		require
 			not_off: not off
 		deferred
+		ensure
+		-- ensure: model
+			item_effect: relation.image_of (item).any_item.is_member (old item)
 		end
 
 	down (i: INTEGER) is
@@ -41,11 +49,27 @@ feature -- Cursor movement
 			not_off: not off
  			argument_within_bounds: i >= 1 and i <= successor_count
 		deferred
+		ensure
+		-- ensure: model
+			item_effect: item = relation.image_of (old item).any_item.item (i)
+		end
+
+feature -- Model
+
+
+	relation: MML_RELATION [G, MML_SEQUENCE [G]]
+			-- Mathematical representation of hierarchy
+			-- ToDo: should be deferred
+		do
 		end
 
 invariant
 
 	non_negative_successor_count: successor_count >= 0
+
+-- invariant: model
+	relation_is_function: relation.is_function
+	relation_is_injective: relation.is_injective
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."

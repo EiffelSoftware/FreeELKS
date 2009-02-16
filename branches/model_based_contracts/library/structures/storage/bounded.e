@@ -6,6 +6,7 @@ indexing
 
 	status: "See notice at end of class."
 	names: bounded, storage;
+	model: bag, capacity, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -26,6 +27,9 @@ feature -- Status report
 			-- Is structure full?
 		do
 			Result := (count = capacity)
+		ensure then
+		-- ensure then: model
+			definition: full = (bag.count = capacity)
 		end
 
 	resizable: BOOLEAN is
@@ -38,6 +42,8 @@ invariant
 	valid_count: count <= capacity
 	full_definition: full = (count = capacity)
 
+-- invariant: model
+	bag_capacity_constraint: bag.count <= capacity
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."
 	copyright:	"Copyright (c) 1984-2006, Eiffel Software and others"

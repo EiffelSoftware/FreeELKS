@@ -11,6 +11,8 @@ indexing
 	names: active, access
 	access: membership
 	contents: generic
+	model: bag, extendible, prunable, readable, writable, object_comparison;
+	model_links: item;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -48,6 +50,9 @@ feature -- Element change
 		deferred
 		ensure
 			item_replaced: item = v
+		-- ensure: model
+			bag_effect: bag |=| old (bag.pruned (item).extended (v))
+			item_effect: item = v
 		end
 
 feature -- Removal
@@ -58,12 +63,18 @@ feature -- Removal
 			prunable: prunable
 			writable: writable
 		deferred
+		ensure
+		-- ensure: model
+			bag_effect: bag |=| old (bag.pruned (item))
 		end
 
 invariant
 
 	writable_constraint: writable implies readable
 	empty_constraint: is_empty implies (not readable) and (not writable)
+
+--invariant: model
+--	item_in_bag: readable implies bag.contains (item) -- ToDo: the same problem: does not run
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."

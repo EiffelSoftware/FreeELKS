@@ -18,11 +18,11 @@ class ARRAY [G] inherit
 			full, copy, is_equal
 		end
 
-	INDEXABLE [G, INTEGER]
+	INDEXABLE [G]
 		rename
 			item as item alias "[]"
 		redefine
-			copy, is_equal
+			copy, is_equal, lower
 		end
 
 	TO_SPECIAL [G]

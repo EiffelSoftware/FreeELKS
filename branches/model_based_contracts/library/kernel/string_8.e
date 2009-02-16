@@ -30,14 +30,16 @@ inherit
 			append_string_general
 		end
 
-	INDEXABLE [CHARACTER_8, INTEGER]
+	INDEXABLE [CHARACTER_8]
 		rename
-			item as item
+			item as item,
+			relation as sequence
 		undefine
 			copy, is_equal, out
 		redefine
 			prune_all,
-			changeable_comparison_criterion
+			changeable_comparison_criterion,
+			sequence
 		end
 
 	RESIZABLE [CHARACTER_8]
@@ -1699,8 +1701,28 @@ feature {NONE} -- Implementation
 			empty_area_not_void: Result /= Void
 		end
 
+feature -- Model
+	sequence: MML_SEQUENCE [CHARACTER_8] is
+			-- Mathematical relation, representing content of the container
+		local
+			i: INTEGER
+		do
+			create {MML_DEFAULT_SEQUENCE [CHARACTER_8]} Result
+			from
+				i := 1
+			until
+				i > count
+			loop
+				Result := Result.extended (item (i))
+				i := i + 1
+			end
+		end
+
 invariant
 	extendible: extendible
 	compare_character: not object_comparison
+
+-- invariant: model
+	lower_is_one: lower = 1
 
 end

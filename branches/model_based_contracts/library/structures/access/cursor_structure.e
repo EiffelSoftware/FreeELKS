@@ -10,6 +10,8 @@ indexing
 	names: cursor_structure, access;
 	access: cursor, membership;
 	contents: generic;
+	model: bag, extendible, prunable, readable, writable, object_comparison;
+	model_links: cursor, item; -- ToDo: both cursor and item are redundant?
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -40,6 +42,9 @@ feature -- Cursor movement
 		require
 			cursor_position_valid: valid_cursor (p)
 		deferred
+		ensure
+		-- ensure: model
+			cursor_effect: cursor = p
 		end
 
 indexing

@@ -10,6 +10,7 @@ indexing
 	names: collection, access;
 	access: membership;
 	contents: generic;
+	model: bag, extendible, prunable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -21,17 +22,21 @@ feature -- Status report
 
 	extendible: BOOLEAN is
 			-- May new items be added?
+		note
+			spec: model
 		deferred
 		end
 
 	prunable: BOOLEAN is
 			-- May items be removed?
+		note
+			spec: model
 		deferred
 		end
 
 	is_inserted (v: G): BOOLEAN is
 			-- Has `v' been inserted by the most recent insertion?
-			-- (By default, the value returned is equivalent to calling 
+			-- (By default, the value returned is equivalent to calling
 			-- `has (v)'. However, descendants might be able to provide more
 			-- efficient implementations.)
 		do
@@ -47,6 +52,8 @@ feature -- Element change
 		deferred
 		ensure
 			item_inserted: is_inserted (v)
+		-- ensure: model
+			bag_effect: bag.contains (v)
 		end
 
 	fill (other: CONTAINER [G]) is
@@ -95,6 +102,9 @@ feature -- Removal
 			end
 		ensure
 			no_more_occurrences: not has (v)
+		-- ensure: model
+			bag_effect_reference_comparison: bag |=| old bag.domain_anti_restricted_by (v)
+			bag_effect_object_comparison: bag |=| old (bag.domain_anti_restricted (bag.domain.subset_where (agent equal_elements (v, ?))))
 		end
 
 	wipe_out is
@@ -104,6 +114,8 @@ feature -- Removal
 		deferred
 		ensure
 			wiped_out: is_empty
+		-- ensure: model
+			bag_effect: bag.is_empty
 		end
 
 indexing

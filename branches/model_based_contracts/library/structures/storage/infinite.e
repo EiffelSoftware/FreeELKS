@@ -5,7 +5,7 @@ indexing
 	legal: "See notice at end of class."
 
 	status: "See notice at end of class."
-	names: infinite, storage ;
+	names: infinite, storage;
 	date: "$Date$"
 	revision: "$Revision$"
 

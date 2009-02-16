@@ -17,14 +17,14 @@ inherit
 			copy, is_equal
 		end
 
-	INDEXABLE [INTEGER, INTEGER]
+	INDEXABLE [INTEGER]
 		rename
 			item as item alias "[]",
 			put as indexable_put
 		undefine
 			changeable_comparison_criterion
 		redefine
-			copy, is_equal
+			copy, is_equal, lower
 		select
 			bag_put
 		end
@@ -88,7 +88,7 @@ feature -- Access
 
 	lower: INTEGER is
 			-- Smallest value in interval
-		require
+		require else
 			lower_defined: lower_defined
 		do
 			Result := lower_internal

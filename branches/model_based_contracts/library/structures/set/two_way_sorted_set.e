@@ -25,7 +25,8 @@ class TWO_WAY_SORTED_SET [G -> COMPARABLE] inherit
 			search, has, index, off,
 			min, max, index_of,
 			prune_all, occurrences,
-			is_equal, fill, copy
+			is_equal, fill, copy,
+			sequence
 		redefine
 			merge, intersect, subtract
 		select

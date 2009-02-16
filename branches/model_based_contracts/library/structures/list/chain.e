@@ -10,6 +10,7 @@ indexing
 	names: chain, sequence;
 	access: index, cursor, membership;
 	contents: generic;
+	model: sequence, index, extendible, prunable, full, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -24,14 +25,16 @@ deferred class CHAIN [G] inherit
 			put
 		end
 
-	INDEXABLE [G, INTEGER]
+	INDEXABLE [G]
 		rename
 			item as i_th alias "[]",
-			put as put_i_th
+			put as put_i_th,
+			relation as sequence
 		undefine
 			prune_all
 		redefine
-			fill
+			fill,
+			sequence
 		end
 
 	SEQUENCE [G]
@@ -39,6 +42,8 @@ deferred class CHAIN [G] inherit
 			put as sequence_put
 		export
 			{NONE} sequence_put
+		undefine
+			sequence
 		redefine
 			index_of, has, off, occurrences, fill, append
 		select
@@ -55,6 +60,8 @@ deferred class CHAIN [G] inherit
 			{NONE}
 				sequential_index_of, sequential_has,
 				sequence_put
+		undefine
+			sequence
 		redefine
 			off, fill, append
 		end
@@ -72,6 +79,9 @@ feature -- Access
 			start
 			Result := item
 			go_to (pos)
+		ensure
+		-- ensure: model
+			definition: Result = sequence.first
 		end
 
 	last: like item is
@@ -85,6 +95,9 @@ feature -- Access
 			finish
 			Result := item
 			go_to (pos)
+		ensure
+		-- ensure: model
+			definition: Result = sequence.last
 		end
 
 	has (v: like item): BOOLEAN is
@@ -206,6 +219,10 @@ feature -- Cursor movement
 			too_far_right: (old index + i > count) implies exhausted
 			too_far_left: (old index + i < 1) implies exhausted
 			expected_index: (not exhausted) implies (index = old index + i)
+		-- ensure: model
+			index_effect_too_far_right: (old index + i > sequence.count) implies index = sequence.count + 1
+			index_effect_too_far_left: (old index + i < 1) implies index = 0
+			index_effect_expected: sequence.is_defined (old index + i) implies (index = old index + i)
 		end
 
 	go_i_th (i: INTEGER) is
@@ -216,6 +233,8 @@ feature -- Cursor movement
 			move (i - index)
 		ensure
 			position_expected: index = i
+		-- ensure: model
+			index_effect: index = i
 		end
 
  feature -- Status report
@@ -235,6 +254,8 @@ feature -- Cursor movement
 			Result := not is_empty and (index = 1)
 		ensure
 			valid_position: Result implies not is_empty
+		-- ensure: model
+			definition: Result = (index = 1)
 		end
 
 	islast: BOOLEAN is
@@ -243,6 +264,8 @@ feature -- Cursor movement
 			Result := not is_empty and (index = count)
 		ensure
 			valid_position: Result implies not is_empty
+		-- ensure: model
+			definition: Result = not sequence.is_empty and (index = sequence.count)
 		end
 
 	off: BOOLEAN is
@@ -258,6 +281,8 @@ feature -- Cursor movement
 			Result := (i >= 0) and (i <= count + 1)
 		ensure
 			valid_cursor_index_definition: Result = ((i >= 0) and (i <= count + 1))
+		-- ensure: model
+			definition: Result = sequence.is_defined (i) or i = 0 or i = sequence.count + 1
 		end
 
 feature -- Element change
@@ -269,6 +294,8 @@ feature -- Element change
 			replace (v)
 		ensure then
 	 		same_count: count = old count
+	 	-- ensure then: model
+	 		sequence_effect: sequence |=| old sequence.replaced_at (v, index)
 		end
 
 	put_i_th (v: like item; i: INTEGER) is
@@ -280,6 +307,9 @@ feature -- Element change
 			go_i_th (i)
 			replace (v)
 			go_to (pos)
+		ensure then
+	 	-- ensure then: model
+	 		sequence_effect: sequence |=| old sequence.replaced_at (v, i) -- Not really needed			
 		end
 
 	append (s: SEQUENCE [G]) is
@@ -348,6 +378,8 @@ feature -- Transformation
 		ensure
 	 		swapped_to_item: item = old i_th (i)
 	 		swapped_from_item: i_th (i) = old item
+	 	-- ensure: model
+	 		sequence_effect: sequence |=| old (sequence.replaced_at (sequence.item (i), index).replaced_at (sequence.item (index), i))
 		end
 
 feature -- Duplication
@@ -361,6 +393,9 @@ feature -- Duplication
 			not_off_unless_after: off implies after
 			valid_subchain: n >= 0
 		deferred
+		ensure
+		-- ensure: model
+			definition: Result.sequence |=| sequence.domain_restricted (create {MML_RANGE_SET}.make_from_range (index, index + n.min (sequence.count - index + 1)))
 		end
 
 feature {NONE} -- Inapplicable
@@ -368,6 +403,23 @@ feature {NONE} -- Inapplicable
 	remove is
 			-- Remove current item.
 		do
+		end
+
+feature -- Model
+	sequence: MML_SEQUENCE [G] is
+			-- Mathematical relation, representing content of the container
+		local
+			i: INTEGER
+		do
+			create {MML_DEFAULT_SEQUENCE [G]} Result
+			from
+				i := 1
+			until
+				i > count
+			loop
+				Result := Result.extended (i_th (i))
+				i := i + 1
+			end
 		end
 
 invariant
@@ -379,6 +431,9 @@ invariant
 	islast_definition: islast = ((not is_empty) and (index = count))
 	item_corresponds_to_index: (not off) implies (item = i_th (index))
 	index_set_has_same_count: index_set.count = count
+
+-- invariant: model
+	lower_is_one: lower = 1
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."

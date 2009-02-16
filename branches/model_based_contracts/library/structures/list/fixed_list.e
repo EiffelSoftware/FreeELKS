@@ -24,7 +24,7 @@ class FIXED_LIST [G] inherit
 				prune, prune_all
 		undefine
 			force, prune, infix "@", put_i_th,
-			prune_all, copy, i_th
+			prune_all, copy, i_th, lower
 		redefine
 			first,
 			last,
@@ -48,7 +48,8 @@ class FIXED_LIST [G] inherit
 			force as force_i_th,
 			bag_put as put,
 			index_set as array_index_set,
-			extendible as array_extendible
+			extendible as array_extendible,
+			relation as sequence
 		export
 			{NONE}
 				all
@@ -67,7 +68,7 @@ class FIXED_LIST [G] inherit
 		undefine
 			count, linear_representation, put, resizable, fill,
 			for_all, there_exists, do_all, do_if, occurrences, has,
-			valid_index, is_equal
+			valid_index, is_equal, sequence
 		redefine
 			full, extend, prunable
 		end

@@ -8,6 +8,7 @@ indexing
 	names: list, sequence;
 	access: index, cursor, membership;
 	contents: generic;
+	model: sequence, index, extendible, prunable, full, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -67,6 +68,9 @@ feature -- Comparison
 			indices_unchanged:
 				index = old index and other.index = old other.index
 			true_implies_same_size: Result implies count = other.count
+		-- ensure then:
+			definition_reference_comparison: not object_comparison implies Result = not other.object_comparison and (sequence |=| other.sequence)
+			definition_object_comparison: object_comparison implies Result = other.object_comparison and other.sequence.count = sequence.count and sequence.set_for_all (agent (p: MML_PAIR [INTEGER, G]; s: MML_SEQUENCE [G]): BOOLEAN do Result := equal_elements (s.item (p.first), p.second) end (?, other.sequence))
 		end
 
 feature -- Status report

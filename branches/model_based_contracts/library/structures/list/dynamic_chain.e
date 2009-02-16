@@ -8,6 +8,7 @@ indexing
 	names: dynamic_chain, sequence;
 	access: index, cursor, membership;
 	contents: generic;
+	model: sequence, index, prunable, full, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -42,6 +43,9 @@ feature -- Element change
 		ensure
 	 		new_count: count = old count + 1
 			item_inserted: first = v
+		-- ensure: model
+			sequence_effect: sequence |=| old sequence.prepended (v)
+			index_effect: index = old index + 1 --?
 		end
 
 	put_left (v: like item) is
@@ -54,6 +58,9 @@ feature -- Element change
 		ensure
 	 		new_count: count = old count + 1
 	 		new_index: index = old index + 1
+	 	-- ensure
+	 		sequence_effect: sequence |=| old (sequence.extended_at (v, index))
+	 		index_effect: index = old index + 1
 		end
 
 	put_right (v: like item) is
@@ -66,6 +73,8 @@ feature -- Element change
 		ensure
 	 		new_count: count = old count + 1
 	 		same_index: index = old index
+	 	-- ensure
+	 		sequence_effect: sequence |=| old (sequence.extended_at (v, index + 1))
 		end
 
 	merge_left (other: like Current) is
@@ -81,6 +90,10 @@ feature -- Element change
 	 		new_count: count = old count + old other.count
 	 		new_index: index = old index + old other.count
 			other_is_empty: other.is_empty
+		--ensure: model
+			sequence_effect: sequence |=| old (sequence.interval (1, index - 1).concatenated (other.sequence).concatenated (sequence.interval (index, sequence.count)))
+			index_effect: index = old index + old other.sequence.count
+			other_sequence_effect: other.sequence.is_empty
 		end
 
 	merge_right (other: like Current) is
@@ -96,6 +109,9 @@ feature -- Element change
 	 		new_count: count = old count + old other.count
 	 		same_index: index = old index
 			other_is_empty: other.is_empty
+		--ensure: model
+			sequence_effect: sequence |=| old (sequence.interval (1, index).concatenated (other.sequence).concatenated (sequence.interval (index + 1, sequence.count)))
+			other_sequence_effect: other.sequence.is_empty
 		end
 
 feature -- Removal
@@ -110,6 +126,12 @@ feature -- Removal
 			if not exhausted then
 				remove
 			end
+		ensure then
+		-- ensure then: model
+			sequence_effect_reference_comparison_has: not object_comparison implies (sequence.is_member (v) implies
+				sequence |=| old (sequence.pruned_at (sequence.interval (index, sequence.count).index_of_i_th_occurrence_of (v, 1))))
+			sequence_effect_object_comparison_has: object_comparison implies (sequence.there_exists (agent equal_elements (v, ?)) implies
+				sequence |=| old (sequence.pruned_at (sequence.interval (index, sequence.count).index_of_i_th_that (agent equal_elements (v, ?), 1))))
 		end
 
 	remove_left is
@@ -121,6 +143,9 @@ feature -- Removal
 		ensure
 	 		new_count: count = old count - 1
 	 		new_index: index = old index - 1
+	 	-- ensure
+	 		sequence_effect: sequence |=| old (sequence.pruned_at (index - 1))
+	 		index_effect: index = old index - 1
 		end
 
 	remove_right is
@@ -132,6 +157,8 @@ feature -- Removal
 		ensure
 	 		new_count: count = old count - 1
 	 		same_index: index = old index
+	 	-- ensure
+	 		sequence_effect: sequence |=| old (sequence.pruned_at (index + 1))
 		end
 
 	prune_all (v: like item) is
@@ -163,6 +190,10 @@ feature -- Removal
 			loop
 				remove
 			end
+		ensure then
+		-- ensure then: model
+			sequence_effect: sequence.is_empty
+			index_effect: index = 0 or index = 1
 		end
 
 feature -- Duplication
@@ -201,6 +232,8 @@ feature {DYNAMIC_CHAIN} -- Implementation
 		deferred
 		ensure
 			result_exists: Result /= Void
+		-- ensure: model -- ToDo: separate?
+			-- Result # Current
 		end
 
 invariant
