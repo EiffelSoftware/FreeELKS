@@ -8,6 +8,7 @@ indexing
 	names: bidirectional, traversing;
 	access: cursor, membership;
 	contents: generic;
+	model: sequence, index, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -43,6 +44,9 @@ feature -- Cursor movement
 	before: BOOLEAN is
 			-- Is there no valid position to the left of current one?
 		deferred
+		ensure
+		-- ensure: model
+			definition: Result = (index < 1)
 		end
 
 	back is
@@ -52,6 +56,8 @@ feature -- Cursor movement
 		deferred
 		ensure then
 			-- moved_forth_after_start: (not before) implies index = old index - 1
+		-- ensure then: model
+			definition: index = old index - 1
 		end
 
 	search (v: like item) is

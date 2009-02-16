@@ -36,7 +36,8 @@ class LINKED_QUEUE [G] inherit
 				all
 			{LINKED_QUEUE}
 				cursor, valid_cursor, start, forth, go_to,
-				first_element, last_element, ll_item
+				first_element, last_element, ll_item,
+				sequence
 			{ANY}
 				writable, extendible, wipe_out,
 				readable, off, before, after, index

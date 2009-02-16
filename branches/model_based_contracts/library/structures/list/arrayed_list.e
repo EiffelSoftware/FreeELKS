@@ -25,7 +25,8 @@ class ARRAYED_LIST [G] inherit
 			count as array_count,
 			index_set as array_index_set,
 			bag_put as put,
-			resize as array_resize
+			resize as array_resize,
+			relation as sequence
 		export
 			{NONE}
 				all
@@ -37,7 +38,8 @@ class ARRAYED_LIST [G] inherit
 		undefine
 			linear_representation, prunable, put, is_equal,
 			prune, occurrences, extendible, fill,
-			for_all, there_exists, do_all, do_if
+			for_all, there_exists, do_all, do_if,
+			sequence
 		redefine
 			extend, prune_all, full, wipe_out,
 			is_inserted, make_from_array, has, valid_index
@@ -46,7 +48,8 @@ class ARRAYED_LIST [G] inherit
 	DYNAMIC_LIST [G]
 		undefine
 			put_i_th,
-			force, is_inserted, copy
+			force, is_inserted, copy,
+			lower
 		redefine
 			first, last, swap, wipe_out, i_th, infix "@",
 			go_i_th, move, prunable, start, finish,

@@ -10,6 +10,7 @@ indexing
 	names: bag, access;
 	access: membership;
 	contents: generic;
+	model: bag, extendible, prunable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -17,7 +18,8 @@ deferred class BAG [G] inherit
 
 	COLLECTION [G]
 		redefine
-			extend
+			extend,
+			prune
 		end
 
 feature -- Measurement
@@ -29,6 +31,9 @@ feature -- Measurement
 		deferred
 		ensure
 			non_negative_occurrences: Result >= 0
+		-- ensure: model
+			definition_reference_comparison: not object_comparison implies Result = bag.occurrences (v)
+			definition_object_comparison: object_comparison implies Result = bag.hold_count (agent equal_elements (v, ?))
 		end
 
 feature -- Element change
@@ -38,6 +43,22 @@ feature -- Element change
 		deferred
 		ensure then
 			one_more_occurrence: occurrences (v) = old (occurrences (v)) + 1
+		-- ensure: model
+			bag_effect: bag |=| old bag.extended (v)
+		end
+
+feature -- Removal
+
+	prune (v: G) is
+			-- Remove one occurrence of `v' if any.
+			-- (Reference or object equality,
+			-- based on `object_comparison'.)
+		deferred
+		ensure then
+		-- ensure then: model -- ToDo: Commented contracts are not true in DYNAMIC_CHAIN
+--			bag_effect_reference_comparison: not object_comparison implies bag |=| old bag.pruned (v)
+--			bag_effect_object_comparison_has: object_comparison implies (bag.there_exists (agent equal_elements (v, ?)) implies bag |=| old (bag.pruned (bag.item_where (agent equal_elements (v, ?)))))
+			bag_effect_object_comparison_not_has: object_comparison implies (not bag.there_exists (agent equal_elements (v, ?)) implies bag |=| old bag)
 		end
 
 indexing

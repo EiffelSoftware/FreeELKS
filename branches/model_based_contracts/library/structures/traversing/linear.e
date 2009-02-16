@@ -8,6 +8,7 @@ indexing
 	names: sequential, traversing;
 	access: membership;
 	contents: generic;
+	model: sequence, index, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -15,10 +16,18 @@ deferred class LINEAR [G] inherit
 
 	TRAVERSABLE [G]
 		redefine
-			do_all, do_if, there_exists, for_all
+			item, do_all, do_if, there_exists, for_all
 		end
 
 feature -- Access
+
+	item: G is
+			-- Item at current position
+		deferred
+		ensure then
+		-- ensure then: model
+			definition: Result = sequence.item (index)
+		end
 
 	has (v: like item): BOOLEAN is
 			-- Does structure include an occurrence of `v'?
@@ -76,6 +85,11 @@ feature -- Access
 			end
 		ensure
 			non_negative_result: Result >= 0
+		-- ensure: model
+			definition_reference_comparison_has: not object_comparison and sequence.occurrences (v) >= i implies Result = sequence.index_of_i_th_occurrence_of (v, i)
+			definition_reference_comparison_not_has: not object_comparison and sequence.occurrences (v) < i implies Result = 0
+			definition_object_comparison_has: object_comparison and sequence.hold_count (agent equal_elements (v, ?)) >= i implies Result = sequence.index_of_i_th_that (agent equal_elements (v, ?), i)
+			definition_object_comparison_not_has: object_comparison and sequence.hold_count (agent equal_elements (v, ?)) < i implies Result = 0
 		end
 
 	search (v: like item) is
@@ -113,6 +127,11 @@ feature -- Access
 				 implies equal (v, item)
 			item_found: (not exhausted and not object_comparison)
 				 implies v = item
+		-- ensure: model
+			definition_reference_comparison_has: not object_comparison and sequence.is_member (v) implies index = sequence.index_of_i_th_occurrence_of (v, 1)
+			definition__comparison_not_has: not object_comparison and not sequence.is_member (v) implies index = sequence.count + 1
+			definition_object_comparison_has: object_comparison and sequence.there_exists (agent equal_elements (v, ?)) implies index = sequence.index_of_i_th_that (agent equal_elements (v, ?), 1)
+			definition_object_comparison_not_has: object_comparison and not sequence.there_exists (agent equal_elements (v, ?)) implies index = sequence.count + 1
 		end
 
 	index: INTEGER is
@@ -143,6 +162,9 @@ feature -- Access
 			not_off: not off
 		do
 			Result := item
+		ensure
+		-- ensure: model
+			definition: Result = sequence.item (index)
 		end
 
 feature -- Status report
@@ -153,24 +175,42 @@ feature -- Status report
 			Result := off
 		ensure
 			exhausted_when_off: off implies Result
+		-- ensure: model
+			definition: Result /= sequence.is_defined (index)
 		end
 
 	after: BOOLEAN is
 			-- Is there no valid position to the right of current one?
 		deferred
+		ensure
+		-- ensure: model
+			definition: Result = (index > sequence.count)
 		end
 
 	off: BOOLEAN is
 			-- Is there no current item?
 		do
 			Result := is_empty or after
+		ensure then
+		-- ensure then: model
+			definition: Result /= sequence.is_defined (index)
 		end
 
 feature -- Cursor movement
+	start is
+			-- Move to first position if any.
+		deferred
+		ensure then
+		-- ensure then: model
+			index_effect: not sequence.is_empty implies index = 1
+		end
 
 	finish is
 			-- Move to last position.
 		deferred
+		ensure
+		-- ensure: model
+			index_effect: index = sequence.count
 		end
 
 	forth is
@@ -181,6 +221,8 @@ feature -- Cursor movement
 		deferred
 		ensure
 			-- moved_forth_before_end: (not after) implies index = old index + 1
+		-- ensure: model
+			index_effect: index = old index + 1
 		end
 
 feature -- Iteration
@@ -318,11 +360,37 @@ feature -- Conversion
 			-- Representation as a linear structure
 		do
 			Result := Current
+		ensure then
+		-- ensure then: model
+			same_sequence: Result.sequence |=| sequence
+		end
+
+feature -- Model
+	sequence: MML_SEQUENCE [G] is
+			-- Contents of traversable structure
+		local
+			linear: LINEAR [G]
+		do
+			create {MML_DEFAULT_SEQUENCE [G]} Result
+			linear := linear_representation.twin
+			from
+				linear.start
+			until
+				linear.off
+			loop
+				Result := Result.extended (linear.item)
+				linear.forth
+			end
 		end
 
 invariant
 
 	after_constraint: after implies off
+
+-- invariant: model
+	sequnece_bag_constraint: bag |=| sequence.to_bag
+	index_not_too_small: index >= 0
+	index_not_too_large: index <= sequence.count + 1
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."

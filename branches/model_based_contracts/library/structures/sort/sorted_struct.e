@@ -8,6 +8,7 @@ indexing
 	names: sorted_struct, comparable_struct;
 	access: index, membership, min, max;
 	contents: generic;
+	model: sequence, index, less_equal, lower, extendible, prunable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -15,21 +16,26 @@ deferred class SORTED_STRUCT [G -> COMPARABLE] inherit
 
 	COMPARABLE_STRUCT [G]
 		undefine
-			search, off
+			search, off, sequence
 		redefine
 			min, max
 		end
 
-	INDEXABLE [G, INTEGER]
+	INDEXABLE [G]
 		rename
 			item as i_th,
 			put as put_i_th,
-			bag_put as putt
+			bag_put as putt,
+			relation as sequence
 		redefine
+			sequence,
 			putt
 		end
 
 	LINEAR [G]
+		undefine
+			sequence
+		end
 
 feature -- Measurement
 
@@ -45,6 +51,8 @@ feature -- Measurement
 		--		 For every `i' in `first_position' .. `last_position':
 		--				`Result <= i_th (i)';
 		--		 `Result' = `i_th' (`first_position')
+		-- ensure then: model
+			definition: Result = sequence.first
 		end
 
 	max: like item is
@@ -59,6 +67,8 @@ feature -- Measurement
 		--		 For every `i' in `first_position' .. `last_position':
 		--				`i_th (`i') <= `Result';
 		--		 `Result' = `i_th' (`last_position')
+		-- ensure then: model
+			definition: Result = sequence.last
 		end
 
 	median: like item is
@@ -69,6 +79,8 @@ feature -- Measurement
 		--	median_definition:
 		--		Result = i_th (first_position +
 		--			(last_position - first_position) // 2)
+		-- ensure: model
+			definition: Result = sequence.item ((sequence.count - 1) // 2)
 		end
 
 feature -- Status report
@@ -93,6 +105,9 @@ feature -- Status report
 				end
 				Result := exhausted
 			end
+		ensure
+		-- ensure: model
+			definition: Result = sequence.set_for_all_pairs (agent (x, y: MML_PAIR [INTEGER, G]): BOOLEAN do Result := x.first <= y.first implies less_equal.contains_pair (x.second, y.second) end)
 		end
 
 feature -- Transformation
@@ -102,6 +117,8 @@ feature -- Transformation
 		deferred
 		ensure
 			is_sorted: sorted
+		-- ensure: model
+			sequence_effect: sequence.set_for_all_pairs (agent (x, y: MML_PAIR [INTEGER, G]): BOOLEAN do Result := x.first <= y.first implies less_equal.contains_pair (x.second, y.second) end)
 		end
 
 feature {NONE} -- Inapplicable
@@ -109,6 +126,27 @@ feature {NONE} -- Inapplicable
 	putt (v: like item) is
 		do
 		end
+
+feature -- Model
+	sequence: MML_SEQUENCE [G] is
+			-- Mathematical relation, representing content of the container
+		local
+			i: INTEGER
+		do
+			create {MML_DEFAULT_SEQUENCE [G]} Result
+			from
+				i := index_set.lower
+			until
+				i > index_set.upper
+			loop
+				Result := Result.extended (i_th (i))
+				i := i + 1
+			end
+		end
+
+invariant
+-- invariant: model
+	lower_is_one: lower = 1
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."

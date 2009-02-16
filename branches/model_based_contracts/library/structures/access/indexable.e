@@ -8,12 +8,13 @@ indexing
 	names: indexable, access;
 	access: index, membership;
 	contents: generic;
+	model: relation, lower, extendible, prunable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
-deferred class INDEXABLE [G, H -> INTEGER] inherit
+deferred class INDEXABLE [G] inherit
 
-	TABLE [G, H]
+	TABLE [G, INTEGER]
 		rename
 			valid_key as valid_index,
 			force as put
@@ -28,11 +29,14 @@ feature -- Measurement
 		deferred
 		ensure
 			not_void: Result /= Void
+		-- ensure: model
+			definition_set: Result.set = relation.domain
+			definition_lower: Result.lower = lower
 		end
 
 feature -- Status report
 
-	valid_index (i: H): BOOLEAN is
+	valid_index (i: INTEGER): BOOLEAN is
 			-- Is `i' a valid index?
 		deferred
 		ensure then
@@ -40,11 +44,40 @@ feature -- Status report
 				Result implies
 					((i >= index_set.lower) and
 					(i <= index_set.upper))
+		--ensure then: model
+			definition: Result = (i >= lower) and (i <= lower + relation.count - 1)
+		end
+
+feature -- Model
+	relation: MML_RELATION [INTEGER, G] is
+			-- Mathematical relation, representing content of the container
+		local
+			i: INTEGER
+		do
+			create {MML_DEFAULT_RELATION [INTEGER, G]} Result
+			from
+				i := index_set.lower
+			until
+				i > index_set.upper
+			loop
+				Result := Result.extended (create {MML_DEFAULT_PAIR [INTEGER, G]}.make_from(i, item (i)))
+				i := i + 1
+			end
+		end
+
+	lower: INTEGER is
+			-- Lower bound of the index range
+		do
+			Result := index_set.lower
 		end
 
 invariant
 
 	index_set_not_void: index_set /= Void
+
+-- invariant: model
+	relation_is_function: relation.is_function
+	domain_is_interval: relation.domain.for_all (agent (i: INTEGER): BOOLEAN do Result := i >= lower and i <= lower + relation.count - 1 end)
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."

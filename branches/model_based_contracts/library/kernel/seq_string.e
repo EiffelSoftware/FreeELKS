@@ -36,7 +36,8 @@ class SEQ_STRING inherit
 				sequence_put, seq_append
 		undefine
 			occurrences, out, copy, is_equal, prune_all,
-			changeable_comparison_criterion
+			changeable_comparison_criterion,
+			sequence
 		redefine
 			has, index_of_occurrence, prune
 		select

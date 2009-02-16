@@ -10,6 +10,8 @@ indexing
 	names: traversable, traversing;
 	access: cursor;
 	contents: generic;
+	model: bag, object_comparison;
+	model_links: item;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -42,31 +44,47 @@ feature -- Cursor movement
 			-- Move to first position if any.
 		deferred
 		end
-		
+
 feature -- Iteration
 
-		
+
 	do_all (action: PROCEDURE [ANY, TUPLE [G]]) is
 			-- Apply `action' to every item.
 			-- Semantics not guaranteed if `action' changes the structure;
-			-- in such a case, apply iterator to clone of structure instead. 
+			-- in such a case, apply iterator to clone of structure instead.
 		require
 			action_exists: action /= Void
 		do
 			linear_representation.do_all (action)
+		ensure
+		-- ensure: model
+			sequence_effect: bag.for_all (
+				agent (a: PROCEDURE [ANY, TUPLE [G]]; x: G): BOOLEAN
+					do
+						Result := a.postcondition ([x])
+					end
+				(action, ?))
 		end
 
 	do_if (action: PROCEDURE [ANY, TUPLE [G]];
 	 test: FUNCTION [ANY, TUPLE [G], BOOLEAN]) is
 			-- Apply `action' to every item that satisfies `test'.
 			-- Semantics not guaranteed if `action' or `test' changes the structure;
-			-- in such a case, apply iterator to clone of structure instead. 
+			-- in such a case, apply iterator to clone of structure instead.
 		require
 			action_exists: action /= Void
 			test_exits: test /= Void
 			-- test.is_pure
 		do
 			linear_representation.do_if (action, test)
+		ensure
+		-- ensure: model
+			sequence_effect: bag.for_all (
+				agent (a: PROCEDURE [ANY, TUPLE [G]]; t: FUNCTION [ANY, TUPLE [G], BOOLEAN]; x: G): BOOLEAN
+					do
+						Result := t.item ([x]) implies a.postcondition ([x])
+					end
+				(action, test, ?))
 		end
 
 	there_exists (test: FUNCTION [ANY, TUPLE [G], BOOLEAN]): BOOLEAN is
@@ -76,6 +94,9 @@ feature -- Iteration
 			-- test.is_pure
 		do
 			Result := linear_representation.there_exists (test)
+		ensure
+		-- ensure: model
+			definition: Result = bag.there_exists (test)
 		end
 
 	for_all (test: FUNCTION [ANY, TUPLE [G], BOOLEAN]): BOOLEAN is
@@ -85,6 +106,9 @@ feature -- Iteration
 			-- test.is_pure
 		do
 			Result := linear_representation.for_all (test)
+		ensure
+		-- ensure: model
+			definition: Result = bag.for_all (test)
 		end
 
 invariant

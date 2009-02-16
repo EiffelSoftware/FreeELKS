@@ -10,6 +10,7 @@ indexing
 	names: sequence;
 	access: cursor, membership;
 	contents: generic;
+	model: sequence, index, extendible, prunable, full, object_comparison; -- ToDo: isn't extendible = not full?
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -30,6 +31,9 @@ feature -- Status report
 			-- Is there a current item that may be read?
 		do
 			Result := not off
+		ensure then
+		-- ensure then: model
+			definition: Result = sequence.is_defined (index)
 		end
 
 
@@ -37,6 +41,9 @@ feature -- Status report
 			-- Is there a current item that may be modified?
 		do
 			Result := not off
+		ensure then
+		-- ensure then: model
+			definition: Result = sequence.is_defined (index)
 		end
 
 feature -- Element change
@@ -50,6 +57,8 @@ feature -- Element change
 		ensure then
 	 		new_count: count = old count + 1
 			item_inserted: has (v)
+		-- ensure: model -- ToDo: unclear semantics
+			sequence_effect: sequence |=| old sequence.extended (v)
 		end
 
 	append (s: SEQUENCE [G]) is
@@ -73,6 +82,8 @@ feature -- Element change
 			end
 		ensure
 	 		new_count: count >= old count
+	 	-- ensure: model
+	 		sequence_effect: sequence |=| old sequence.concatenated (s.sequence)
 		end
 
 	put (v: like item) is
@@ -81,6 +92,8 @@ feature -- Element change
 			extend (v)
 		ensure then
 	 		new_count: count = old count + 1
+		-- ensure then: model -- ToDo: unclear semantics
+			sequence_effect: sequence |=| old sequence.extended (v)
 		end
 
 feature -- Removal
@@ -94,6 +107,12 @@ feature -- Removal
 			if not exhausted then
 				remove
 			end
+		ensure then
+		-- ensure then: model
+			sequence_effect_reference_comparison_not_has: not object_comparison implies (not sequence.is_member (v) implies sequence |=| old sequence)
+			index_effect_reference_comparison_not_has: not object_comparison implies (not sequence.is_member (v) implies not sequence.is_defined (index))
+			sequence_effect_object_comparison_not_has: object_comparison implies (not sequence.there_exists (agent equal_elements (v, ?)) implies sequence |=| old sequence)
+			index_effect_object_comparison_not_has: object_comparison implies (not sequence.there_exists (agent equal_elements (v, ?)) implies not sequence.is_defined (index))
 		end
 
 	prune_all (v: like item) is
@@ -109,7 +128,16 @@ feature -- Removal
 					remove
 				end
 			end
+		ensure then
+		-- ensure then: model
+			sequence_effect_reference_comparison: sequence |=| old sequence.pruned (v)
+			sequence_effect_object_comparison: sequence |=| old (sequence.range_anti_restricted (sequence.range.subset_where (agent equal_elements (v, ?))))
+			index_effect: not sequence.is_defined (index)
 		end
+
+invariant
+-- invariant: model
+	sequnece_bag_constraint: bag |=| sequence.to_bag
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."
