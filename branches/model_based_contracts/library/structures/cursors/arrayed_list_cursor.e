@@ -12,6 +12,9 @@ indexing
 class ARRAYED_LIST_CURSOR inherit
 
 	CURSOR
+		rename
+			position as index
+		end
 
 create
 	make

@@ -12,7 +12,7 @@ class
 inherit
 	RESIZABLE [INTEGER]
 		undefine
-			changeable_comparison_criterion
+			changeable_comparison_criterion, bag
 		redefine
 			copy, is_equal
 		end
@@ -30,6 +30,8 @@ inherit
 		end
 
 	SET [INTEGER]
+		undefine
+			bag
 		redefine
 			copy, is_equal
 		end

@@ -68,7 +68,7 @@ feature -- Access
 	cursor: TWO_WAY_LIST_CURSOR [G] is
 			-- Current cursor position
 		do
-			create Result.make (active, after, before)
+			create Result.make (active, after, before, Current)
 		end
 
 feature -- Status report

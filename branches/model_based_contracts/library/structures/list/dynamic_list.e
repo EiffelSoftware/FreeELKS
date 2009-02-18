@@ -10,6 +10,7 @@ indexing
 	names: dynamic_list, sequence;
 	access: index, cursor, membership;
 	contents: generic;
+	model: sequence, index, prunable, full, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 

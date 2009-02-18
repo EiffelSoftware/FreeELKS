@@ -16,7 +16,8 @@ class LINKED_SET [G] inherit
 
 	LINEAR_SUBSET [G]
 		undefine
-			prune_all, copy, is_equal, fill
+			prune_all, copy, is_equal, fill,
+			bag
 		select
 			extend, put, prune
 		end

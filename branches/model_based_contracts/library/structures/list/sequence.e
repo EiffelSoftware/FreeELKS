@@ -18,6 +18,9 @@ deferred class SEQUENCE [G] inherit
 
 	ACTIVE [G]
 		redefine
+			extend,
+			replace,
+			remove,
 			prune_all
 		end
 
@@ -57,7 +60,7 @@ feature -- Element change
 		ensure then
 	 		new_count: count = old count + 1
 			item_inserted: has (v)
-		-- ensure: model -- ToDo: unclear semantics
+		-- ensure: model
 			sequence_effect: sequence |=| old sequence.extended (v)
 		end
 
@@ -92,8 +95,24 @@ feature -- Element change
 			extend (v)
 		ensure then
 	 		new_count: count = old count + 1
-		-- ensure then: model -- ToDo: unclear semantics
+		-- ensure then: model
 			sequence_effect: sequence |=| old sequence.extended (v)
+		end
+
+	extend (v: G) is
+			-- Add a new occurrence of `v'.
+		deferred
+		ensure then
+		-- ensure: model
+			sequence_effect: sequence |=| old sequence.extended (v)
+		end
+
+	replace (v: G) is
+			-- Replace current item by `v'.
+		deferred
+		ensure then
+		-- ensure: model
+			sequence_effect: sequence |=| old (sequence.replaced_at (v, index))
 		end
 
 feature -- Removal
@@ -109,10 +128,10 @@ feature -- Removal
 			end
 		ensure then
 		-- ensure then: model
-			sequence_effect_reference_comparison_not_has: not object_comparison implies (not sequence.is_member (v) implies sequence |=| old sequence)
-			index_effect_reference_comparison_not_has: not object_comparison implies (not sequence.is_member (v) implies not sequence.is_defined (index))
-			sequence_effect_object_comparison_not_has: object_comparison implies (not sequence.there_exists (agent equal_elements (v, ?)) implies sequence |=| old sequence)
-			index_effect_object_comparison_not_has: object_comparison implies (not sequence.there_exists (agent equal_elements (v, ?)) implies not sequence.is_defined (index))
+			sequence_effect_reference_comparison_not_has: not object_comparison implies (not old sequence.is_member (v) implies sequence |=| old sequence)
+			index_effect_reference_comparison_not_has: not object_comparison implies (not old sequence.is_member (v) implies not sequence.is_defined (index))
+			sequence_effect_object_comparison_not_has: object_comparison implies (not old sequence.there_exists (agent equal_elements (v, ?)) implies sequence |=| old sequence)
+			index_effect_object_comparison_not_has: object_comparison implies (not old sequence.there_exists (agent equal_elements (v, ?)) implies not sequence.is_defined (index))
 		end
 
 	prune_all (v: like item) is
@@ -130,9 +149,17 @@ feature -- Removal
 			end
 		ensure then
 		-- ensure then: model
-			sequence_effect_reference_comparison: sequence |=| old sequence.pruned (v)
-			sequence_effect_object_comparison: sequence |=| old (sequence.range_anti_restricted (sequence.range.subset_where (agent equal_elements (v, ?))))
+			sequence_effect_reference_comparison: not object_comparison implies sequence |=| old sequence.pruned (v)
+			sequence_effect_object_comparison: object_comparison implies sequence |=| old (sequence.subtracted (sequence.range.subset_where (agent equal_elements (v, ?))))
 			index_effect: not sequence.is_defined (index)
+		end
+
+	remove is
+			-- Remove current item.
+		deferred
+		ensure then
+		-- ensure then: model
+			sequence_effect: sequence |=| old (sequence.pruned_at (index))
 		end
 
 invariant

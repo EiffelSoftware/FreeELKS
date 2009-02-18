@@ -26,7 +26,7 @@ class TWO_WAY_SORTED_SET [G -> COMPARABLE] inherit
 			min, max, index_of,
 			prune_all, occurrences,
 			is_equal, fill, copy,
-			sequence
+			sequence, bag
 		redefine
 			merge, intersect, subtract
 		select
@@ -35,7 +35,7 @@ class TWO_WAY_SORTED_SET [G -> COMPARABLE] inherit
 
 	LINEAR_SUBSET [G]
 		undefine
-			is_equal, prune_all, fill, copy
+			is_equal, prune_all, fill, copy, bag
 		redefine
 			merge, intersect, subtract
 		select

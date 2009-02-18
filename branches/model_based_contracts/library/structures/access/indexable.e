@@ -19,7 +19,8 @@ deferred class INDEXABLE [G] inherit
 			valid_key as valid_index,
 			force as put
 		redefine
-			valid_index
+			valid_index,
+			bag
 		end
 
 feature -- Measurement
@@ -69,6 +70,22 @@ feature -- Model
 			-- Lower bound of the index range
 		do
 			Result := index_set.lower
+		end
+
+	bag: MML_BAG [G] is
+			-- Mathematical bag, representing content of the container
+		local
+			i: INTEGER
+		do
+			create {MML_DEFAULT_BAG [G]} Result
+			from
+				i := index_set.lower
+			until
+				i > index_set.upper
+			loop
+				Result := Result.extended (item (i))
+				i := i + 1
+			end
 		end
 
 invariant

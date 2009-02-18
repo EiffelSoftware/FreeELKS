@@ -16,7 +16,7 @@ class LINKED_QUEUE [G] inherit
 
 	QUEUE [G]
 		undefine
-			is_empty, copy, is_equal
+			is_empty, copy, is_equal, bag
 		redefine
 			linear_representation, prune_all, extend
 		select

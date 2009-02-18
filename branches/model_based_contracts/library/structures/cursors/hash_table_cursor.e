@@ -7,12 +7,16 @@ indexing
 	status: "See notice at end of class."
 	names: linked_list_cursor, cursor;
 	contents: generic;
+	model: position;
 	date: "$Date$"
 	revision: "$Revision$"
 
 class HASH_TABLE_CURSOR inherit
 
 	CURSOR
+		redefine
+			position
+		end
 
 create
 	make
@@ -25,6 +29,8 @@ feature {NONE} -- Initialization
 			position := pos
 		ensure
 			position_set: position = pos
+		-- ensure: model
+			position_effect: position = pos
 		end
 
 feature {HASH_TABLE} -- Access

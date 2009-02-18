@@ -128,10 +128,10 @@ feature -- Access
 			item_found: (not exhausted and not object_comparison)
 				 implies v = item
 		-- ensure: model
-			definition_reference_comparison_has: not object_comparison and sequence.is_member (v) implies index = sequence.index_of_i_th_occurrence_of (v, 1)
-			definition__comparison_not_has: not object_comparison and not sequence.is_member (v) implies index = sequence.count + 1
-			definition_object_comparison_has: object_comparison and sequence.there_exists (agent equal_elements (v, ?)) implies index = sequence.index_of_i_th_that (agent equal_elements (v, ?), 1)
-			definition_object_comparison_not_has: object_comparison and not sequence.there_exists (agent equal_elements (v, ?)) implies index = sequence.count + 1
+			index_effect_reference_comparison_has: not object_comparison and sequence.interval (old index, sequence.count).is_member (v) implies index = old index + sequence.interval (old index, sequence.count).index_of_i_th_occurrence_of (v, 1) - 1
+			index_effect_reference_comparison_not_has: not object_comparison and not sequence.interval (old index, sequence.count).is_member (v) implies index = sequence.count + 1
+			index_effect_object_comparison_has: object_comparison and sequence.interval (old index, sequence.count).there_exists (agent equal_elements (v, ?)) implies index = old index + sequence.interval (old index, sequence.count).index_of_i_th_that (agent equal_elements (v, ?), 1) - 1
+			index_effect_object_comparison_not_has: object_comparison and not sequence.interval (old index, sequence.count).there_exists (agent equal_elements (v, ?)) implies index = sequence.count + 1
 		end
 
 	index: INTEGER is

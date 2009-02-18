@@ -76,7 +76,8 @@ class FIXED_LIST [G] inherit
 	FIXED [G]
 		undefine
 			copy, is_equal,
-			full
+			full,
+			bag
 		end
 
 create

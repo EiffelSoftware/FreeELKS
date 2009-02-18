@@ -7,6 +7,7 @@ indexing
 	status: "See notice at end of class."
 	names: cell;
 	contents: generic;
+	model_links: item;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -29,6 +30,8 @@ feature -- Element change
 			item := v
 		ensure
 			item_inserted: item = v
+		-- ensure: model
+			item_effect: item = v
 		end
 
 indexing

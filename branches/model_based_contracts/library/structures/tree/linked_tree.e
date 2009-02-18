@@ -21,7 +21,7 @@ class LINKED_TREE [G] inherit
 			{NONE} ll_empty
 		undefine
 			child_after, child_before, child_item,
-			child_off
+			child_off, bag
 		redefine
 			parent, clone_node
 		select
@@ -145,7 +145,7 @@ feature -- Access
 	child_cursor: LINKED_TREE_CURSOR [G] is
 			-- Current cursor position
 		do
-			create Result.make (child, child_after, child_before)
+			create Result.make (child, child_after, child_before, Current)
 		end
 
 feature {RECURSIVE_CURSOR_TREE} -- Element change

@@ -6,12 +6,16 @@ indexing
 
 	status: "See notice at end of class."
 	names: compact_tree_cursor, cursor;
+	model: active, after, before, below, above;
 	date: "$Date$"
 	revision: "$Revision$"
 
 class COMPACT_TREE_CURSOR inherit
 
 	CURSOR
+		rename
+			position as active
+		end
 
 create
 

@@ -49,6 +49,12 @@ feature {RECURSIVE_CURSOR_TREE} -- Status report
 	below: BOOLEAN;
 			-- Is there no valid cursor position below cursor?
 
+feature -- Model
+	position: INTEGER
+			-- ToDO: remove this!
+		attribute
+		end
+
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."
 	copyright:	"Copyright (c) 1984-2008, Eiffel Software and others"

@@ -6,12 +6,16 @@ indexing
 
 	status: "See notice at end of class."
 	names: cursor;
+	model: index;
 	date: "$Date$"
 	revision: "$Revision$"
 
 class MULTAR_LIST_CURSOR [G] inherit
 
 	CURSOR
+		rename
+			position as index
+		end
 
 create
 	make
