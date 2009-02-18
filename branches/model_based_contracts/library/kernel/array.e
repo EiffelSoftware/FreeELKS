@@ -14,6 +14,8 @@ indexing
 class ARRAY [G] inherit
 
 	RESIZABLE [G]
+		undefine
+			bag
 		redefine
 			full, copy, is_equal
 		end

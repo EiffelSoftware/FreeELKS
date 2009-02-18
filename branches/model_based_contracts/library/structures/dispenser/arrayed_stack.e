@@ -17,7 +17,7 @@ class ARRAYED_STACK [G] inherit
 
 	STACK [G]
 		undefine
-			copy, is_equal, prune_all, replace, is_inserted
+			copy, is_equal, prune_all, replace, is_inserted, bag
 		redefine
 			linear_representation
 		select
@@ -53,7 +53,7 @@ class ARRAYED_STACK [G] inherit
 
 create
 	make
-	
+
 create {ARRAYED_STACK}
 	make_filled
 

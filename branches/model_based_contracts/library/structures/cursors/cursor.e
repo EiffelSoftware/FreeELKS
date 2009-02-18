@@ -6,11 +6,18 @@ indexing
 
 	status: "See notice at end of class."
 	names: cursor;
+	model: position;
 	date: "$Date$"
 	revision: "$Revision$"
 
-class
+deferred class
 	CURSOR
+
+feature -- Model
+	position: INTEGER
+			-- Cursor position
+		deferred
+		end
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."
@@ -31,6 +38,3 @@ indexing
 
 
 end -- class CURSOR
-
-
-

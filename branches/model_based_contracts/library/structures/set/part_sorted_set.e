@@ -18,7 +18,7 @@ class PART_SORTED_SET [G -> PART_COMPARABLE] inherit
 
 	LINEAR_SUBSET [G]
 		undefine
-			prune_all, changeable_comparison_criterion, copy, is_equal, fill
+			prune_all, changeable_comparison_criterion, copy, is_equal, fill, bag
 		redefine
 			merge
 		select

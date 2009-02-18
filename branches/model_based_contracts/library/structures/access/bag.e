@@ -58,7 +58,7 @@ feature -- Removal
 		-- ensure then: model -- ToDo: Commented contracts are not true in DYNAMIC_CHAIN
 --			bag_effect_reference_comparison: not object_comparison implies bag |=| old bag.pruned (v)
 --			bag_effect_object_comparison_has: object_comparison implies (bag.there_exists (agent equal_elements (v, ?)) implies bag |=| old (bag.pruned (bag.item_where (agent equal_elements (v, ?)))))
-			bag_effect_object_comparison_not_has: object_comparison implies (not bag.there_exists (agent equal_elements (v, ?)) implies bag |=| old bag)
+			bag_effect_object_comparison_not_has: old object_comparison implies (not old bag.there_exists (agent equal_elements (v, ?)) implies bag |=| old bag)
 		end
 
 indexing

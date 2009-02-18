@@ -16,7 +16,7 @@ deferred class SORTED_STRUCT [G -> COMPARABLE] inherit
 
 	COMPARABLE_STRUCT [G]
 		undefine
-			search, off, sequence
+			search, off, sequence, bag
 		redefine
 			min, max
 		end
@@ -34,7 +34,7 @@ deferred class SORTED_STRUCT [G -> COMPARABLE] inherit
 
 	LINEAR [G]
 		undefine
-			sequence
+			sequence, bag
 		end
 
 feature -- Measurement

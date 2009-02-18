@@ -7,6 +7,7 @@ indexing
 	status: "See notice at end of class."
 	names: circular_cursor, cursor;
 	contents: generic;
+	model: position, internal_exhausted, starter;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -32,12 +33,24 @@ feature {CIRCULAR} -- Implementation
 
 	cursor: CURSOR
 			-- Current element in implementation
+		attribute
+		ensure
+		-- ensure: model
+			definition: Result.position = position
+		end
 
 	internal_exhausted: BOOLEAN
 			-- Has traversal passsed the start?
 
 	starter: INTEGER;
 			-- Index of start position
+
+feature -- Model
+	position: INTEGER
+			-- Cursor_position
+		do
+			Result := cursor.position
+		end
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."

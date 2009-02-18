@@ -15,7 +15,8 @@ class LINKED_PRIORITY_QUEUE [G -> COMPARABLE] inherit
 	PRIORITY_QUEUE [G]
 		undefine
 			copy, is_equal,
-			prune_all, append, readable, writable, fill
+			prune_all, append, readable, writable, fill,
+			bag
 		select
 			put, remove, item
 		end
@@ -36,7 +37,7 @@ class LINKED_PRIORITY_QUEUE [G -> COMPARABLE] inherit
 
 create
 	make
-	
+
 create {LINKED_PRIORITY_QUEUE}
 	make_sublist
 

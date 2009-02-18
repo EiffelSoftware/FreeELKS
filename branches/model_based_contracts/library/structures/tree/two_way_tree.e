@@ -17,7 +17,8 @@ class TWO_WAY_TREE [G] inherit
 	DYNAMIC_TREE [G]
 		undefine
 			child_after, child_before, child_item,
-			child_off, child_islast
+			child_off, child_islast,
+			bag
 		redefine
 			parent, clone_node
 		select
@@ -127,7 +128,7 @@ feature -- Access
 	child_cursor: TWO_WAY_TREE_CURSOR [G] is
 			-- Current cursor position
 		do
-			create Result.make (child, child_after, child_before)
+			create Result.make (child, child_after, child_before, Current)
 		end
 
 feature -- Status report

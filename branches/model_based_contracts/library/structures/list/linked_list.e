@@ -8,6 +8,7 @@ indexing
 	representation: linked;
 	access: index, cursor, membership;
 	contents: generic;
+	model: sequence, index, prunable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -32,6 +33,11 @@ feature {NONE} -- Initialization
 			before := True
 		ensure
 			is_before: before
+		-- ensure: model
+			sequence_effect: sequence.is_empty
+			index_effect: index = 0
+			prunable_effect: prunable
+			object_comparison_effect: not object_comparison
 		end
 
 feature -- Access
@@ -96,7 +102,7 @@ feature -- Access
 	cursor: LINKED_LIST_CURSOR [G] is
 			-- Current cursor position
 		do
-			create Result.make (active, after, before)
+			create Result.make (active, after, before, Current)
 		end
 
 feature -- Measurement
@@ -179,6 +185,9 @@ feature -- Status report
 				end
 				Result := (v = l.item) or else (v = item)
 			end
+		ensure then
+		-- ensure then: model
+			definition: (sequence.is_defined (index) and then v = sequence.item (index)) or (not sequence.is_empty and then v = sequence.last)
 		end
 
 feature -- Cursor movement
@@ -629,9 +638,15 @@ feature -- Duplication
 				end
 			end
 			object_comparison := obj_comparison
+		ensure then
+		-- ensure then: model
+			sequence_effect: sequence |=| old other.sequence
+			index_effect: index = 0
+			prunable_effect: prunable = old other.prunable -- ToDo: should it be so?
+			object_comparison_effect: object_comparison = old other.object_comparison
 		end
 
-feature {LINKED_LIST} -- Implementation
+feature {LINKED_LIST, LINKED_LIST_CURSOR} -- Implementation
 
 	new_chain: like Current is
 			-- A newly created instance of the same type.
@@ -731,6 +746,9 @@ feature {NONE} -- Implementation
 		ensure
 			wiped_out: is_empty
 			is_before: before
+		-- ensure: model
+			sequence_effect: sequence.is_empty
+			index_effect: index = 0 or index = 1
 		end
 
 invariant

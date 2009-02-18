@@ -14,7 +14,8 @@ class LINKED_STACK [G] inherit
 
 	STACK [G]
 		undefine
-			replace, copy, is_equal
+			replace, copy, is_equal,
+			bag
 		select
 			remove, put, item
 		end

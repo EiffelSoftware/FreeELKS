@@ -13,7 +13,7 @@ class HEAP_PRIORITY_QUEUE [G -> COMPARABLE] inherit
 
 	PRIORITY_QUEUE [G]
 		undefine
-			is_equal, copy, is_empty
+			is_equal, copy, is_empty, bag
 		redefine
 			linear_representation
 		select

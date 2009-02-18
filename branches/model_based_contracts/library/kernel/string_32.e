@@ -45,7 +45,7 @@ inherit
 
 	RESIZABLE [CHARACTER_32]
 		undefine
-			copy, is_equal, out
+			copy, is_equal, out, bag
 		redefine
 			changeable_comparison_criterion
 		end

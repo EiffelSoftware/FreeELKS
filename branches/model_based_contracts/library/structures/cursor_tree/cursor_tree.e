@@ -8,6 +8,7 @@ indexing
 	names: cursor_tree, tree;
 	access: cursor, membership;
 	contents: generic;
+	model: sequence, index, relation, extendible, prunable, writable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -20,7 +21,9 @@ deferred class CURSOR_TREE [G] inherit
 
 	CURSOR_STRUCTURE [G]
 		rename
-			fill as container_fill
+			fill as container_fill,
+			cursor_position as index,
+			cursor_to_item as sequence
 		export
 			{NONE} prune_all
 		end
@@ -683,6 +686,13 @@ feature {NONE} -- Not applicable
 		do
 		end
 
+feature -- Model
+	cursors: MML_SET [INTEGER] is
+			-- Set of possible cursors
+		do
+			create {MML_RANGE_SET} Result.make_from_range (0, sequence.count + 1)
+		end
+
 invariant
 
 	non_negative_depth: depth >= 0
@@ -700,6 +710,9 @@ invariant
 	after_constraint: after implies not (before or above)
 	before_constaint: before implies not (after or above)
 	empty_below_constraint: (is_empty and (after or before)) implies below
+
+-- invariant: model
+	sequence_bag_constraint: bag |=| sequence.to_bag
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."

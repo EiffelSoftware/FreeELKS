@@ -103,8 +103,8 @@ feature -- Removal
 		ensure
 			no_more_occurrences: not has (v)
 		-- ensure: model
-			bag_effect_reference_comparison: bag |=| old bag.domain_anti_restricted_by (v)
-			bag_effect_object_comparison: bag |=| old (bag.domain_anti_restricted (bag.domain.subset_where (agent equal_elements (v, ?))))
+			bag_effect_reference_comparison: not object_comparison implies bag |=| old bag.domain_anti_restricted_by (v)
+			bag_effect_object_comparison: object_comparison implies bag |=| old (bag.domain_anti_restricted (bag.domain.subset_where (agent equal_elements (v, ?))))
 		end
 
 	wipe_out is

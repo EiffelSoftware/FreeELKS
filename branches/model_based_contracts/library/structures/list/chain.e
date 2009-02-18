@@ -17,8 +17,11 @@ indexing
 deferred class CHAIN [G] inherit
 
 	CURSOR_STRUCTURE [G]
+		rename
+			cursor_to_item as sequence,
+			cursor_position as index
 		undefine
-			prune_all
+			prune_all, bag
 		redefine
 			fill
 		select
@@ -43,9 +46,10 @@ deferred class CHAIN [G] inherit
 		export
 			{NONE} sequence_put
 		undefine
-			sequence
+			bag
 		redefine
-			index_of, has, off, occurrences, fill, append
+			index_of, has, off, occurrences, fill, append,
+			sequence
 		select
 			index_of, has, occurrences
 		end
@@ -61,9 +65,10 @@ deferred class CHAIN [G] inherit
 				sequential_index_of, sequential_has,
 				sequence_put
 		undefine
-			sequence
+			bag
 		redefine
-			off, fill, append
+			off, fill, append,
+			sequence
 		end
 
 feature -- Access
@@ -244,7 +249,7 @@ feature -- Cursor movement
 		do
 			Result := (i >= 1) and (i <= count)
 		ensure then
-			valid_index_definition: Result = ((i >= 1) and (i <= count))
+			valid_index_definition: Result = (i >= 1 and i <= count)
 		end
 
 
@@ -265,7 +270,7 @@ feature -- Cursor movement
 		ensure
 			valid_position: Result implies not is_empty
 		-- ensure: model
-			definition: Result = not sequence.is_empty and (index = sequence.count)
+			definition: Result = (not sequence.is_empty and index = sequence.count)
 		end
 
 	off: BOOLEAN is
@@ -395,7 +400,7 @@ feature -- Duplication
 		deferred
 		ensure
 		-- ensure: model
-			definition: Result.sequence |=| sequence.domain_restricted (create {MML_RANGE_SET}.make_from_range (index, index + n.min (sequence.count - index + 1)))
+			definition: Result.sequence |=| sequence.interval (index, sequence.count.min (index + n))
 		end
 
 feature {NONE} -- Inapplicable
@@ -422,6 +427,12 @@ feature -- Model
 			end
 		end
 
+	cursors: MML_SET [INTEGER] is
+			-- Set of possible cursors
+		do
+			create {MML_RANGE_SET} Result.make_from_range (0, sequence.count + 1)
+		end
+
 invariant
 
 	non_negative_index: index >= 0
@@ -434,6 +445,7 @@ invariant
 
 -- invariant: model
 	lower_is_one: lower = 1
+	cursors_sequence_constraint: cursors |=| sequence.domain.extended (0).extended (sequence.count + 1)
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."
