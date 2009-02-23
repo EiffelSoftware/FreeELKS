@@ -776,11 +776,35 @@ feature -- Measurement
 			-- Space occupied by `object' in bytes
 		require
 			object_not_void: object /= Void
+		local
+			l_size: NATURAL_64
+		do
+			l_size := c_size (object)
+				-- Prevent overflow by giving the maximum INTEGER_32 value when it is very large.
+			Result := l_size.min ({INTEGER_32}.max_value.as_natural_64).as_integer_32
+		end
+
+	deep_physical_size (object: ANY): INTEGER
+			-- Space occupied by `object' and its children in bytes
+		require
+			object_not_void: object /= Void
+		local
+			l_size: NATURAL_64
+		do
+			l_size := deep_physical_size_64 (object)
+				-- Prevent overflow by giving the maximum INTEGER_32 value when it is very large.
+			Result := l_size.min ({INTEGER_32}.max_value.as_natural_64).as_integer_32
+		end
+
+	physical_size_64 (object: ANY): NATURAL_64
+			-- Space occupied by `object' in bytes
+		require
+			object_not_void: object /= Void
 		do
 			Result := c_size (object)
 		end
 
-	deep_physical_size (object: ANY): INTEGER
+	deep_physical_size_64 (object: ANY): NATURAL_64
 			-- Space occupied by `object' and its children in bytes
 		require
 			object_not_void: object /= Void
@@ -798,7 +822,7 @@ feature -- Measurement
 				until
 					l_objects.after
 				loop
-					Result := Result + physical_size (l_objects.item)
+					Result := Result + physical_size_64 (l_objects.item)
 					l_objects.forth
 				end
 			end
@@ -1012,7 +1036,7 @@ feature {NONE} -- Implementation
 			"built_in static"
 		end
 
-	c_size (object: ANY): INTEGER
+	c_size (object: ANY): NATURAL_64
 			-- Physical size of `object'
 		external
 			"built_in static"
