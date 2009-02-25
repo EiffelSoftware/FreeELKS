@@ -8,13 +8,13 @@ note
 			redefinition of `is_equal' and `copy'.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2009, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
 class
-	PROCEDURE [BASE_TYPE, OPEN_ARGS -> TUPLE create default_create end]
+	PROCEDURE [BASE_TYPE, OPEN_ARGS -> ?TUPLE create default_create end]
 
 inherit
 	ROUTINE [BASE_TYPE, OPEN_ARGS]

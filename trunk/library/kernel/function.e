@@ -8,13 +8,13 @@ note
 			of `last_result' and `item'.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2009, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
 class
-	FUNCTION [BASE_TYPE, OPEN_ARGS -> TUPLE create default_create end, RESULT_TYPE]
+	FUNCTION [BASE_TYPE, OPEN_ARGS -> ?TUPLE create default_create end, RESULT_TYPE]
 
 inherit
 	ROUTINE [BASE_TYPE, OPEN_ARGS]
