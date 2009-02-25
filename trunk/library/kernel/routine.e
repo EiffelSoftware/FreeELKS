@@ -4,13 +4,13 @@ note
 		with some operands possibly still open
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2009, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
 deferred class
-	ROUTINE [BASE_TYPE, OPEN_ARGS -> TUPLE create default_create end]
+	ROUTINE [BASE_TYPE, OPEN_ARGS -> ?TUPLE create default_create end]
 
 inherit
 	HASHABLE
