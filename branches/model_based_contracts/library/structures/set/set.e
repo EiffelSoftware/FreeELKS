@@ -9,6 +9,7 @@ indexing
 	names: set;
 	access: membership;
 	contents: generic;
+	model: set, extendible, prunable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -73,8 +74,6 @@ feature -- Removal
 feature -- Model
 	set: MML_SET [G] is
 			-- Mathematical set that corresponds to container contents
-		note
-			spec: model
 		local
 			linear: LINEAR [G]
 		do

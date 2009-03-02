@@ -36,13 +36,16 @@ feature -- Status report
 	valid_key (k: H): BOOLEAN is
 			-- Is `k' a valid key?
 		deferred
+		ensure
+		-- ensure: model
+			definition: Result = relation.domain.contains (k)
 		end
 
 feature -- Element change
 
 	put (v: G; k: H) is
 			-- Associate value `v' with key `k'.
-			-- ToDo: what happens here?
+			-- ToDo: in some classes acts like force and in others put only if not relation.domain.contains (k)
 		require
 			valid_key: valid_key (k)
 		deferred
@@ -50,14 +53,13 @@ feature -- Element change
 
 	force (v: G; k: H) is
 			-- Associate value `v' with key `k'.
-			-- ToDo: what happens here?			
 		require
 			valid_key: valid_key (k)
 		deferred
 		ensure
 			inserted: item (k) = v
 		-- ensure: model
-			relation_contains: relation.contains_pair (k, v)
+			relation_effect: relation |=| old relation.domain_anti_restricted_by (k).extended_by_pair (k, v)
 		end
 
 feature {NONE} -- Inapplicable
@@ -74,7 +76,9 @@ feature -- Model
 
 invariant
 -- invariant: model
---	relation_bag_constraint: bag.domain = relation.range -- Doesn't run if uncommented
+	relation_is_function: relation.is_function
+	relation_bag_constraint_domain: bag.domain |=| relation.range
+	relation_bag_constraint_range: bag.set_for_all (agent (p: MML_PAIR [G, INTEGER]): BOOLEAN do Result := p.second = relation.anti_image_of (p.first).count end)
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."
 	copyright:	"Copyright (c) 1984-2006, Eiffel Software and others"

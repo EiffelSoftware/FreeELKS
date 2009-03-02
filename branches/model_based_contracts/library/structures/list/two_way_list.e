@@ -9,6 +9,8 @@ indexing
 	representation: linked;
 	access: index, cursor, membership;
 	contents: generic;
+	model: sequence, index, object_comparison;
+	model_links: sublist;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -16,6 +18,7 @@ class TWO_WAY_LIST [G] inherit
 
 	LINKED_LIST [G]
 		redefine
+			make,
 			first_element, last_element,
 			extend, put_front, put_left, put_right,
 			merge_right, merge_left, new_cell,
@@ -41,6 +44,7 @@ class TWO_WAY_LIST [G] inherit
 				ll_put_front, ll_put_right,
 				ll_move, ll_merge_right, ll_wipe_out
 		redefine
+			make,
 			put_left, merge_left, remove, new_chain,
 			remove_left, finish, islast, first_element, extend,
 			last_element, previous, new_cell, remove_right,
@@ -53,11 +57,23 @@ create
 create {TWO_WAY_LIST}
 	make_sublist
 
+feature {NONE} -- Initialization
+
+	make is
+			-- Create an empty list.
+		do
+			Precursor
+		ensure then
+		-- ensure then: model
+			sublist_effect: sublist = Void
+		end
+
 feature -- Access
 
 	first_element: ?like new_cell
 			-- Head of list
 			-- (Anchor redefinition)
+			-- ToDo: isn't it a part of implementation?
 
 	last_element: like first_element
 			-- Tail of the list
@@ -274,6 +290,7 @@ feature -- Element change
 				other_first_element := other.first_element
 				other_last_element := other.last_element
 				other_count := other.count
+				other.wipe_out
 					check
 						other_first_element /= Void
 						other_last_element /= Void
@@ -301,7 +318,7 @@ feature -- Element change
 					end
 				end
 				count := count + other_count
-				other.wipe_out
+--				other.wipe_out
 			end
 		end
 
@@ -440,11 +457,21 @@ feature -- Removal
 					after := True
 				end
 			end
+		ensure
+		-- ensure: model
+			sequence_effect: sequence |=| old (sequence.interval (1, index - 1).concatenated (sequence.interval (index + n, sequence.count)))
+			sublist_sequence_effect: sublist.sequence |=| old (sequence.interval (index, sequence.count.min (index + n - 1)))
+			sublist_index_effect: sublist.index = 0
+			sublist_object_comparison_effect: not sublist.object_comparison
+			sublist_sublist_effect: sublist.sublist = Void
 		end
 
 	remove_sublist is
 		do
 			sublist := Void
+		ensure
+		-- ensure: model
+			sublist_effect: sublist = Void
 		end
 
 feature {TWO_WAY_LIST} -- Implementation

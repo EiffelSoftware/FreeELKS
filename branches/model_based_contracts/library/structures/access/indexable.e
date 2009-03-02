@@ -8,7 +8,7 @@ indexing
 	names: indexable, access;
 	access: index, membership;
 	contents: generic;
-	model: relation, lower, extendible, prunable, object_comparison;
+	model: relation, extendible, prunable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -20,7 +20,8 @@ deferred class INDEXABLE [G] inherit
 			force as put
 		redefine
 			valid_index,
-			bag
+			bag,
+			linear_representation
 		end
 
 feature -- Measurement
@@ -31,8 +32,7 @@ feature -- Measurement
 		ensure
 			not_void: Result /= Void
 		-- ensure: model
-			definition_set: Result.set = relation.domain
-			definition_lower: Result.lower = lower
+			definition_set: Result.set |=| relation.domain
 		end
 
 feature -- Status report
@@ -45,8 +45,16 @@ feature -- Status report
 				Result implies
 					((i >= index_set.lower) and
 					(i <= index_set.upper))
-		--ensure then: model
-			definition: Result = (i >= lower) and (i <= lower + relation.count - 1)
+		end
+
+feature -- Conversion
+
+	linear_representation: LINEAR [G] is
+			-- Representation as a linear structure
+		deferred
+		ensure then
+		-- ensure: model
+			sequence_corresponds_to_relation: Result.sequence |=| relation.as_sequence
 		end
 
 feature -- Model
@@ -64,12 +72,6 @@ feature -- Model
 				Result := Result.extended (create {MML_DEFAULT_PAIR [INTEGER, G]}.make_from(i, item (i)))
 				i := i + 1
 			end
-		end
-
-	lower: INTEGER is
-			-- Lower bound of the index range
-		do
-			Result := index_set.lower
 		end
 
 	bag: MML_BAG [G] is
@@ -93,8 +95,7 @@ invariant
 	index_set_not_void: index_set /= Void
 
 -- invariant: model
-	relation_is_function: relation.is_function
-	domain_is_interval: relation.domain.for_all (agent (i: INTEGER): BOOLEAN do Result := i >= lower and i <= lower + relation.count - 1 end)
+	domain_is_interval: relation.domain.is_range
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."

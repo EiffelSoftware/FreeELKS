@@ -3,6 +3,7 @@ indexing
 	library: "Free implementation of ELKS library"
 	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
+	model: set, extendible, prunable, additional_space, resizable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -24,7 +25,7 @@ inherit
 		undefine
 			changeable_comparison_criterion
 		redefine
-			copy, is_equal, lower
+			copy, is_equal
 		select
 			bag_put
 		end
@@ -468,5 +469,8 @@ invariant
 	count_definition: upper_defined and lower_defined implies count = upper - lower + 1
 	index_set_is_range: equal (index_set, Current)
 	not_infinite: upper_defined and lower_defined
+
+-- invariant
+	set_relation_constraint: relation |=| set.identity
 
 end

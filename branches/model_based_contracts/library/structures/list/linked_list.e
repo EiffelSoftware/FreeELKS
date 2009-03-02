@@ -8,7 +8,7 @@ indexing
 	representation: linked;
 	access: index, cursor, membership;
 	contents: generic;
-	model: sequence, index, prunable, object_comparison;
+	model: sequence, index, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -19,7 +19,8 @@ class LINKED_LIST [G] inherit
 			go_i_th, put_left, move, wipe_out,
 			isfirst, islast, is_inserted,
 			first, last, finish, merge_left, merge_right,
-			readable, start, before, after, off, copy
+			readable, start, before, after, off, copy,
+			duplicate
 		end
 
 create
@@ -36,7 +37,6 @@ feature {NONE} -- Initialization
 		-- ensure: model
 			sequence_effect: sequence.is_empty
 			index_effect: index = 0
-			prunable_effect: prunable
 			object_comparison_effect: not object_comparison
 		end
 
@@ -103,6 +103,9 @@ feature -- Access
 			-- Current cursor position
 		do
 			create Result.make (active, after, before, Current)
+		ensure then
+		-- ensure then: model
+			list_definition: Result.list = Current
 		end
 
 feature -- Measurement
@@ -641,9 +644,21 @@ feature -- Duplication
 		ensure then
 		-- ensure then: model
 			sequence_effect: sequence |=| old other.sequence
-			index_effect: index = 0
-			prunable_effect: prunable = old other.prunable -- ToDo: should it be so?
+			index_effect: index = old other.sequence.count
 			object_comparison_effect: object_comparison = old other.object_comparison
+		end
+
+	duplicate (n: INTEGER): like Current is
+			-- Copy of sub-chain beginning at current position
+			-- and having min (`n', `from_here') items,
+			-- where `from_here' is the number of items
+			-- at or to the right of current position.
+		do
+			Result := Precursor (n)
+		ensure then
+		-- ensure: model
+			index_definition: Result.index = 0
+			object_comparison_definition: Result.object_comparison = object_comparison
 		end
 
 feature {LINKED_LIST, LINKED_LIST_CURSOR} -- Implementation

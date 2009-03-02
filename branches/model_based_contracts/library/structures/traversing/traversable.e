@@ -58,7 +58,7 @@ feature -- Iteration
 			linear_representation.do_all (action)
 		ensure
 		-- ensure: model
-			sequence_effect: bag.for_all (
+			bag_effect: bag.for_all (
 				agent (a: PROCEDURE [ANY, TUPLE [G]]; x: G): BOOLEAN
 					do
 						Result := a.postcondition ([x])
@@ -79,7 +79,7 @@ feature -- Iteration
 			linear_representation.do_if (action, test)
 		ensure
 		-- ensure: model
-			sequence_effect: bag.for_all (
+			bag_effect: bag.for_all (
 				agent (a: PROCEDURE [ANY, TUPLE [G]]; t: FUNCTION [ANY, TUPLE [G], BOOLEAN]; x: G): BOOLEAN
 					do
 						Result := t.item ([x]) implies a.postcondition ([x])

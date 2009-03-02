@@ -9,6 +9,7 @@ indexing
 	representation: array;
 	access: index, cursor, membership;
 	contents: generic;
+	model: sequence, index, capacity, object_comparison; -- extendible, prunable?
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -24,7 +25,7 @@ class FIXED_LIST [G] inherit
 				prune, prune_all
 		undefine
 			force, prune, infix "@", put_i_th,
-			prune_all, copy, i_th, lower
+			prune_all, copy, i_th
 		redefine
 			first,
 			last,
@@ -37,7 +38,7 @@ class FIXED_LIST [G] inherit
 			put,
 			remove
 		select
-			extendible, index_set
+			extendible, index_set, sequence
 		end
 
 	ARRAY [G]
@@ -48,8 +49,7 @@ class FIXED_LIST [G] inherit
 			force as force_i_th,
 			bag_put as put,
 			index_set as array_index_set,
-			extendible as array_extendible,
-			relation as sequence
+			extendible as array_extendible
 		export
 			{NONE}
 				all
@@ -68,7 +68,7 @@ class FIXED_LIST [G] inherit
 		undefine
 			count, linear_representation, put, resizable, fill,
 			for_all, there_exists, do_all, do_if, occurrences, has,
-			valid_index, is_equal, sequence
+			valid_index, is_equal
 		redefine
 			full, extend, prunable
 		end
@@ -94,6 +94,11 @@ feature -- Initialization
 		ensure
 			is_before: before
 			new_count: count = 0
+		-- ensure: model
+			sequence_effect: sequence.is_empty
+			index_effect: index = 0
+			capacity_effect: capacity = n
+			object_comparison_effect: not object_comparison
 		end
 
 	make_filled (n: INTEGER) is
@@ -104,6 +109,12 @@ feature -- Initialization
 		ensure
 			is_before: before
 			new_count: count = n
+		-- ensure: model
+			sequence_domain_effect: sequence.count = n
+			sequence_range_effect: sequence.for_all (agent is_default)
+			index_effect: index = 0
+			capacity_effect: capacity = n
+			object_comparison_effect: not object_comparison
 		end
 
 feature -- Access
@@ -145,12 +156,18 @@ feature -- Status report
 			-- May new items be added?
 		do
 			Result := (count < capacity)
+		ensure then
+		-- ensure then: model
+			definition: Result = (sequence.count < capacity)
 		end
 
 	prunable: BOOLEAN is
 			-- May items be removed?
 		do
 			Result := not is_empty
+		ensure then
+		-- ensure then: model
+			definition: Result = not sequence.is_empty
 		end
 
 	full: BOOLEAN is
@@ -242,6 +259,9 @@ feature -- Element change
 			count := count + 1
 			index := count
 			force_i_th (v, count)
+		ensure then
+		-- ensure then: model
+			index_effect: index = old sequence.count + 1
 		end
 
 	remove is
@@ -300,6 +320,11 @@ feature -- Duplication
 			end
 			Result.start
 			index := pos
+		ensure then
+		-- ensure: model
+			index_definition: Result.index = 1
+			capacity_definition: Result.capacity = n.min (sequence.count - index + 1)
+			object_comparison_definition: not Result.object_comparison
 		end
 
 feature {NONE} -- Implementation
@@ -312,6 +337,11 @@ feature {NONE} -- Implementation
 invariant
 
 	empty_means_storage_empty: is_empty implies all_default
+
+-- invariant: model
+	relation_is_sequence: relation.domain.as_range.lower = 1
+	relation_range_head: relation.as_sequence.interval (1, count) |=| sequence
+	sequence_capacity_constraint: sequence.count <= capacity
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."

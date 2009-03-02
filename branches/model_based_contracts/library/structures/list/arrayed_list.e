@@ -10,6 +10,7 @@ indexing
 	access: index, cursor, membership;
 	size: fixed;
 	contents: generic;
+	model: sequence, index, capacity, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -25,8 +26,7 @@ class ARRAYED_LIST [G] inherit
 			count as array_count,
 			index_set as array_index_set,
 			bag_put as put,
-			resize as array_resize,
-			relation as sequence
+			resize as array_resize
 		export
 			{NONE}
 				all
@@ -38,8 +38,7 @@ class ARRAYED_LIST [G] inherit
 		undefine
 			linear_representation, prunable, put, is_equal,
 			prune, occurrences, extendible, fill,
-			for_all, there_exists, do_all, do_if,
-			sequence
+			for_all, there_exists, do_all, do_if
 		redefine
 			extend, prune_all, full, wipe_out,
 			is_inserted, make_from_array, has, valid_index
@@ -48,8 +47,7 @@ class ARRAYED_LIST [G] inherit
 	DYNAMIC_LIST [G]
 		undefine
 			put_i_th,
-			force, is_inserted, copy,
-			lower
+			force, is_inserted, copy
 		redefine
 			first, last, swap, wipe_out, i_th, infix "@",
 			go_i_th, move, prunable, start, finish,
@@ -58,7 +56,7 @@ class ARRAYED_LIST [G] inherit
 			merge_right, duplicate, prune_all, has, search,
 			append, valid_index
 		select
-			count, index_set, i_th, infix "@"
+			count, index_set, i_th, infix "@", sequence
 		end
 
 create
@@ -81,6 +79,11 @@ feature -- Initialization
 		ensure
 			correct_position: before
 			is_empty: is_empty
+		-- ensure: model
+			sequence_effect: sequence.is_empty
+			index_effect: index = 0
+			capacity_effect: capacity = n
+			object_comparison_effect: not object_comparison
 		end
 
 	make_filled (n: INTEGER) is
@@ -96,6 +99,12 @@ feature -- Initialization
 		ensure
 			correct_position: before
 			filled: full
+		-- ensure: model
+			sequence_domain_effect: sequence.count = n
+			sequence_range_effect: sequence.for_all (agent is_default)
+			index_effect: index = 0
+			capacity_effect: capacity = n
+			object_comparison_effect: not object_comparison
 		end
 
 	make_from_array (a: ARRAY [G]) is
@@ -109,6 +118,10 @@ feature -- Initialization
 		ensure then
 			correct_position: before
 			filled: count = a.count
+		-- ensure then: model
+			sequence_effect: sequence |=| a.relation.as_sequence
+			index_effect: index = 0
+			capacity_effect: capacity = a.relation.count
 		end
 
 feature -- Access
@@ -224,6 +237,9 @@ feature -- Status report
 			end
 
 			Result := (v = last) or else (v = item)
+		ensure then
+		-- ensure then: model
+			definition: (sequence.is_defined (index) and then v = sequence.item (index)) or (not sequence.is_empty and then v = sequence.last)
 		end
 
 feature -- Cursor movement
@@ -346,6 +362,8 @@ feature -- Element change
 				insert (v, 1)
 			end
 			index := index + 1
+--		ensure then: model
+--			capacity_effect: modifies (capacity) -- ToDo: what to do here?
 		end
 
 	force, extend (v: like item) is
@@ -357,6 +375,8 @@ feature -- Element change
 			i := count + 1
 			set_count (i)
 			force_i_th (v, i)
+--		ensure then: model
+--			capacity_effect: modifies (capacity) -- ToDo: what to do here?
 		end
 
 	put_left (v: like item) is
@@ -369,6 +389,8 @@ feature -- Element change
 				insert (v, index)
 			end
 			index := index + 1
+--		ensure then: model
+--			capacity_effect: modifies (capacity) -- ToDo: what to do here?
 		end
 
 	put_right (v: like item) is
@@ -380,6 +402,8 @@ feature -- Element change
 			else
 				insert (v, index + 1)
 			end
+--		ensure then: model
+--			capacity_effect: modifies (capacity) -- ToDo: what to do here?			
 		end
 
 	replace (v: like first) is
@@ -399,6 +423,8 @@ feature -- Element change
 			index := index - 1
 			merge_right (other)
 			index := old_index + old_other_count
+--		ensure then: model
+--			capacity_effect: modifies (capacity) -- ToDo: what to do here?			
 		end
 
 	merge_right (other: ARRAYED_LIST [G]) is
@@ -418,6 +444,8 @@ feature -- Element change
 				subcopy (other, 1, other.count, index + 1)
 				other.wipe_out
 			end
+--		ensure then: model
+--			capacity_effect: modifies (capacity) -- ToDo: what to do here?			
 		end
 
 	append (s: SEQUENCE [G]) is
@@ -438,6 +466,8 @@ feature -- Element change
 			else
 				Precursor {DYNAMIC_LIST} (s)
 			end
+--		ensure then: model
+--			capacity_effect: modifies (capacity) -- ToDo: what to do here?			
 		end
 
 feature -- Resizing
@@ -451,6 +481,8 @@ feature -- Resizing
 			grow (new_capacity)
 		ensure
 			capacity_set: capacity >= new_capacity
+		-- ensure: model
+			capacity_effect: capacity >= new_capacity
 		end
 
 feature -- Removal
@@ -544,6 +576,8 @@ feature -- Removal
 			index := count + 1
 		ensure then
 			is_after: after
+		-- ensure then: model
+			index_effect: index = sequence.count + 1
 		end
 
 	remove_left is
@@ -569,6 +603,9 @@ feature -- Removal
 			set_count (0)
 			index := 0
 			clear_all
+		ensure then
+		-- ensure then: model
+			index = 0
 		end
 
 feature -- Transformation
@@ -599,6 +636,11 @@ feature -- Duplication
 				Result := new_filled_list (end_pos - index + 1)
 				Result.subcopy (Current, index, end_pos, 1)
 			end
+		ensure then
+		-- ensure then: model
+			index_definition: Result.index = 0
+			capacity_definition: Result.capacity = n.min (sequence.count - index + 1)
+			object_comparison_definition: not Result.object_comparison
 		end
 
 feature {NONE} -- Inapplicable
@@ -654,6 +696,11 @@ invariant
 	prunable: prunable
 	starts_from_one: lower = 1
 	empty_means_storage_empty: is_empty implies all_default
+
+-- invariant: model
+	relation_is_sequence: relation.domain.as_range.lower = 1
+	relation_range_head: relation.as_sequence.interval (1, count) |=| sequence
+	sequence_capacity_constraint: sequence.count <= capacity
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."

@@ -4,6 +4,7 @@ indexing
 	status: "See notice at end of class."
 	names: storage;
 	size: resizable;
+	model: bag, capacity, additional_space, resizable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -48,6 +49,8 @@ feature -- Resizing
 			grow (capacity + additional_space)
 		ensure
 			increased_capacity: capacity >= old capacity + old additional_space
+		-- ensure: model
+			capacity_effect: capacity >= old capacity + old additional_space
 		end
 
 	grow (i: INTEGER) is
@@ -55,6 +58,8 @@ feature -- Resizing
 		deferred
 		ensure
 			new_capacity: capacity >= i
+		-- ensure: model
+			capacity_effect: capacity >= i
 		end
 
 invariant

@@ -1722,7 +1722,4 @@ invariant
 	extendible: extendible
 	compare_character: not object_comparison
 
--- invariant: model
-	lower_is_one: lower = 1
-
 end

@@ -8,6 +8,7 @@ indexing
 	library: "Free implementation of ELKS library"
 	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
+	model: relation, additional_space, resizable, extendible, prunable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -24,7 +25,7 @@ class ARRAY [G] inherit
 		rename
 			item as item alias "[]"
 		redefine
-			copy, is_equal, lower
+			copy, is_equal
 		end
 
 	TO_SPECIAL [G]
@@ -65,6 +66,14 @@ feature -- Initialization
 			lower_set: lower = min_index
 			upper_set: upper = max_index
 			items_set: all_default
+		-- ensure: model
+			relation_domain_effect: relation.domain |=| create {MML_RANGE_SET}.make_from_range (min_index, max_index)
+			relation_range_effect: relation.range.for_all (agent is_default)
+			additional_space_effect: additional_space = ((max_index - min_index + 1) // 2).max (minimal_increase)
+--			resizable_effect: resizable = True -- ToDo: not True in FIXED_LIST
+--			extendible_effect: extendible = False -- ToDo: Not true in ARRAYED_LIST
+--			prunable_effect: prunable = False -- ToDo: Not true in ARRAYED_LIST
+			object_comparison_effect: object_comparison = False
 		end
 
 	make_from_array (a: ARRAY [G]) is
@@ -77,6 +86,14 @@ feature -- Initialization
 			area := a.area
 			lower := a.lower
 			upper := a.upper
+		ensure
+		-- ensure: model
+			relation_effect: relation |=| a.relation
+			additional_space_effect: additional_space = a.additional_space
+--			resizable_effect: resizable = True -- ToDo: not True in FIXED_LIST
+--			extendible_effect: extendible = False -- ToDo: Not true in ARRAYED_LIST
+--			prunable_effect: prunable = False -- ToDo: Not true in ARRAYED_LIST
+			object_comparison_effect: object_comparison = False
 		end
 
 	make_from_cil (na: NATIVE_ARRAY [like item]) is
@@ -104,6 +121,8 @@ feature -- Access
 			valid_key: valid_index (i)
 		do
 			Result := item (i)
+		ensure
+			definition: relation.image_of (i).contains (Result)
 		end
 
 	has (v: G): BOOLEAN is
@@ -141,9 +160,19 @@ feature -- Measurement
 
 	lower: INTEGER
 			-- Minimum index
+		attribute
+		ensure
+		-- ensure: model
+			definition: Result = relation.domain.as_range.lower
+		end
 
 	upper: INTEGER
 			-- Maximum index
+		attribute
+		ensure
+		-- ensure: model
+			definition: Result = relation.domain.as_range.upper
+		end
 
 	count, capacity: INTEGER is
 			-- Number of available indices
@@ -151,6 +180,8 @@ feature -- Measurement
 			Result := upper - lower + 1
 		ensure then
 			consistent_with_bounds: Result = upper - lower + 1
+		-- ensure then: model
+			definition: Result = relation.domain.as_range.upper - relation.domain.as_range.lower + 1
 		end
 
 	occurrences (v: G): INTEGER is
@@ -221,6 +252,10 @@ feature -- Comparison
 					Result := area.same_items (other.area, 0, 0, count)
 				end
 			end
+		ensure then
+		-- ensure then: model
+			definition_reference_comparison: not object_comparison implies Result = not other.object_comparison and (relation |=| other.relation)
+			definition_object_comparison: object_comparison implies (Result = other.object_comparison) and (relation.domain |=| other.relation.domain) and relation.range.for_all (agent (v1: G; o: MML_SET [G]): BOOLEAN do Result := o.there_exists (agent equal_elements (v1, ?)) end (?, other.relation.range))
 		end
 
 feature -- Status report
@@ -233,6 +268,8 @@ feature -- Status report
 			definition: Result = (count = 0 or else
 				((not {i: like item} item (upper) or else i = i.default) and
 				subarray (lower, upper - 1).all_default))
+		-- ensure: model
+			definition: relation.range.for_all (agent is_default)
 		end
 
 	full: BOOLEAN is
@@ -254,6 +291,8 @@ feature -- Status report
 				(count = 0 or else (item (upper) = other.item (other.upper)
 				and subarray (lower, upper - 1).same_items
 				(other.subarray (other.lower, other.upper - 1)))))
+		-- ensure then: model
+			definition: Result = (relation |=| other.relation)
 		end
 
 	all_cleared: BOOLEAN is
@@ -286,6 +325,9 @@ feature -- Status report
 	valid_index_set: BOOLEAN is
 		do
 			Result := index_set.count = count
+		ensure
+		-- ensure: model
+			definition: Result = relation.domain.count = relation.count -- ToDo: delete this together with the feature
 		end
 
 feature -- Element change
@@ -302,6 +344,9 @@ feature -- Element change
 			valid_key: valid_index (i)
 		do
 			area.put (v, i - lower)
+		ensure
+		-- ensure: model
+			relation_effect: relation |=| old relation.domain_anti_restricted_by (i).extended_by_pair (i, v)
 		end
 
 	force (v: like item; i: INTEGER) is
@@ -318,6 +363,11 @@ feature -- Element change
 		ensure
 			inserted: item (i) = v
 			higher_count: count >= old count
+		-- ensure: model
+			relation_domain_effect: relation.domain |=| create {MML_RANGE_SET}.make_from_range (i.min (old relation.domain.as_range.lower), i.max (old relation.domain.as_range.upper))
+			relation_i_th_effect: relation.image_of (i).contains (v)
+			relation_old_effect: relation.domain_restricted (old relation.domain).domain_anti_restricted_by (i) |=| old relation.domain_anti_restricted_by (i)
+			relation_rest_effect: relation.domain_anti_restricted (old relation.domain).domain_anti_restricted_by (i).range.for_all (agent is_default)
 		end
 
 	subcopy (other: ARRAY [like item]; start_pos, end_pos, index_pos: INTEGER) is
@@ -335,6 +385,9 @@ feature -- Element change
 		ensure
 			-- copied: forall `i' in 0 .. (`end_pos'-`start_pos'),
 			--     item (index_pos + i) = other.item (start_pos + i)
+		-- ensure: model
+			relation_effect_unchanged: relation.domain_anti_restricted (create {MML_RANGE_SET}.make_from_range (index_pos, index_pos + end_pos - start_pos)) |=| old relation.domain_anti_restricted (create {MML_RANGE_SET}.make_from_range (index_pos, index_pos + end_pos - start_pos))
+			relation_effect_changed: relation.domain_restricted (create {MML_RANGE_SET}.make_from_range (index_pos, index_pos + end_pos - start_pos)).as_sequence |=| old other.relation.domain_restricted (create {MML_RANGE_SET}.make_from_range (start_pos, end_pos)).as_sequence
 		end
 
 feature -- Iteration
@@ -362,6 +415,14 @@ feature -- Iteration
 				action.call (t)
 				i := i + 1
 			end
+		ensure
+		-- ensure: model
+			relation_effect: relation.range.for_all (
+				agent (a: PROCEDURE [ANY, TUPLE [G]]; x: G): BOOLEAN
+					do
+						Result := a.postcondition ([x])
+					end
+				(action, ?))
 		end
 
 	do_if (action: PROCEDURE [ANY, TUPLE [G]]; test: FUNCTION [ANY, TUPLE [G], BOOLEAN]) is
@@ -390,6 +451,14 @@ feature -- Iteration
 				end
 				i := i + 1
 			end
+		ensure
+		-- ensure: model
+			relation_effect: relation.range.for_all (
+				agent (a: PROCEDURE [ANY, TUPLE [G]]; p: FUNCTION [ANY, TUPLE [G], BOOLEAN]; x: G): BOOLEAN
+					do
+						Result := p.item ([x]) implies a.postcondition ([x])
+					end
+				(action, test, ?))
 		end
 
 	there_exists (test: FUNCTION [ANY, TUPLE [G], BOOLEAN]): BOOLEAN is
@@ -413,6 +482,9 @@ feature -- Iteration
 				Result := test.item (t)
 				i := i + 1
 			end
+		ensure
+		-- ensure: model
+			definition: Result = relation.range.there_exists (test)
 		end
 
 	for_all (test: FUNCTION [ANY, TUPLE [G], BOOLEAN]): BOOLEAN is
@@ -437,6 +509,9 @@ feature -- Iteration
 				Result := test.item (t)
 				i := i + 1
 			end
+		ensure
+		-- ensure: model
+			definition: Result = relation.range.for_all (test)
 		end
 
 	do_all_with_index (action: PROCEDURE [ANY, TUPLE [G, INTEGER]]) is
@@ -466,6 +541,14 @@ feature -- Iteration
 				j := j + 1
 				i := i + 1
 			end
+		ensure
+		-- ensure: model
+			relation_effect: relation.for_all (
+				agent (a: PROCEDURE [ANY, TUPLE [G, INTEGER]]; pair: MML_PAIR [INTEGER, G]): BOOLEAN
+					do
+						Result := a.postcondition ([pair.second, pair.first])
+					end
+				(action, ?))
 		end
 
 	do_if_with_index (action: PROCEDURE [ANY, TUPLE [G, INTEGER]]; test: FUNCTION [ANY, TUPLE [G, INTEGER], BOOLEAN]) is
@@ -498,6 +581,14 @@ feature -- Iteration
 				j := j + 1
 				i := i + 1
 			end
+		ensure
+		-- ensure: model
+			relation_effect: relation.for_all (
+				agent (a: PROCEDURE [ANY, TUPLE [G, INTEGER]]; p: FUNCTION [ANY, TUPLE [G, INTEGER], BOOLEAN]; pair: MML_PAIR [INTEGER, G]): BOOLEAN
+					do
+						Result := p.item ([pair.second, pair.first]) implies a.postcondition ([pair.second, pair.first])
+					end
+				(action, test, ?))
 		end
 
 feature -- Removal
@@ -516,6 +607,9 @@ feature -- Removal
 			make_area (capacity)
 		ensure
 			default_items: all_default
+		-- ensure: model
+			relation_domain_effect: relation.domain |=| old relation.domain
+			relation_range_effect: relation.range.for_all (agent is_default)
 		end
 
 	clear_all is
@@ -526,6 +620,9 @@ feature -- Removal
 			stable_lower: lower = old lower
 			stable_upper: upper = old upper
 			default_items: all_default
+		-- ensure: model
+			relation_domain_effect: relation.domain |=| old relation.domain
+			relation_range_effect: relation.range.for_all (agent is_default)
 		end
 
 feature -- Resizing
@@ -536,6 +633,11 @@ feature -- Resizing
 			if i > capacity then
 				conservative_resize (lower, upper + i - capacity)
 			end
+		ensure then
+		-- ensure then: model
+			relation_domain_effect: relation.domain |=| old (create {MML_RANGE_SET}.make_from_range (relation.domain.as_range.lower, relation.domain.as_range.upper.max (relation.domain.as_range.lower + i - 1)))
+			relation_old_range_effect: relation.domain_restricted (old relation.domain) |=| old relation
+			relation_new_range_effect: relation.domain_anti_restricted (old relation.domain).range.for_all (agent is_default)
 		end
 
 	conservative_resize (min_index, max_index: INTEGER) is
@@ -571,6 +673,10 @@ feature -- Resizing
 		ensure
 			no_low_lost: lower = min_index or else lower = old lower
 			no_high_lost: upper = max_index or else upper = old upper
+		-- ensure: model
+			relation_domain_effect: relation.domain |=| create {MML_RANGE_SET}.make_from_range (min_index.min (old relation.domain.as_range.lower), max_index.max (old relation.domain.as_range.upper))
+			relation_old_range_effect: relation.domain_restricted (old relation.domain).as_sequence |=| old relation.as_sequence
+			relation_new_range_effect: relation.domain_anti_restricted (old relation.domain).range.for_all (agent is_default)
 		end
 
 	resize (min_index, max_index: INTEGER) is
@@ -648,6 +754,13 @@ feature -- Duplication
 			end
 		ensure then
 			equal_areas: area.is_equal (other.area)
+		-- ensure then: model
+			relation_effect: relation |=| old other.relation
+			additional_space_effect: additional_space = old other.additional_space
+			resizable_effect: resizable = old other.resizable
+			extendible_effect: extendible = old other.extendible
+			prunable_effect: prunable = old other.prunable
+			object_comparison_effect: object_comparison = old other.object_comparison
 		end
 
 	subarray (start_pos, end_pos: INTEGER): ARRAY [G] is
@@ -668,6 +781,13 @@ feature -- Duplication
 			upper: Result.upper = end_pos
 			-- copied: forall `i' in `start_pos' .. `end_pos',
 			--     Result.item (i) = item (i)
+		-- ensure: model
+			relation_definition: Result.relation |=| relation.domain_restricted (create {MML_RANGE_SET}.make_from_range (start_pos, end_pos))
+			additional_space_effect: Result.additional_space = ((end_pos - start_pos + 1) // 2).max (Result.minimal_increase)
+			resizable_effect: Result.resizable = resizable
+			extendible_effect: Result.extendible = extendible
+			prunable_effect: Result.prunable = prunable
+			object_comparison_effect: Result.object_comparison = False
 		end
 
 feature {NONE} -- Inapplicable

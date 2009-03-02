@@ -29,7 +29,7 @@ feature -- Access
 		ensure
 			cursor_not_void: Result /= Void
 		-- ensure: model
-			definition: Result.position = cursor_position
+			position_definition: Result.position = cursor_position
 		end
 
 	item: G is
