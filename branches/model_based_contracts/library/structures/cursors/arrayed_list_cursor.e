@@ -6,6 +6,7 @@ indexing
 
 	status: "See notice at end of class."
 	names: fixed_list_cursor, cursor;
+	model: index;
 	date: "$Date$"
 	revision: "$Revision$"
 

@@ -2,6 +2,8 @@ indexing
 	description: "Cursors for two way lists."
 	legal: "See notice at end of class."
 	status: "See notice at end of class."
+	model: position;
+	model_links: list;
 	date: "$Date$"
 	revision: "$Revision$"
 

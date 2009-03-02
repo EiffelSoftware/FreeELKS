@@ -6,7 +6,7 @@ indexing
 
 	status: "See notice at end of class."
 	names: bounded, storage;
-	model: bag, capacity, object_comparison;
+	model: bag, capacity, resizable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 

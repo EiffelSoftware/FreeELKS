@@ -8,7 +8,7 @@ indexing
 	names: sorted_struct, comparable_struct;
 	access: index, membership, min, max;
 	contents: generic;
-	model: sequence, index, less_equal, lower, extendible, prunable, object_comparison;
+	model: sequence, index, less_equal, extendible, prunable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -143,10 +143,6 @@ feature -- Model
 				i := i + 1
 			end
 		end
-
-invariant
--- invariant: model
-	lower_is_one: lower = 1
 
 indexing
 	library:	"EiffelBase: Library of reusable components for Eiffel."

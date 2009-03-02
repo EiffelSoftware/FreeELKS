@@ -77,6 +77,7 @@ indexing
 		]"
 
 	status: "See notice at end of class."
+	model: relation, prunable, object_comparison;
 	date: "$Date$"
 	revision: "$Revision$"
 

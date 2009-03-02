@@ -32,6 +32,16 @@ feature -- Customization
 			Result := not (Current |=| other)
 		end
 
+	frozen identical (v1, v2: ANY): BOOLEAN is
+			-- Workaround: instead should use = and make model classes expanded
+		do
+			if v1 = Void and v2 = Void then
+				Result := True
+			elseif v1 /= Void and v2 /= Void then
+				Result := v1 |=| v2
+			end
+		end
+
 feature -- Access
 
 	generator: STRING is
@@ -181,6 +191,7 @@ feature -- Duplication
 		require
 			other_not_void: other /= Void
 			type_identity: same_type (other)
+			other_not_current: other /= Current
 		external
 			"built_in"
 		ensure

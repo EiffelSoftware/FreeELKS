@@ -27,7 +27,7 @@ feature -- Access
 		ensure
 			not_found_in_empty: Result implies not is_empty
 		-- ensure: model
---			definition_reference_comparison: not object_comparison implies Result = bag.contains (v) -- If uncommented, the program doesn't run
+--			definition_reference_comparison: not object_comparison implies Result = bag.contains (v) -- ToDo: If uncommented, the program doesn't run
 			definition_object_comparison: object_comparison implies Result = bag.there_exists (agent equal_elements (v, ?))
 		end
 
@@ -119,6 +119,12 @@ feature -- Model
 			Result := equal (e1, e2)
 		ensure
 			Result = equal (e1, e2)
+		end
+
+	is_default (e: G): BOOLEAN
+			-- Does `e' have a default value of its type?
+		do
+			Result := e = Void or else e = e.default
 		end
 
 indexing

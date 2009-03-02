@@ -132,6 +132,8 @@ feature -- Removal
 			back
 		ensure then
 			is_before: before
+		-- ensure then: model
+			index_effect: index = 0
 		end
 
 indexing

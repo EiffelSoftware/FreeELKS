@@ -57,7 +57,7 @@ feature -- Cursor movement
 		ensure then
 			-- moved_forth_after_start: (not before) implies index = old index - 1
 		-- ensure then: model
-			definition: index = old index - 1
+			index_effect: index = old index - 1
 		end
 
 	search (v: like item) is

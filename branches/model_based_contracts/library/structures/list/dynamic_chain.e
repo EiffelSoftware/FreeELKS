@@ -133,8 +133,12 @@ feature -- Removal
 		-- ensure then: model
 			sequence_effect_reference_comparison_has: not object_comparison implies (old sequence.is_member (v) implies
 				sequence |=| old (sequence.pruned_at (sequence.interval (index, sequence.count).index_of_i_th_occurrence_of (v, 1))))
+			index_effect_reference_comparison_has: not object_comparison implies (old sequence.is_member (v) implies
+				index = old (sequence.interval (index, sequence.count).index_of_i_th_occurrence_of (v, 1)))
 			sequence_effect_object_comparison_has: object_comparison implies (old sequence.there_exists (agent equal_elements (v, ?)) implies
 				sequence |=| old (sequence.pruned_at (sequence.interval (index, sequence.count).index_of_i_th_that (agent equal_elements (v, ?), 1))))
+			index_effect_object_comparison_has: object_comparison implies (old sequence.there_exists (agent equal_elements (v, ?)) implies
+				index = old (sequence.interval (index, sequence.count).index_of_i_th_that (agent equal_elements (v, ?), 1)))
 		end
 
 	remove_left is

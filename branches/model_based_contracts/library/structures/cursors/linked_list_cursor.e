@@ -75,7 +75,7 @@ feature -- Model
 			if before then
 				Result := 0
 			elseif after then
-				Result := list.sequence.count
+				Result := list.sequence.count + 1
 			else
 				Result := list.first_element.distance (active) + 1
 			end

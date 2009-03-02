@@ -8,6 +8,7 @@ indexing
 	names: bi_linkable, cell;
 	representation: linked;
 	contents: generic;
+	model_links: item, right, left;
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -43,6 +44,11 @@ feature {CELL, CHAIN} -- Implementation
 			if l_other /= Void then
 				l_other.simple_put_left (Current)
 			end
+		ensure then
+		-- ensure then: model
+			old_right_left_effect: old right /= Void implies (old right).left = Void
+			other_left_effect: other /= Void implies other.left = Current
+--			old_other_right_left_effect: other /= Void and then old other.right /= Void implies (old other.right).left = Void -- Not true with current implementation
 		end
 
 	put_left (other: ?like Current) is
@@ -60,6 +66,11 @@ feature {CELL, CHAIN} -- Implementation
 			end
 		ensure
 			chained: left = other
+		-- ensure: model
+			left_effect: left = other
+			old_left_right_effect: old left /= Void implies (old left).right = Void
+			other_right_effect: other /= Void implies other.right = Current
+--			old_other_left_right_effect: other /= Void and then old other.left /= Void implies (old other.left).right = Void -- Not true with current implementation
 		end
 
 	forget_right is
@@ -75,6 +86,8 @@ feature {CELL, CHAIN} -- Implementation
 		ensure then
 	 		right_not_chained:
 	 			({r: like right} old right) implies r.left = Void
+	 	-- ensure then: model
+	 		right_left_effect: old right /= Void implies (old right).left = Void
 		end
 
 	forget_left is
@@ -91,6 +104,9 @@ feature {CELL, CHAIN} -- Implementation
 			left_not_chained:
 			left = Void or else
 				({p: like left} old left implies p.right = Void)
+		-- ensure: model
+			left_effect: left = Void
+			left_right_effect: old left /= Void implies (old left).right = Void
 		end
 
 feature {BI_LINKABLE, TWO_WAY_LIST} -- Implementation

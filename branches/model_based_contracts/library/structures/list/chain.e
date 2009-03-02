@@ -23,7 +23,8 @@ deferred class CHAIN [G] inherit
 		undefine
 			prune_all, bag
 		redefine
-			fill
+			fill,
+			go_to
 		select
 			put
 		end
@@ -242,6 +243,14 @@ feature -- Cursor movement
 			index_effect: index = i
 		end
 
+	go_to (p: CURSOR) is
+			-- Move cursor to position `p'.
+		deferred
+		ensure then
+		-- ensure then: model
+			index_effect: index = p.position
+		end
+
  feature -- Status report
 
 	valid_index (i: INTEGER): BOOLEAN is
@@ -400,7 +409,7 @@ feature -- Duplication
 		deferred
 		ensure
 		-- ensure: model
-			definition: Result.sequence |=| sequence.interval (index, sequence.count.min (index + n))
+			sequence_definition: Result.sequence |=| sequence.interval (index, sequence.count.min (index + n))
 		end
 
 feature {NONE} -- Inapplicable
@@ -444,7 +453,6 @@ invariant
 	index_set_has_same_count: index_set.count = count
 
 -- invariant: model
-	lower_is_one: lower = 1
 	cursors_sequence_constraint: cursors |=| sequence.domain.extended (0).extended (sequence.count + 1)
 
 indexing
