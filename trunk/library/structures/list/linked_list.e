@@ -447,10 +447,11 @@ feature -- Element change
 			if other_last_element /= Void then
 				other_first_element := other.first_element
 				other_count := other.count
-					check
-						other_first_element /= Void
-						other_last_element /= Void
-					end
+				other.wipe_out
+				check
+					other_first_element /= Void
+					other_last_element /= Void
+				end
 				if is_empty then
 					first_element := other_first_element
 					active := first_element
@@ -465,7 +466,6 @@ feature -- Element change
 					other_last_element.put_right (active)
 				end
 				count := count + other_count
-				other.wipe_out
 			end
 		end
 
@@ -482,10 +482,11 @@ feature -- Element change
 			if other_last_element /= Void then
 				other_first_element := other.first_element
 				other_count := other.count
-					check
-						other_first_element /= Void
-						other_last_element /= Void
-					end
+				other.wipe_out
+				check
+					other_first_element /= Void
+					other_last_element /= Void
+				end
 				a := active
 				if a = Void then
 					first_element := other_first_element
@@ -497,7 +498,6 @@ feature -- Element change
 					a.put_right (other_first_element)
 				end
 				count := count + other_count
-				other.wipe_out
 			end
 		end
 
