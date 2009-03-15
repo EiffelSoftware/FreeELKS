@@ -18,13 +18,13 @@ deferred class
 
 feature -- Access
 
-	root_object: ?ANY
+	root_object: detachable ANY
 			-- Starting point of graph traversing
 
-	object_action: ?PROCEDURE [ANY, TUPLE [ANY]]
+	object_action: detachable PROCEDURE [ANY, TUPLE [ANY]]
 			-- Action called on every object in object graph
 
-	visited_objects: ?ARRAYED_LIST [ANY]
+	visited_objects: detachable ARRAYED_LIST [ANY]
 			-- List referencing objects of object graph that have been visited in `traverse'.
 
 feature -- Status report
@@ -72,7 +72,7 @@ feature -- Basic operations
 		require
 			root_object_available: is_root_object_set
 		local
-			l_int: ?INTERNAL
+			l_int: detachable INTERNAL
 			retried, l_has_lock: BOOLEAN
 		do
 			if not retried then
@@ -123,7 +123,7 @@ feature {NONE} -- Implementation
 		local
 			i, nb: INTEGER
 			l_object: ANY
-			l_field: ?ANY
+			l_field: detachable ANY
 			l_int: INTERNAL
 			l_objects_to_visit: like new_dispenser
 			l_visited: like visited_objects
@@ -131,7 +131,7 @@ feature {NONE} -- Implementation
 			l_tuple: TUPLE [ANY]
 			l_dtype: INTEGER
 			l_spec: SPECIAL [ANY]
-			l_arr: ?ARRAY [ANY]
+			l_arr: detachable ARRAY [ANY]
 			r: like root_object
 		do
 			from
@@ -168,7 +168,7 @@ feature {NONE} -- Implementation
 				l_dtype := l_int.dynamic_type (l_object)
 				if l_int.is_special_type (l_dtype) then
 					if l_int.is_special_any_type (l_dtype) then
-						if {l_sp: SPECIAL [ANY]} l_object then
+						if attached {SPECIAL [ANY]} l_object as l_sp then
 							from
 								i := 0
 								nb := l_sp.count
@@ -185,7 +185,7 @@ feature {NONE} -- Implementation
 						end
 					end
 				elseif l_int.is_tuple (l_object) then
-					if {l_tuple_obj: TUPLE} l_object then
+					if attached {TUPLE} l_object as l_tuple_obj then
 						from
 							i := 1
 							nb := l_tuple_obj.count + 1

@@ -13,7 +13,7 @@ class
 
 feature -- Access
 
-	last_exception: ?EXCEPTION
+	last_exception: detachable EXCEPTION
 			-- Last exception
 		external
 			"built_in"
@@ -96,13 +96,13 @@ feature -- Status report
 
 feature {EXCEPTIONS} -- Backward compatibility support
 
-	type_of_code (a_code: INTEGER): ?TYPE [EXCEPTION]
+	type_of_code (a_code: INTEGER): detachable TYPE [EXCEPTION]
 			-- Exception type of `a_code'
 		external
 			"built_in"
 		end
 
-	exception_from_code (a_code: INTEGER): ?EXCEPTION
+	exception_from_code (a_code: INTEGER): detachable EXCEPTION
 			-- Create exception object from `a_code'
 		external
 			"built_in"

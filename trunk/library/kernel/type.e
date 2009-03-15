@@ -32,7 +32,7 @@ feature -- Comparison
 
 feature -- Conversion
 
-	adapt alias "[]" (g: ?G): ?G
+	adapt alias "[]" (g: detachable G): detachable G
 			-- Adapts `g' or calls necessary conversion routine to adapt `g'
 		do
 			Result := g
@@ -40,17 +40,17 @@ feature -- Conversion
 			adapted: Result ~ g
 		end
 
-	attempt alias "#?" (obj: ?ANY): ?G
+	attempt alias "#?" (obj: detachable ANY): detachable G
 			-- Result of assignment attempt of `obj' to entity of type G
 		do
-			if {l_g: G} obj then
+			if attached {G} obj as l_g then
 				Result := l_g
 			end
 		ensure
 			assigned_or_void: Result = obj or Result = default_value
 		end
 
-	default_value: ?G
+	default_value: detachable G
 		do
 		end
 
