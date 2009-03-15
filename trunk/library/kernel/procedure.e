@@ -14,7 +14,7 @@ note
 	revision: "$Revision$"
 
 class
-	PROCEDURE [BASE_TYPE, OPEN_ARGS -> ?TUPLE create default_create end]
+	PROCEDURE [BASE_TYPE, OPEN_ARGS -> detachable TUPLE create default_create end]
 
 inherit
 	ROUTINE [BASE_TYPE, OPEN_ARGS]
@@ -27,7 +27,7 @@ feature -- Calls
 			call (operands)
 		end
 
-	call (args: ?OPEN_ARGS)
+	call (args: detachable OPEN_ARGS)
 		local
 			c: like closed_operands
 			l_closed_count: INTEGER

@@ -54,10 +54,10 @@ feature -- Access
 			Result := internal_meaning
 		end
 
-	message: ?STRING
+	message: detachable STRING
 			-- Message(Tag) of current exception
 		local
-			m: ?C_STRING
+			m: detachable C_STRING
 		do
 			m := c_message
 			if m /= Void then
@@ -65,7 +65,7 @@ feature -- Access
 			end
 		end
 
-	exception_trace: ?STRING
+	exception_trace: detachable STRING
 			-- String representation of current exception trace
 		do
 			Result := internal_trace
@@ -91,14 +91,14 @@ feature -- Access
 			original_not_void: Result /= Void
 		end
 
-	frozen throwing_exception: ?EXCEPTION
+	frozen throwing_exception: detachable EXCEPTION
 			-- The exception throwing current exception
 
-	frozen recipient_name: ?STRING
+	frozen recipient_name: detachable STRING
 			-- Name of the routine whose execution was
 			-- interrupted by current exception
 
-	frozen type_name: ?STRING
+	frozen type_name: detachable STRING
 			-- Name of the class that includes the recipient
 			-- of original form of current exception
 
@@ -107,7 +107,7 @@ feature -- Access
 
 feature -- Access obselete
 
-	tag: ?STRING
+	tag: detachable STRING
 			-- Exception tag of `Current'
 		obsolete
 			"Use `message' instead."
@@ -115,7 +115,7 @@ feature -- Access obselete
 			Result := message
 		end
 
-	trace_as_string: ?STRING
+	trace_as_string: detachable STRING
 			-- Exception trace represented as a string
 		obsolete
 			"Use `exception_trace' instead."
@@ -145,7 +145,7 @@ feature -- Status report
 			l_internal: INTERNAL
 		do
 			create l_internal
-			if {l_type: TYPE [EXCEPTION]} l_internal.type_of (Current) then
+			if attached {TYPE [EXCEPTION]} l_internal.type_of (Current) as l_type then
 				Result := exception_manager.is_ignorable (l_type)
 			end
 		end
@@ -156,7 +156,7 @@ feature -- Status report
 			l_internal: INTERNAL
 		do
 			create l_internal
-			if {l_type: TYPE [EXCEPTION]} l_internal.type_of (Current) then
+			if attached {TYPE [EXCEPTION]} l_internal.type_of (Current) as l_type then
 				Result := exception_manager.is_raisable (l_type)
 			end
 		end
@@ -167,7 +167,7 @@ feature -- Status report
 			l_internal: INTERNAL
 		do
 			create l_internal
-			if {l_type: TYPE [EXCEPTION]} l_internal.type_of (Current) then
+			if attached {TYPE [EXCEPTION]} l_internal.type_of (Current) as l_type then
 				Result := exception_manager.is_ignored (l_type)
 			end
 		ensure
@@ -190,7 +190,7 @@ feature -- Output
 			-- New string containing terse printable representation
 			-- of current object
 		local
-			t: ?STRING
+			t: detachable STRING
 		do
 			Result := generating_type
 			t := exception_trace
@@ -202,7 +202,7 @@ feature -- Output
 
 feature {EXCEPTION_MANAGER} -- Implementation
 
-	frozen set_throwing_exception (a_exception: ?EXCEPTION)
+	frozen set_throwing_exception (a_exception: detachable EXCEPTION)
 			-- Set `throwing_exception' with `a_exception'.
 		require
 			not_throwing_a_exception: a_exception /= Void implies not is_throwing (a_exception)
@@ -218,7 +218,7 @@ feature {EXCEPTION_MANAGER} -- Implementation
 		require
 			a_exception_not_viod: a_exception /= Void
 		local
-			l_exception: ?EXCEPTION
+			l_exception: detachable EXCEPTION
 			l_stop: BOOLEAN
 		do
 			if a_exception /= Current and then a_exception.throwing_exception /= a_exception then
@@ -254,7 +254,7 @@ feature {EXCEPTION_MANAGER} -- Implementation
 			line_number := a_number
 		end
 
-	c_message: ?C_STRING
+	c_message: detachable C_STRING
 			-- Message, stored as C string to keep it alive and usable by the runtime trace printing.		
 
 	internal_meaning: STRING
@@ -278,7 +278,7 @@ feature {EXCEPTION_MANAGER} -- Implementation
 			internal_trace := a_trace
 		end
 
-	internal_trace: ?STRING
+	internal_trace: detachable STRING
 			-- String representation of the exception trace
 
 end

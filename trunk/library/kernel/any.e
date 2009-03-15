@@ -87,7 +87,7 @@ feature -- Comparison
 			symmetric: Result implies other.standard_is_equal (Current)
 		end
 
-	frozen equal (some: ?ANY; other: like some): BOOLEAN
+	frozen equal (some: detachable ANY; other: like some): BOOLEAN
 			-- Are `some' and `other' either both void or attached
 			-- to objects considered equal?
 		do
@@ -103,7 +103,7 @@ feature -- Comparison
 						some.is_equal (other))
 		end
 
-	frozen standard_equal (some: ?ANY; other: like some): BOOLEAN
+	frozen standard_equal (some: detachable ANY; other: like some): BOOLEAN
 			-- Are `some' and `other' either both void or attached to
 			-- field-by-field identical objects of the same type?
 			-- Always uses default object comparison criterion.
@@ -132,7 +132,7 @@ feature -- Comparison
 			symmetric: Result implies other.is_deep_equal (Current)
 		end
 
-	frozen deep_equal (some: ?ANY; other: like some): BOOLEAN
+	frozen deep_equal (some: detachable ANY; other: like some): BOOLEAN
 			-- Are `some' and `other' either both void
 			-- or attached to isomorphic object structures?
 		do
@@ -184,7 +184,7 @@ feature -- Duplication
 			is_standard_equal: standard_is_equal (other)
 		end
 
-	frozen clone (other: ?ANY): like other
+	frozen clone (other: detachable ANY): like other
 			-- Void if `other' is void; otherwise new object
 			-- equal to `other'
 			--
@@ -200,7 +200,7 @@ feature -- Duplication
 			equal: Result ~ other
 		end
 
-	frozen standard_clone (other: ?ANY): like other
+	frozen standard_clone (other: detachable ANY): like other
 			-- Void if `other' is void; otherwise new object
 			-- field-by-field identical to `other'.
 			-- Always uses default copying semantics.
@@ -233,7 +233,7 @@ feature -- Duplication
 			deep_equal: deep_equal (Current, Result)
 		end
 
-	frozen deep_clone (other: ?ANY): like other
+	frozen deep_clone (other: detachable ANY): like other
 			-- Void if `other' is void: otherwise, new object structure
 			-- recursively duplicated from the one attached to `other'
 		obsolete
@@ -266,7 +266,7 @@ feature {NONE} -- Retrieval
 			l_msg: STRING
 			l_exc: EXCEPTIONS
 		do
-			if {l_corrector: MISMATCH_CORRECTOR} Current then
+			if attached {MISMATCH_CORRECTOR} Current as l_corrector then
 				l_corrector.correct_mismatch
 			else
 				create l_msg.make_from_string ("Mismatch: ")
@@ -305,7 +305,7 @@ feature -- Output
 			tagged_out_not_void: Result /= Void
 		end
 
-	print (some: ?ANY)
+	print (some: detachable ANY)
 			-- Write terse external representation of `some'
 			-- on standard output.
 		do
@@ -345,7 +345,7 @@ feature -- Basic operations
 		do
 		end
 
-	frozen default: ?like Current
+	frozen default: detachable like Current
 			-- Default value of object's type
 		do
 		end
@@ -359,7 +359,7 @@ feature -- Basic operations
 			-- Result = Result.default
 		end
 
-	frozen as_attached: !like Current
+	frozen as_attached: attached like Current
 			-- Attached version of Current
 			-- (Can be used during transitional period to convert
 			-- non-void-safe classes to void-safe ones.)

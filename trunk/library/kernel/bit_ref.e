@@ -38,7 +38,7 @@ feature -- Access
 			-- Is dynamic type of current object a descendant of
 			-- dynamic type of `other'?
 		do
-			if {b: BIT_REF} other then
+			if attached {BIT_REF} other as b then
 				Result := count <= b.count
 			end
 		end

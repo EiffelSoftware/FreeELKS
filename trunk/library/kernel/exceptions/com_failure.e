@@ -45,7 +45,7 @@ feature -- Status setting
 	hresult_message: STRING
 			-- Error message.
 		local
-			r: ?STRING
+			r: detachable STRING
 		do
 			r := exception_information
 			if r /= Void then
@@ -84,7 +84,7 @@ feature -- Element Change
 
 feature {EXCEPTION_MANAGER} -- Implementation
 
-	exception_information: ?STRING
+	exception_information: detachable STRING
 			-- Stream holding exception information.
 
 	set_exception_information(a_message: STRING)

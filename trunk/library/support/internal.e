@@ -93,7 +93,7 @@ feature -- Creation
 			dynamic_type_set: dynamic_type (Result) = type_id
 		end
 
-	new_special_any_instance (type_id, count: INTEGER): SPECIAL [?ANY]
+	new_special_any_instance (type_id, count: INTEGER): SPECIAL [detachable ANY]
 			-- New instance of dynamic `type_id' that represents
 			-- a SPECIAL with `count' element. To create a SPECIAL of
 			-- basic type, use `SPECIAL'.
@@ -110,13 +110,13 @@ feature -- Creation
 			count_set: Result.count = count
 		end
 
-	type_of (object: ?ANY): ?TYPE [?ANY]
+	type_of (object: detachable ANY): detachable TYPE [detachable ANY]
 			-- Type object for `object'.
 		do
 			if object /= Void then
 				Result := type_of_type (dynamic_type (object))
 			else
-				if {l_result: TYPE [?ANY]} new_instance_of (dynamic_type_from_string ("TYPE [NONE]")) then
+				if attached {TYPE [detachable ANY]} new_instance_of (dynamic_type_from_string ("TYPE [NONE]")) as l_result then
 					Result := l_result
 				end
 			end
@@ -124,12 +124,12 @@ feature -- Creation
 			result_not_void: Result /= Void
 		end
 
-	type_of_type (type_id: INTEGER): ?TYPE [?ANY]
+	type_of_type (type_id: INTEGER): detachable TYPE [detachable ANY]
 			-- Return type for type id `type_id'.
 		require
 			type_id_nonnegative: type_id >= 0
 		do
-			if {l_result: TYPE [?ANY]} new_instance_of (dynamic_type_from_string ("TYPE [" + type_name_of_type (type_id) + "]")) then
+			if attached {TYPE [detachable ANY]} new_instance_of (dynamic_type_from_string ("TYPE [" + type_name_of_type (type_id) + "]")) as l_result then
 				Result := l_result
 			end
 		ensure
@@ -323,7 +323,7 @@ feature -- Access
 			dynamic_type_nonnegative: Result >= 0
 		end
 
-	field (i: INTEGER; object: ANY): ?ANY
+	field (i: INTEGER; object: ANY): detachable ANY
 			-- Object attached to the `i'-th field of `object'
 			-- (directly or through a reference)
 		require
@@ -810,7 +810,7 @@ feature -- Measurement
 			object_not_void: object /= Void
 		local
 			l_traverse: OBJECT_GRAPH_BREADTH_FIRST_TRAVERSABLE
-			l_objects: ?ARRAYED_LIST [ANY]
+			l_objects: detachable ARRAYED_LIST [ANY]
 		do
 			create l_traverse
 			l_traverse.set_root_object (object)
@@ -892,7 +892,7 @@ feature {NONE} -- Implementation
 			"built_in static"
 		end
 
-	c_field (i: INTEGER; object: ANY): ?ANY
+	c_field (i: INTEGER; object: ANY): detachable ANY
 			-- Object referenced by the `i'-th field of `object'
 		external
 			"built_in static"
@@ -1141,7 +1141,7 @@ feature {NONE} -- Implementation
 			"RTLNSMART"
 		end
 
-	c_set_dynamic_type (obj: SPECIAL [?ANY]; dtype: INTEGER)
+	c_set_dynamic_type (obj: SPECIAL [detachable ANY]; dtype: INTEGER)
 			-- Set `obj' dynamic type to `dtype'.
 		external
 			"built_in static"

@@ -10,7 +10,7 @@ note
 	revision: "$Revision$"
 
 deferred class
-	ROUTINE [BASE_TYPE, OPEN_ARGS -> ?TUPLE create default_create end]
+	ROUTINE [BASE_TYPE, OPEN_ARGS -> detachable TUPLE create default_create end]
 
 inherit
 	HASHABLE
@@ -44,13 +44,13 @@ feature -- Initialization
 
 feature -- Access
 
-	frozen operands: ?OPEN_ARGS
+	frozen operands: detachable OPEN_ARGS
 
-	target: ?ANY
+	target: detachable ANY
 			-- Target of call
 		local
 			c: like closed_operands
-			o: ?OPEN_ARGS
+			o: detachable OPEN_ARGS
 		do
 			if is_target_closed then
 				c := closed_operands
@@ -117,11 +117,11 @@ feature -- Status report
 				and then (calc_rout_addr = other.calc_rout_addr)
 		end
 
-	valid_operands (args: ?TUPLE): BOOLEAN
+	valid_operands (args: detachable TUPLE): BOOLEAN
 			-- Are `args' valid operands for this routine?
 		local
 			i, arg_type_code: INTEGER
-			arg: ?ANY
+			arg: detachable ANY
 			int: INTERNAL
 			open_type_codes: STRING
 			l_type: INTEGER
@@ -162,7 +162,7 @@ feature -- Status report
 			end
 		end
 
-	valid_target (args: ?TUPLE): BOOLEAN
+	valid_target (args: detachable TUPLE): BOOLEAN
 			-- Is the first element of tuple `args' a valid target
 		do
 			if args /= Void and then args.count > 0 then
@@ -184,7 +184,7 @@ feature -- Measurement
 
 feature -- Settings
 
-	frozen set_operands (args: ?OPEN_ARGS)
+	frozen set_operands (args: detachable OPEN_ARGS)
 			-- Use `args' as operands for next call.
 		require
 			valid_operands: valid_operands (args)
@@ -236,7 +236,7 @@ feature -- Duplication
 
 feature -- Basic operations
 
-	call (args: ?OPEN_ARGS)
+	call (args: detachable OPEN_ARGS)
 			-- Call routine with `args'.
 		require
 			valid_operands: valid_operands (args)
@@ -265,13 +265,13 @@ feature -- Obsolete
 
 feature {ROUTINE} -- Implementation
 
-	frozen closed_operands: ?TUPLE
+	frozen closed_operands: detachable TUPLE
 			-- All closed arguments provided at creation time
 
 	closed_count: INTEGER
 			-- The number of closed operands (including the target if it is closed)
 		local
-			c: ?TUPLE
+			c: detachable TUPLE
 		do
 			c := closed_operands
 			if c /= Void then
@@ -285,7 +285,7 @@ feature {ROUTINE} -- Implementation
 	frozen calc_rout_addr: POINTER
 			-- Address of the final routine
 
-	frozen open_map: ?ARRAY [INTEGER]
+	frozen open_map: detachable ARRAY [INTEGER]
 			-- Index map for open arguments
 
 	frozen encaps_rout_disp: POINTER
@@ -364,7 +364,7 @@ feature {ROUTINE} -- Implementation
 
 feature {NONE} -- Implementation
 
-	frozen open_types: ?ARRAY [INTEGER]
+	frozen open_types: detachable ARRAY [INTEGER]
 			-- Types of open operands
 
 	open_operand_type (i: INTEGER): INTEGER
@@ -400,21 +400,21 @@ feature {NONE} -- Externals
 
 feature -- Obsolete
 
-	arguments: ?OPEN_ARGS
+	arguments: detachable OPEN_ARGS
 		obsolete
 			"use operands"
 		do
 			Result := operands
 		end
 
-	set_arguments (args: ?OPEN_ARGS)
+	set_arguments (args: detachable OPEN_ARGS)
 		obsolete
 			"use set_operands"
 		do
 			set_operands (args)
 		end
 
-	valid_arguments (args: ?OPEN_ARGS): BOOLEAN
+	valid_arguments (args: detachable OPEN_ARGS): BOOLEAN
 		obsolete
 			"use valid_operands"
 		do

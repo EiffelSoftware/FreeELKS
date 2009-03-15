@@ -16,10 +16,10 @@ inherit
 
 feature -- Access
 
-	routine_name: ?STRING
+	routine_name: detachable STRING
 			-- Name of the failing routine
 
-	class_name: ?STRING
+	class_name: detachable STRING
 			-- Class of the failure
 
 	frozen code: INTEGER

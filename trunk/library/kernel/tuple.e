@@ -33,7 +33,7 @@ feature -- Creation
 
 feature -- Access
 
-	item alias "[]", at alias "@" (index: INTEGER): ?ANY assign put
+	item alias "[]", at alias "@" (index: INTEGER): detachable ANY assign put
 			-- Entry of key `index'.
 		require
 			valid_index: valid_index (index)
@@ -57,7 +57,7 @@ feature -- Access
 			end
 		end
 
-	reference_item (index: INTEGER): ?ANY
+	reference_item (index: INTEGER): detachable ANY
 			-- Reference item at `index'.
 		require
 			valid_index: valid_index (index)
@@ -278,7 +278,7 @@ feature -- Status report
 				when integer_32_code then l_hash := eif_integer_32_item ($Current, i).hash_code
 				when integer_64_code then l_hash := eif_integer_64_item ($Current, i).hash_code
 				when reference_code then
-					if {l_key: HASHABLE} eif_reference_item ($Current, i) then
+					if attached {HASHABLE} eif_reference_item ($Current, i) as l_key then
 						l_hash := l_key.hash_code
 					else
 						l_hash := 0
@@ -297,7 +297,7 @@ feature -- Status report
 			Result := k >= 1 and then k <= count
 		end
 
-	valid_type_for_index (v: ?ANY; index: INTEGER): BOOLEAN
+	valid_type_for_index (v: detachable ANY; index: INTEGER): BOOLEAN
 			-- Is object `v' a valid target for element at position `index'?
 		require
 			valid_index: valid_index (index)
@@ -317,20 +317,20 @@ feature -- Status report
 				end
 			else
 				inspect eif_item_type ($Current, index)
-				when boolean_code then Result := {l_b: BOOLEAN_REF} v
-				when character_8_code then Result := {l_c: CHARACTER_8_REF} v
-				when character_32_code then Result := {l_wc: CHARACTER_32_REF} v
-				when real_64_code then Result := {l_d: REAL_64_REF} v
-				when real_32_code then Result := {l_r: REAL_32_REF} v
-				when pointer_code then Result := {l_p: POINTER_REF} v
-				when natural_8_code then Result := {l_ui8: NATURAL_8_REF} v
-				when natural_16_code then Result := {l_ui16: NATURAL_16_REF} v
-				when natural_32_code then Result := {l_ui32: NATURAL_32_REF} v
-				when natural_64_code then Result := {l_ui64: NATURAL_64_REF} v
-				when integer_8_code then Result := {l_i8: INTEGER_8_REF} v
-				when integer_16_code then Result := {l_i16: INTEGER_16_REF} v
-				when integer_32_code then Result := {l_i32: INTEGER_32_REF} v
-				when integer_64_code then Result := {l_i64: INTEGER_64_REF} v
+				when boolean_code then Result := attached {BOOLEAN_REF} v as l_b
+				when character_8_code then Result := attached {CHARACTER_8_REF} v as l_c
+				when character_32_code then Result := attached {CHARACTER_32_REF} v as l_wc
+				when real_64_code then Result := attached {REAL_64_REF} v as l_d
+				when real_32_code then Result := attached {REAL_32_REF} v as l_r
+				when pointer_code then Result := attached {POINTER_REF} v as l_p
+				when natural_8_code then Result := attached {NATURAL_8_REF} v as l_ui8
+				when natural_16_code then Result := attached {NATURAL_16_REF} v as l_ui16
+				when natural_32_code then Result := attached {NATURAL_32_REF} v as l_ui32
+				when natural_64_code then Result := attached {NATURAL_64_REF} v as l_ui64
+				when integer_8_code then Result := attached {INTEGER_8_REF} v as l_i8
+				when integer_16_code then Result := attached {INTEGER_16_REF} v as l_i16
+				when integer_32_code then Result := attached {INTEGER_32_REF} v as l_i32
+				when integer_64_code then Result := attached {INTEGER_64_REF} v as l_i64
 				when Reference_code then
 						-- Let's check that type of `v' conforms to specified type of `index'-th
 						-- arguments of current TUPLE.
@@ -363,7 +363,7 @@ feature -- Status report
 
 feature -- Element change
 
-	put (v: ?ANY; index: INTEGER)
+	put (v: detachable ANY; index: INTEGER)
 			-- Insert `v' at position `index'.
 		require
 			valid_index: valid_index (index)
@@ -861,7 +861,7 @@ feature -- Type conversion queries
 
 feature -- Conversion
 
-	arrayed: ARRAY [?ANY]
+	arrayed: ARRAY [detachable ANY]
 			-- Items of Current as array
 		obsolete
 			"Will be removed in future releases"
@@ -1034,7 +1034,7 @@ feature -- Conversion
 			same_items: -- Items are the same in same order
 		end
 
-	string_arrayed: ARRAY [?STRING]
+	string_arrayed: ARRAY [detachable STRING]
 			-- Items of Current as array
 			-- NOTE: Items with a type not cconforming to
 			--       type STRING are set to Void.
@@ -1050,7 +1050,7 @@ feature -- Conversion
 			until
 				i > cnt
 			loop
-				if {s: STRING} item (i) then
+				if attached {STRING} item (i) as s then
 					Result.put (s, i)
 				end
 				i := i + 1
@@ -1071,7 +1071,7 @@ feature -- Retrieval
 				-- Old version of TUPLE had a SPECIAL [ANY] to store all values.
 				-- If we can get access to it, then most likely we can recover this
 				-- old TUPLE implementation.
-			if {l_area: SPECIAL [ANY]} Mismatch_information.item (area_name) then
+			if attached {SPECIAL [ANY]} Mismatch_information.item (area_name) as l_area then
 				from
 					i := 1
 					nb := l_area.count
@@ -1254,7 +1254,7 @@ feature {NONE} -- Externals: Access
 			"C macro use %"eif_rout_obj.h%""
 		end
 
-	eif_reference_item (obj: POINTER; pos: INTEGER): ?ANY
+	eif_reference_item (obj: POINTER; pos: INTEGER): detachable ANY
 			-- Reference item at position `pos' in tuple `obj'.
 		external
 			"C macro use %"eif_rout_obj.h%""
