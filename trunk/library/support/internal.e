@@ -577,7 +577,7 @@ feature -- Version
 
 	compiler_version: INTEGER
 		external
-			"C [macro %"eif_project.h%"]"
+			"C macro use %"eif_project.h%""
 		alias
 			"egc_compiler_tag"
 		end
@@ -1126,7 +1126,7 @@ feature {NONE} -- Implementation
 	eif_gen_param_id (dftype: INTEGER; pos: INTEGER): INTEGER
 			-- Type of generic parameter in `obj' at position `pos'.
 		external
-			"C (EIF_TYPE_INDEX, int): EIF_INTEGER | %"eif_gen_conf.h%""
+			"C signature (EIF_TYPE_INDEX, int): EIF_INTEGER use %"eif_gen_conf.h%""
 		end
 
 	c_new_instance_of (type_id: INTEGER): ANY
