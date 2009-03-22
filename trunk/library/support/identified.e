@@ -27,7 +27,7 @@ feature -- Access
 			-- Unique for current object in any given session
 		do
 			if internal_id = 0 then
-				internal_id := eif_object_id (Current)
+				internal_id := eif_current_object_id
 			end
 			Result := internal_id
 		ensure
