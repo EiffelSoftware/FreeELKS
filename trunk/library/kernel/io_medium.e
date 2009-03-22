@@ -100,7 +100,7 @@ feature -- Status report
 	last_character: CHARACTER
 			-- Last character read by `read_character'
 
-	last_string: detachable STRING
+	last_string: STRING
 			-- Last string read
 
 	last_integer: INTEGER
