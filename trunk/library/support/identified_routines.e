@@ -21,11 +21,22 @@ feature -- Basic operations
 
 	eif_object_id (an_object: ANY): INTEGER
 			-- New identifier for `an_object'
+		obsolete
+			"Use `eif_current_object_id'."
 		external
 			"built_in"
 		ensure
 			eif_object_id_positive: Result > 0
 			inserted: eif_id_object (Result) = an_object
+		end
+
+	eif_current_object_id: INTEGER
+			-- New identifier for Current
+		external
+			"built_in"
+		ensure
+			eif_current_object_id: Result > 0
+			inserted: eif_id_object (Result) = Current
 		end
 
 	eif_object_id_free (an_id: INTEGER)
