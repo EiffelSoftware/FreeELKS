@@ -213,7 +213,7 @@ feature -- Output
 
 feature {EXCEPTION} -- Access
 
-	frozen throwing_exception: ?EXCEPTION
+	frozen throwing_exception: detachable EXCEPTION
 			-- The exception throwing current exception
 
 feature {EXCEPTION_MANAGER} -- Implementation
