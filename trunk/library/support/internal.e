@@ -584,7 +584,7 @@ feature -- Version
 
 feature -- Element change
 
-	set_reference_field (i: INTEGER; object: ANY; value: ANY)
+	set_reference_field (i: INTEGER; object: ANY; value: detachable ANY)
 		require
 			object_not_void: object /= Void
 			index_large_enough: i >= 1
@@ -1042,7 +1042,7 @@ feature {NONE} -- Implementation
 			"built_in static"
 		end
 
-	c_set_reference_field (i: INTEGER; object: ANY; value: ANY)
+	c_set_reference_field (i: INTEGER; object: ANY; value: detachable ANY)
 		external
 			"built_in static"
 		end
