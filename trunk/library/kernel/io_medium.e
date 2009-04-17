@@ -503,7 +503,7 @@ feature -- Obsolete
 			Result := last_character
 		end
 
-	laststring: detachable STRING
+	laststring: like last_string
 			-- Last string read
 		do
 			Result := last_string
