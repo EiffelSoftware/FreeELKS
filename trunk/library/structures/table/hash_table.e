@@ -26,8 +26,7 @@ class HASH_TABLE [G, K -> detachable HASHABLE] inherit
 		rename
 			has as has_item,
 			wipe_out as clear_all,
-			extend as collection_extend,
-			force as table_force
+			extend as collection_extend
 		export
 			{NONE} prune_all
 		redefine
@@ -134,7 +133,7 @@ feature -- Access
 	found_item: detachable G
 			-- Item, if any, yielded by last search operation
 
-	item alias "[]", at alias "@" (key: K): detachable G assign  table_force
+	item alias "[]", at alias "@" (key: K): detachable G assign force
 			-- Item associated with `key', if present
 			-- otherwise default value of type `G'
 		local
@@ -593,8 +592,32 @@ feature -- Element change
 			--
 			-- To choose between various insert/replace procedures,
 			-- see `instructions' in the Indexing clause.
+		local
+			l_default_key: detachable K
+			l_default_value: detachable G
 		do
-			table_force (new, key)
+			internal_search (key)
+			if not_found then
+				if soon_full then
+					add_space
+					internal_search (key)
+				end
+				if deleted_position /= Impossible_position then
+					position := deleted_position
+					deleted_marks.put (False, position)
+				else
+					used_slot_count := used_slot_count + 1
+				end
+				keys.put (key, position)
+				if key = l_default_key then
+					has_default := True
+				end
+				count := count + 1
+				found_item := l_default_value
+			else
+				found_item := content.item (position)
+			end
+			content.put (new, position)
 		ensure then
 			insertion_done: item (key) = new
 			now_present: has (key)
@@ -1308,39 +1331,6 @@ feature {NONE} -- Inapplicable
 	collection_extend (v: detachable G)
 			-- Insert a new occurrence of `v'.
 		do
-		end
-
-	table_force (new: detachable G; key: K)
-		local
-			l_default_key: detachable K
-			l_default_value: detachable G
-		do
-			internal_search (key)
-			if not_found then
-				if soon_full then
-					add_space
-					internal_search (key)
-				end
-				if deleted_position /= Impossible_position then
-					position := deleted_position
-					deleted_marks.put (False, position)
-				else
-					used_slot_count := used_slot_count + 1
-				end
-				keys.put (key, position)
-				if key = l_default_key then
-					has_default := True
-				end
-				count := count + 1
-				found_item := l_default_value
-			else
-				found_item := content.item (position)
-			end
-			if attached {G} new as l_g then
-				content.put (l_g, position)
-			else
-				content.put_default (position)
-			end
 		end
 
 invariant
