@@ -14,6 +14,9 @@ frozen class
 
 inherit
 	ABSTRACT_SPECIAL
+		redefine
+			debug_output
+		end
 
 create
 	make,
@@ -478,6 +481,16 @@ feature -- Removal
 			end
 		ensure
 			filled: -- For every `i' in `start_index' .. `end_index', `is_default' (`i')
+		end
+
+feature -- Output
+
+	debug_output: STRING
+			-- String that should be displayed in debugger to represent `Current'.
+		do
+			Result := Precursor
+			Result.append_string (", capacity=")
+			Result.append_integer (capacity)
 		end
 
 feature {NONE} -- Implementation
