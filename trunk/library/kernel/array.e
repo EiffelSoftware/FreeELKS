@@ -683,9 +683,7 @@ feature {NONE} -- Implementation
 			new_size := new_upper - new_lower + 1
 			if not empty_area then
 				old_size := area.count
-				if new_size > old_size
-					 and new_size - old_size < additional_space
-				then
+				if new_size > old_size and new_size - old_size < additional_space then
 					new_size := old_size + additional_space
 				end
 			end
