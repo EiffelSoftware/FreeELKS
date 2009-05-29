@@ -11,11 +11,22 @@ class
 
 inherit
 	ANY
+		rename
+			default as any_default
 		redefine
 			is_equal
 		end
 
 create {NONE}
+
+feature -- Status report
+
+	has_default: BOOLEAN
+			-- Is current type a type that has a default value?
+			-- I.e. a detachable type or an expanded type.
+		external
+			"built_in"
+		end
 
 feature -- Comparison
 
@@ -47,11 +58,18 @@ feature -- Conversion
 				Result := l_g
 			end
 		ensure
-			assigned_or_void: Result = obj or Result = default_value
+			assigned_or_void: Result = obj or Result = default_detachable_value
 		end
 
-	default_value: detachable G
+	default_detachable_value: detachable G
 		do
+		end
+
+	default: G
+		require
+			has_default: has_default
+		external
+			"built_in"
 		end
 
 end
