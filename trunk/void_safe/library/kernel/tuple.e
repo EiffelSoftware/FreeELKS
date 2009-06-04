@@ -388,7 +388,7 @@ feature -- Element change
 			end
 		end
 
-	put_reference (v: ANY; index: INTEGER)
+	put_reference (v: detachable ANY; index: INTEGER)
 			-- Put `v' at position `index' in Current.
 		require
 			valid_index: valid_index (index)
