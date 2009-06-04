@@ -344,14 +344,12 @@ feature -- Removal
 			dir: DIRECTORY
 			file_count: INTEGER
 			deleted_files: ARRAYED_LIST [STRING]
-			deleted_files_tuple: TUPLE [ARRAYED_LIST [STRING]]
 			current_directory: STRING
 			parent_directory: STRING
 			requested_cancel: BOOLEAN
 		do
 			file_count := 1
 			create deleted_files.make (file_number)
-			create deleted_files_tuple
 
 			l := linear_representation
 			current_directory := "."
@@ -386,8 +384,7 @@ feature -- Removal
 						-- If `file_number' has been reached, call `action'.
 					if file_count > file_number then
 						if action /= Void then
-							deleted_files_tuple.put (deleted_files, 1)
-							action.call (deleted_files_tuple)
+							action.call ([deleted_files])
 						end
 						if is_cancel_requested /= Void then
 							requested_cancel := is_cancel_requested.item (Void)
@@ -402,8 +399,7 @@ feature -- Removal
 				-- agent has been called, call one now.
 			if file_count > 1 then
 				if action /= Void then
-					deleted_files_tuple.put (deleted_files, 1)
-					action.call (deleted_files_tuple)
+					action.call ([deleted_files])
 				end
 				deleted_files.wipe_out
 				file_count := 1
