@@ -563,8 +563,10 @@ feature -- Access
 		end
 
 	array_make (min_index: INTEGER; max_index: INTEGER)
+		obsolete
+			"Should not be used."
 		do
-			fixed_list.array_make (min_index, max_index)
+			fixed_list.make (max_index - min_index + 1)
 		end
 
 	capacity: INTEGER

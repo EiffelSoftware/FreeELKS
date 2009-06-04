@@ -20,25 +20,25 @@ class ARRAYED_SET [G] inherit
 		select
 			extend, put, prune
 		end
-		
+
 	ARRAYED_LIST [G]
 		rename
 			extend as al_extend,
 			put as al_put,
 			prune as al_prune
 		export
-			{ANY} valid_cursor_index, readable, writable
-			{ARRAYED_SET} go_to, area, cursor, full, i_th, lower, upper,
-				subcopy, valid_cursor, subarray
+			{ANY} valid_cursor_index, readable, writable, to_array
+			{ARRAYED_SET} go_to, area, area_v2, cursor, full, i_th, lower, upper,
+				valid_cursor
 			{NONE} all
 		undefine
 			is_inserted,
 			changeable_comparison_criterion
 		end
 
-create 
+create
 	make
-	
+
 create {ARRAYED_SET}
 	make_filled
 
@@ -60,7 +60,7 @@ feature -- Removal
 			start
 			al_prune (v)
 		end
-	
+
 note
 	library:	"EiffelBase: Library of reusable components for Eiffel."
 	copyright:	"Copyright (c) 1984-2006, Eiffel Software and others"

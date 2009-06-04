@@ -128,10 +128,8 @@ feature {NONE} -- Implementation
 			l_objects_to_visit: like new_dispenser
 			l_visited: like visited_objects
 			l_action: like object_action
-			l_tuple: TUPLE [ANY]
 			l_dtype: INTEGER
 			l_spec: SPECIAL [ANY]
-			l_arr: detachable ARRAY [ANY]
 			r: like root_object
 		do
 			from
@@ -144,7 +142,6 @@ feature {NONE} -- Implementation
 					l_int.mark (r)
 				end
 				l_action := object_action
-				create l_tuple
 			until
 				l_objects_to_visit.is_empty
 			loop
@@ -156,8 +153,7 @@ feature {NONE} -- Implementation
 
 					-- Call action.
 				if l_action /= Void then
-					l_tuple.put_reference (l_object, 1)
-					l_action.call (l_tuple)
+					l_action.call ([l_object])
 				end
 
 					-- Iterate through fields of `l_object'.
@@ -227,9 +223,7 @@ feature {NONE} -- Implementation
 			from
 				i := 0
 				nb := l_visited.count
-				l_arr := l_visited
-				l_spec := l_arr.area
-				l_arr := Void
+				l_spec := l_visited.area
 			until
 				i = nb
 			loop

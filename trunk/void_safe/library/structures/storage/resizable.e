@@ -44,6 +44,8 @@ feature -- Resizing
 			-- `Growth_percentage' more items.
 			--| Trades space for time:
 			--| allocates fairly large chunks of memory but not very often.
+		require
+			resizable: resizable
 		do
 			grow (capacity + additional_space)
 		ensure
@@ -52,6 +54,8 @@ feature -- Resizing
 
 	grow (i: INTEGER)
 			-- Ensure that capacity is at least `i'.
+		require
+			resizable: resizable
 		deferred
 		ensure
 			new_capacity: capacity >= i

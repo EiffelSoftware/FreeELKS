@@ -27,6 +27,8 @@ inherit
 					fill, prune_all, put,
 					prune,
 					wipe_out, replace, remove
+		redefine
+			replaceable
 		end
 
 	LINEAR [G]
@@ -63,6 +65,9 @@ feature -- Status report
 	writable: BOOLEAN = False
 			-- Is there a current item that may be written?
 			-- (Answer: no.)
+
+	replaceable: BOOLEAN = False
+			-- <Precursor>
 
 feature -- Cursor movement
 

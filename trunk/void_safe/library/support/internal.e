@@ -101,13 +101,15 @@ feature -- Creation
 			count_valid: count >= 0
 			type_id_nonnegative: type_id >= 0
 			special_type: is_special_any_type (type_id)
+			detachable_type: not is_attached_type (generic_dynamic_type_of_type (type_id, 1))
 		do
-			create Result.make (count)
+			create Result.make_empty (count)
 			c_set_dynamic_type (Result, type_id)
 		ensure
 			special_type: is_special (Result)
 			dynamic_type_set: dynamic_type (Result) = type_id
-			count_set: Result.count = count
+			count_set: Result.count = 0
+			capacity_set: Result.capacity = count
 		end
 
 	type_of (object: detachable ANY): detachable TYPE [detachable ANY]

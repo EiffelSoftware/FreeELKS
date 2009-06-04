@@ -346,7 +346,7 @@ feature {NONE} -- Implementation
 		local
 			i: INTEGER
 		do
-			create Result.make (0, argument_count)
+			create Result.make_filled ("", 0, argument_count)
 			Result.compare_objects
 			from
 			until

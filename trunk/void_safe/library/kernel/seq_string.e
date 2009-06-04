@@ -36,7 +36,8 @@ class SEQ_STRING inherit
 				sequence_put, seq_append
 		undefine
 			occurrences, out, copy, is_equal, prune_all,
-			changeable_comparison_criterion
+			changeable_comparison_criterion, do_all, do_if,
+			there_exists, for_all
 		redefine
 			has, index_of_occurrence, prune
 		select
@@ -271,6 +272,36 @@ feature -- Removal
 		do
 			string_wipe_out
 			index := 0
+		end
+
+feature -- Iteration
+
+	do_all (action: PROCEDURE [ANY, TUPLE [CHARACTER]])
+			-- Apply `action' to every item, from first to last.
+			-- Semantics not guaranteed if `action' changes the structure;
+			-- in such a case, apply iterator to clone of structure instead.
+		do
+			area.do_all_in_bounds (action, 0, area.count - 1)
+		end
+
+	do_if (action: PROCEDURE [ANY, TUPLE [CHARACTER]]; test: FUNCTION [ANY, TUPLE [CHARACTER], BOOLEAN])
+			-- Apply `action' to every item that satisfies `test', from first to last.
+			-- Semantics not guaranteed if `action' or `test' changes the structure;
+			-- in such a case, apply iterator to clone of structure instead.
+		do
+			area.do_if_in_bounds (action, test, 0, area.count - 1)
+		end
+
+	there_exists (test: FUNCTION [ANY, TUPLE [CHARACTER], BOOLEAN]): BOOLEAN
+			-- Is `test' true for at least one item?
+		do
+			Result := area.there_exists_in_bounds (test, 0, area.count - 1)
+		end
+
+	for_all (test: FUNCTION [ANY, TUPLE [CHARACTER], BOOLEAN]): BOOLEAN
+			-- Is `test' true for all items?
+		do
+			Result := area.for_all_in_bounds (test, 0, area.count - 1)
 		end
 
 feature -- Duplication

@@ -1,11 +1,9 @@
 note
-
 	description: "[
 		Queues (first-in, first-out dispensers), without commitment 
 		to a particular representation
 		]"
 	legal: "See notice at end of class."
-
 	status: "See notice at end of class."
 	names: queue, dispenser;
 	access: fixed, fifo, membership;
@@ -13,12 +11,10 @@ note
 	date: "$Date$"
 	revision: "$Revision$"
 
-deferred class QUEUE [G] inherit
+deferred class QUEUE [G]
 
+inherit
 	DISPENSER [G]
-		export
-			{NONE} prune, prune_all
-		end
 
 feature -- Element change
 

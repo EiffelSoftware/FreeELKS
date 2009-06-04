@@ -58,7 +58,7 @@ feature {NONE} -- Initialization
 			s_area: SPECIAL [CHARACTER_8]
 			i, j, nb: INTEGER
 		do
-			create a.make (s.count + 1)
+			create a.make_empty (s.count + 1)
 			from
 				i := 0
 				j := s.area_lower
@@ -67,10 +67,11 @@ feature {NONE} -- Initialization
 			until
 				i > nb
 			loop
-				a [i] := s_area [j]
+				a.extend (s_area [j])
 				i := i + 1
 				j := j + 1
 			end
+			a.extend ('%/000/')
 			make_from_area_and_bounds (a, 0, s.count)
 		end
 
@@ -80,26 +81,13 @@ feature {NONE} -- Initialization
 			s_attached: s /= Void
 		local
 			a: like area
-			s_area: SPECIAL [CHARACTER_32]
-			i, j, nb: INTEGER
 		do
 			area := s.area
 			if same_type (s) then
 				area_lower := s.area_lower
 			else
-				create a.make (s.count + 1)
-				from
-					i := 0
-					j := s.area_lower
-					s_area := s.area
-					nb := s.count - 1
-				until
-					i > nb
-				loop
-					a [i] := s_area [j]
-					i := i + 1
-					j := j + 1
-				end
+				create a.make_empty (s.count + 1)
+				a.copy_data (s.area, s.area_lower, 0, s.count + 1)
 				area := a
 				area_lower := 0
 			end
@@ -156,9 +144,9 @@ feature -- Elment change
 		local
 			a: like area
 		do
-			create a.make (count + s.count + 1)
+			create a.make_empty (count + s.count + 1)
 			a.copy_data (area, area_lower, 0, count)
-			a.copy_data (s.area, s.area_lower, count, s.count)
+			a.copy_data (s.area, s.area_lower, count, s.count + 1)
 			create Result.make_from_area_and_bounds (a, 0, count + s.count)
 		end
 
@@ -167,8 +155,8 @@ feature -- Elment change
 		local
 			a: like area
 		do
-			create a.make (count + 1)
-			a.copy_data (area, area_lower, 0, count)
+			create a.make_empty (count + 1)
+			a.copy_data (area, area_lower, 0, count + 1)
 			mirror_area (a, 0, count - 1)
 			create Result.make_from_area_and_bounds (a, 0, count)
 		end
@@ -178,8 +166,8 @@ feature -- Elment change
 		local
 			a: like area
 		do
-			create a.make (count + 1)
-			a.copy_data (area, area_lower, 0, count)
+			create a.make_empty (count + 1)
+			a.copy_data (area, area_lower, 0, count + 1)
 			to_lower_area (a, 0, count - 1)
 			create Result.make_from_area_and_bounds (a, 0, count)
 		end
@@ -189,8 +177,8 @@ feature -- Elment change
 		local
 			a: like area
 		do
-			create a.make (count + 1)
-			a.copy_data (area, area_lower, 0, count)
+			create a.make_empty (count + 1)
+			a.copy_data (area, area_lower, 0, count + 1)
 			to_upper_area (a, 0, count - 1)
 			create Result.make_from_area_and_bounds (a, 0, count)
 		end
@@ -199,11 +187,14 @@ feature -- Elment change
 			-- <Precursor>
 		local
 			a: like area
+			nb: INTEGER
 		do
 			if (1 <= start_index) and (start_index <= end_index) and (end_index <= count) then
-				create a.make (end_index - start_index + 2)
-				a.copy_data (area, area_lower + start_index - 1, 0, end_index - start_index + 1)
-				create Result.make_from_area_and_bounds (a, 0, end_index - start_index + 1)
+				nb := end_index - start_index + 1
+				create a.make_empty (nb + 1)
+				a.copy_data (area, area_lower + start_index - 1, 0, nb)
+				a.extend ('%/000/')
+				create Result.make_from_area_and_bounds (a, 0, nb)
 			else
 				Result := empty_string
 			end

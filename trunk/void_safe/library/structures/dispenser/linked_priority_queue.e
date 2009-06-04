@@ -14,7 +14,9 @@ class LINKED_PRIORITY_QUEUE [G -> COMPARABLE] inherit
 
 	SORTED_TWO_WAY_LIST [G]
 		rename
-			item as sl_item
+			item as sl_item,
+			put as sl_put,
+			sequence_put as put
 		export
 			{NONE} all
 			{LINKED_PRIORITY_QUEUE}

@@ -23,7 +23,7 @@ feature {NONE} -- Initialization
 	make
 			-- Initialize current
 		do
-			create deltas.make (max_ascii_character_value + 1)
+			create deltas.make_empty (max_ascii_character_value + 1)
 		end
 
 feature -- Initialization
@@ -248,7 +248,7 @@ feature {NONE} -- Implementation
 			a_pattern_count_not_negative: a_pattern_count >= 0
 			a_pattern_count_valid: a_pattern_count <= a_pattern.count
 			a_deltas_not_void: a_deltas /= Void
-			a_deltas_valid: a_deltas.count = max_ascii_character_value + 1
+			a_deltas_valid: a_deltas.capacity = max_ascii_character_value + 1
 		local
 			i, l_char_code: INTEGER
 		do
@@ -291,12 +291,12 @@ feature {NONE} -- Implementation
 			from
 				l_pattern_count := a_pattern.count
 				l_fuzzy := fuzzy + 1
-				create l_deltas_array.make (l_fuzzy)
+				create l_deltas_array.make_empty (l_fuzzy)
 			until
 				i = l_fuzzy
 			loop
-				create l_deltas.make (max_ascii_character_value + 1)
-				l_deltas_array.put (l_deltas, i)
+				create l_deltas.make_empty (max_ascii_character_value + 1)
+				l_deltas_array.extend (l_deltas)
 				internal_initialize_deltas (a_pattern, l_pattern_count - i, l_deltas)
 				i := i + 1
 			end
@@ -309,6 +309,6 @@ feature {NONE} -- Implementation
 
 invariant
 	deltas_not_void: deltas /= Void
-	deltas_valid: deltas.count = max_ascii_character_value + 1
+	deltas_valid: deltas.capacity = max_ascii_character_value + 1
 
 end

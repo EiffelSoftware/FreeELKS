@@ -36,7 +36,7 @@ feature -- Initialization
 		require
 			non_negative_size: n >= 0
 		do
-			make_area (n)
+			make_filled_area (False, n)
 		ensure
 			correct_allocation: count = n
 		end

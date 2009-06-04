@@ -39,11 +39,23 @@ feature -- Element change
 	append (s: SEQUENCE [G])
 			-- Append a copy of `s'.
 			-- (Synonym for `fill')
+		require
+			s_not_void: s /= Void
+			extendible: extendible
 		do
 			fill (s)
 		end
 
-	extend, force, put (v: like item)
+	force (v: like item)
+			-- Add item `v'.
+		require
+			extendible: extendible
+		deferred
+		ensure
+			item_inserted: is_inserted (v)
+		end
+
+	extend, put (v: like item)
 			-- Add item `v'.
 		deferred
 		end
