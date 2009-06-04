@@ -201,7 +201,7 @@ feature -- Settings
 			a_target_not_void: a_target /= Void
 			is_target_closed: is_target_closed
 			target_not_void: target /= Void
---			same_target_type: {t: like target}  target and then t.same_type (a_target)
+			same_target_type: attached target as t and then t.same_type (a_target)
 		local
 			c: like closed_operands
 		do
@@ -386,7 +386,7 @@ feature {NONE} -- Implementation
 				create l_internal
 				Result := l_internal.generic_dynamic_type_of_type (
 					l_internal.generic_dynamic_type (Current, 2), i)
-				o.force (Result, i)
+				o.put (Result, i)
 			end
 		end
 
