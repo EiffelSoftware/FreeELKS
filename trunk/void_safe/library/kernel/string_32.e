@@ -1315,7 +1315,7 @@ feature -- Removal
 	wipe_out
 			-- Remove all characters.
 		do
-			create area.make (1)
+			create area.make_filled ('%/000/', 1)
 			count := 0
 			internal_hash_code := 0
 		ensure then
@@ -1350,7 +1350,7 @@ feature -- Resizing
 		do
 			area_count := area.count
 			if newsize >= area_count then
-				area := area.aliased_resized_area (newsize + 1)
+				area := area.aliased_resized_area_with_default ('%/000/', newsize + 1)
 			end
 		end
 

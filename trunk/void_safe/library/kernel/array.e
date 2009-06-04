@@ -15,7 +15,7 @@ class ARRAY [G] inherit
 
 	RESIZABLE [G]
 		redefine
-			full, copy, is_equal
+			full, copy, is_equal, resizable
 		end
 
 	INDEXABLE [G, INTEGER]
@@ -34,7 +34,9 @@ class ARRAY [G] inherit
 
 create
 	make,
+	make_filled,
 	make_from_array,
+	make_from_special,
 	make_from_cil
 
 convert
@@ -44,7 +46,7 @@ convert
 
 feature -- Initialization
 
-	make (min_index, max_index: INTEGER)
+	make_filled (a_default_value: G; min_index, max_index: INTEGER)
 			-- Allocate array; set index interval to
 			-- `min_index' .. `max_index'; set all values to default.
 			-- (Make array empty if `min_index' = `max_index' + 1).
@@ -58,7 +60,29 @@ feature -- Initialization
 			if min_index <= max_index then
 				n := max_index - min_index + 1
 			end
-			make_area (n)
+			make_filled_area (a_default_value, n)
+		ensure
+			lower_set: lower = min_index
+			upper_set: upper = max_index
+			items_set: filled_with (a_default_value)
+		end
+
+	make (min_index, max_index: INTEGER)
+			-- Allocate array; set index interval to
+			-- `min_index' .. `max_index'; set all values to default.
+			-- (Make array empty if `min_index' = `max_index' + 1).
+		require
+			valid_bounds: min_index <= max_index + 1
+			has_default: ({G}).has_default
+		local
+			n: INTEGER
+		do
+			lower := min_index
+			upper := max_index
+			if min_index <= max_index then
+				n := max_index - min_index + 1
+			end
+			make_filled_area (({G}).default, n)
 		ensure
 			lower_set: lower = min_index
 			upper_set: upper = max_index
@@ -72,9 +96,23 @@ feature -- Initialization
 		require
 			array_exists: a /= Void
 		do
-			area := a.area
+			set_area (a.area)
 			lower := a.lower
 			upper := a.upper
+		end
+
+	make_from_special (a: SPECIAL [G])
+			-- Initialize Current from items of `a'.
+		require
+			special_attached: a /= Void
+		do
+			set_area (a)
+			lower := 1
+			upper := a.count
+		ensure
+			shared: area = a
+			lower_set: lower = 1
+			upper_set: upper = a.count
 		end
 
 	make_from_cil (na: NATIVE_ARRAY [like item])
@@ -222,11 +260,20 @@ feature -- Status report
 	all_default: BOOLEAN
 			-- Are all items set to default values?
 		do
-			Result := area.all_default (0, upper - lower)
+			Result := ({G}).has_default and then area.filled_with (({G}).default, 0, upper - lower)
 		ensure
 			definition: Result = (count = 0 or else
-				((not attached {like item} item (upper) as i or else i = i.default) and
+				((not attached item (upper) as i or else i = i.default) and
 				subarray (lower, upper - 1).all_default))
+		end
+
+	filled_with (v: G): BOOLEAN
+			-- Are all itms set to `v'?
+		do
+			Result := area.filled_with (v, 0, upper - lower)
+		ensure
+			definition: Result = (count = 0 or else
+				(item (upper) = v and subarray (lower, upper - 1).filled_with (v)))
 		end
 
 	full: BOOLEAN
@@ -250,14 +297,6 @@ feature -- Status report
 				(other.subarray (other.lower, other.upper - 1)))))
 		end
 
-	all_cleared: BOOLEAN
-			-- Are all items set to default values?
-		obsolete
-			"Use `all_default' instead"
-		do
-			Result := all_default
-		end
-
 	valid_index (i: INTEGER): BOOLEAN
 			-- Is `i' within the bounds of the array?
 		do
@@ -275,6 +314,12 @@ feature -- Status report
 			-- May items be removed? (Answer: no.)
 		do
 			Result := False
+		end
+
+	resizable: BOOLEAN
+			-- Can array be resized automatically?
+		do
+			Result := ({G}).has_default
 		end
 
 	valid_index_set: BOOLEAN
@@ -302,16 +347,42 @@ feature -- Element change
 			-- Assign item `v' to `i'-th entry.
 			-- Always applicable: resize the array if `i' falls out of
 			-- currently defined bounds; preserve existing items.
+		require
+			has_default: ({G}).has_default
+		local
+			old_size, new_size: INTEGER
+			new_lower, new_upper: INTEGER
+			offset: INTEGER
 		do
-			if i < lower then
-				auto_resize (i, upper)
-			elseif i > upper then
-				auto_resize (lower, i)
+			new_lower := lower.min (i)
+			new_upper := upper.max (i)
+			new_size := new_upper - new_lower + 1
+			if not empty_area then
+				old_size := area.count
+				if new_size > old_size and new_size - old_size < additional_space then
+					new_size := old_size + additional_space
+				end
 			end
+			if empty_area then
+				make_filled_area (({G}).default, new_size)
+			else
+				if new_size > old_size then
+					set_area (area.aliased_resized_area_with_default (({G}).default, new_size))
+				end
+				if new_lower < lower then
+					offset := lower - new_lower
+					area.move_data (0, offset, capacity)
+					area.fill_with (({G}).default, 0, offset - 2)
+				end
+			end
+			lower := new_lower
+			upper := new_upper
 			put (v, i)
 		ensure
 			inserted: item (i) = v
 			higher_count: count >= old count
+			lower_set: lower = (old lower).min (i)
+			upper_set: upper = (old upper).max (i)
 		end
 
 	subcopy (other: ARRAY [like item]; start_pos, end_pos, index_pos: INTEGER)
@@ -333,26 +404,16 @@ feature -- Element change
 
 feature -- Iteration
 
+feature -- Iteration
+
 	do_all (action: PROCEDURE [ANY, TUPLE [G]])
 			-- Apply `action' to every item, from first to last.
 			-- Semantics not guaranteed if `action' changes the structure;
 			-- in such a case, apply iterator to clone of structure instead.
 		require
 			action_not_void: action /= Void
-		local
-			i, nb: INTEGER
-			l_area: like area
 		do
-			from
-				i := 0
-				nb := count - 1
-				l_area := area
-			until
-				i > nb
-			loop
-				action.call ([l_area.item (i)])
-				i := i + 1
-			end
+			area.do_all_in_bounds (action, 0, count - 1)
 		end
 
 	do_if (action: PROCEDURE [ANY, TUPLE [G]]; test: FUNCTION [ANY, TUPLE [G], BOOLEAN])
@@ -362,63 +423,24 @@ feature -- Iteration
 		require
 			action_not_void: action /= Void
 			test_not_void: test /= Void
-		local
-			i, nb: INTEGER
-			l_area: like area
 		do
-			from
-				i := 0
-				nb := count - 1
-				l_area := area
-			until
-				i > nb
-			loop
-				if test.item ([l_area.item (i)]) then
-					action.call ([l_area.item (i)])
-				end
-				i := i + 1
-			end
+			area.do_if_in_bounds (action, test, 0, count - 1)
 		end
 
 	there_exists (test: FUNCTION [ANY, TUPLE [G], BOOLEAN]): BOOLEAN
 			-- Is `test' true for at least one item?
 		require
 			test_not_void: test /= Void
-		local
-			i, nb: INTEGER
-			l_area: like area
 		do
-			from
-				i := 0
-				nb := count - 1
-				l_area := area
-			until
-				i > nb or Result
-			loop
-				Result := test.item ([l_area.item (i)])
-				i := i + 1
-			end
+			Result := area.there_exists_in_bounds (test, 0, count - 1)
 		end
 
 	for_all (test: FUNCTION [ANY, TUPLE [G], BOOLEAN]): BOOLEAN
 			-- Is `test' true for all items?
 		require
 			test_not_void: test /= Void
-		local
-			i, nb: INTEGER
-			l_area: like area
 		do
-			from
-				i := 0
-				nb := count - 1
-				l_area := area
-				Result := True
-			until
-				i > nb or not Result
-			loop
-				Result := test.item ([l_area.item (i)])
-				i := i + 1
-			end
+			Result := area.for_all_in_bounds (test, 0, count - 1)
 		end
 
 	do_all_with_index (action: PROCEDURE [ANY, TUPLE [G, INTEGER]])
@@ -426,8 +448,6 @@ feature -- Iteration
 			-- `action' receives item and its index.
 			-- Semantics not guaranteed if `action' changes the structure;
 			-- in such a case, apply iterator to clone of structure instead.
-		require
-			action_not_void: action /= Void
 		local
 			i, j, nb: INTEGER
 			l_area: like area
@@ -451,9 +471,6 @@ feature -- Iteration
 			-- `action' and `test' receive the item and its index.
 			-- Semantics not guaranteed if `action' or `test' changes the structure;
 			-- in such a case, apply iterator to clone of structure instead.
-		require
-			action_not_void: action /= Void
-			test_not_void: test /= Void
 		local
 			i, j, nb: INTEGER
 			l_area: like area
@@ -486,16 +503,20 @@ feature -- Removal
 
 	discard_items
 			-- Reset all items to default values with reallocation.
+		require
+			has_default: ({G}).has_default
 		do
-			make_area (capacity)
+			create area.make_filled (({G}).default, capacity)
 		ensure
 			default_items: all_default
 		end
 
 	clear_all
 			-- Reset all items to default values.
+		require
+			has_default: ({G}).has_default
 		do
-			area.clear_all
+			area.fill_with (({G}).default, 0, area.count - 1)
 		ensure
 			stable_lower: lower = old lower
 			stable_upper: upper = old upper
@@ -518,13 +539,27 @@ feature -- Resizing
 			-- Do not lose any previously entered item.
 		require
 			good_indices: min_index <= max_index
+			has_default: ({G}).has_default
+		do
+			conservative_resize_with_default (({G}).default, min_index, max_index)
+		ensure
+			no_low_lost: lower = min_index or else lower = old lower
+			no_high_lost: upper = max_index or else upper = old upper
+		end
+
+	conservative_resize_with_default (a_default_value: G; min_index, max_index: INTEGER)
+			-- Rearrange array so that it can accommodate
+			-- indices down to `min_index' and up to `max_index'.
+			-- Do not lose any previously entered item.
+		require
+			good_indices: min_index <= max_index
 		local
 			new_size: INTEGER
 			new_lower, new_upper: INTEGER
 			offset: INTEGER
 		do
 			if empty_area then
-				make_area (max_index - min_index + 1)
+				set_area (area.aliased_resized_area_with_default (a_default_value, max_index - min_index + 1))
 				lower := min_index
 				upper := max_index
 			else
@@ -532,12 +567,12 @@ feature -- Resizing
 				new_upper := max_index.max (upper)
 				new_size := new_upper - new_lower + 1
 				if new_size > area.count then
-					area := area.aliased_resized_area (new_size)
+					set_area (area.aliased_resized_area_with_default (a_default_value, new_size))
 				end
 				if new_lower < lower then
 					offset := lower - new_lower
 					area.move_data (0, offset, upper - lower + 1)
-					area.fill_with_default (0, offset - 1)
+					area.fill_with (a_default_value, 0, offset - 1)
 				end
 				lower := new_lower
 				upper := new_upper
@@ -555,8 +590,9 @@ feature -- Resizing
 			"Use `conservative_resize' instead as future versions will implement `resize' as specified in ELKS."
 		require
 			good_indices: min_index <= max_index
+			has_default: ({G}).has_default
 		do
-			conservative_resize (min_index, max_index)
+			conservative_resize_with_default (({G}).default, min_index, max_index)
 		ensure
 			no_low_lost: lower = min_index or else lower = old lower
 			no_high_lost: upper = max_index or else upper = old upper
@@ -659,49 +695,6 @@ feature {NONE} -- Inapplicable
 		end
 
 feature {NONE} -- Implementation
-
-	auto_resize (min_index, max_index: INTEGER)
-			-- Rearrange array so that it can accommodate
-			-- indices down to `min_index' and up to `max_index'.
-			-- Do not lose any previously entered item.
-			-- If area must be extended, ensure that space for at least
-			-- additional_space item is added.
-		require
-			valid_indices: min_index <= max_index
-		local
-			old_size, new_size: INTEGER
-			new_lower, new_upper: INTEGER
-			offset: INTEGER
-		do
-			if empty_area then
-				new_lower := min_index
-				new_upper := max_index
-			else
-				new_lower := min_index.min (lower)
-				new_upper := max_index.max (upper)
-			end
-			new_size := new_upper - new_lower + 1
-			if not empty_area then
-				old_size := area.count
-				if new_size > old_size and new_size - old_size < additional_space then
-					new_size := old_size + additional_space
-				end
-			end
-			if empty_area then
-				make_area (new_size)
-			else
-				if new_size > old_size then
-					area := area.aliased_resized_area (new_size)
-				end
-				if new_lower < lower then
-					offset := lower - new_lower
-					area.move_data (0, offset, capacity)
-					area.fill_with_default (0, offset - 1)
-				end
-			end
-			lower := new_lower
-			upper := new_upper
-		end
 
 	empty_area: BOOLEAN
 			-- Is `area' empty?

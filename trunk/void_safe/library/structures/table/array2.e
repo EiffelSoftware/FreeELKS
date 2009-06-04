@@ -22,7 +22,8 @@ class ARRAY2 [G] inherit
 			put as array_put,
 			force as array_force,
 			resize as array_resize,
-			wipe_out as array_wipe_out
+			wipe_out as array_wipe_out,
+			make_filled as array_make_filled
 		export
 			{NONE}
 				array_make, array_force,
@@ -166,13 +167,13 @@ feature -- Resizing
 				width := nb_columns
 				height := new_height
 				upper := width * height
-				area := new.area
+				set_area (new.area)
 			elseif new_height > height then
 				create new.make (new_height, width)
 				transfer (new, 1, 1, width * height)
 				height := new_height
 				upper := width * height
-				area := new.area
+				set_area (new.area)
 			end
 		end
 

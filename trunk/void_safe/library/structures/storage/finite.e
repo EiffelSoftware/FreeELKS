@@ -18,6 +18,8 @@ feature -- Measurement
 	count: INTEGER
 			-- Number of items
 		deferred
+		ensure
+			count_non_negative: Result >= 0
 		end
 
 feature -- Status report
@@ -29,9 +31,7 @@ feature -- Status report
 		end
 
 invariant
-
 	empty_definition: is_empty = (count = 0)
-	non_negative_count: count >= 0
 
 note
 	library:	"EiffelBase: Library of reusable components for Eiffel."

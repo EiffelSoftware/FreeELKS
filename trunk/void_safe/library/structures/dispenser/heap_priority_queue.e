@@ -9,35 +9,18 @@ note
 	date: "$Date$"
 	revision: "$Revision$"
 
-class HEAP_PRIORITY_QUEUE [G -> COMPARABLE] inherit
+class HEAP_PRIORITY_QUEUE [G -> COMPARABLE]
 
+inherit
 	PRIORITY_QUEUE [G]
-		undefine
-			is_equal, copy, is_empty
 		redefine
-			linear_representation
-		select
-			count
+			linear_representation, is_equal, copy,
+			replaceable
 		end
 
-	ARRAY [G]
-		rename
-			make as array_make,
-			item as i_th,
-			put as put_i_th,
-			bag_put as put,
-			force as array_force,
-			count as array_count
-		export
-			{NONE}
-				all
-			{HEAP_PRIORITY_QUEUE}
-				put_i_th, area, i_th, valid_index, upper, lower, subarray
+	RESIZABLE [G]
 		redefine
-			full, prunable, prune,
-			put, extendible, wipe_out,
-			linear_representation,
-			index_set, is_equal, extend
+			is_equal, copy
 		end
 
 create
@@ -48,7 +31,7 @@ feature -- Initialization
 	make (n: INTEGER)
 			-- Allocate heap space.
 		do
-			array_make (1, n)
+			create area.make_empty (n)
 		end
 
 feature -- Access
@@ -59,10 +42,76 @@ feature -- Access
 			Result := i_th (1)
 		end
 
+	has (v: G): BOOLEAN
+			-- <Precursor>
+		local
+			i, nb: INTEGER
+			l_area: like area
+		do
+			l_area := area
+			nb := l_area.count
+			if object_comparison and v /= Void then
+				from
+				until
+					i = nb or Result
+				loop
+					Result := l_area.item (i) ~ v
+					i := i + 1
+				end
+			else
+				from
+				until
+					i = nb or Result
+				loop
+					Result := l_area.item (i) = v
+					i := i + 1
+				end
+			end
+		end
+
 feature -- Measurement
 
 	count: INTEGER
 			-- Number of items
+		do
+			Result := area.count
+		end
+
+	capacity: INTEGER
+		do
+			Result := area.capacity
+		end
+
+	occurrences (v: G): INTEGER
+		local
+			i, nb: INTEGER
+		do
+			if object_comparison then
+				from
+					i := lower
+					nb := count
+				until
+					i > nb
+				loop
+					if i_th (i) ~ v then
+						Result := Result + 1
+					end
+					i := i + 1
+				end
+			else
+				from
+					i := lower
+					nb := count
+				until
+					i > nb
+				loop
+					if i_th (i) = v then
+						Result := Result + 1
+					end
+					i := i + 1
+				end
+			end
+		end
 
 	index_set: INTEGER_INTERVAL
 			-- Range of acceptable indexes
@@ -80,10 +129,9 @@ feature -- Status report
 			Result := not full
 		end
 
-	full: BOOLEAN
-			-- Is structure filled to capacity?
+	replaceable: BOOLEAN
 		do
-			Result := (count = capacity)
+			Result := False
 		end
 
 	prunable: BOOLEAN = True
@@ -127,7 +175,7 @@ feature -- Element change
 			-- Add item `v' at its proper position.
 		do
 			if full then
-				auto_resize (1, count + additional_space)
+				grow (count + additional_space)
 			end
 			put (v)
 		end
@@ -137,22 +185,32 @@ feature -- Element change
 		local
 			i: INTEGER
 		do
-			count := count + 1
 			from
-				i := count
+				i := count + 1
 			until
 				i <= 1 or else not safe_less_than (i_th (i // 2), v)
 			loop
-				put_i_th (i_th (i // 2), i)
+				force_i_th (i_th (i // 2), i)
 				i := i // 2
 			end
-			put_i_th (v, i)
+			force_i_th (v, i)
 		end
 
 	extend (v: like item)
 			-- <Precursor>
 		do
 			put (v)
+		end
+
+feature -- Duplication
+
+	copy (other: like Current)
+			-- <Precursor>
+		do
+			if other /= Current then
+				standard_copy (Current)
+				area := area.twin
+			end
 		end
 
 feature -- Removal
@@ -164,7 +222,6 @@ feature -- Removal
 			up: like item
 			stop: BOOLEAN
 		do
-			count := count - 1
 			if count > 0 then
 				from
 					i := 1
@@ -184,7 +241,7 @@ feature -- Removal
 				end
 				put_i_th (up, i)
 			end
-			area.put_default (count)
+			area.remove_tail (1)
 		end
 
 	prune (v: G)
@@ -248,8 +305,16 @@ feature -- Removal
 	wipe_out
 			-- Remove all items.
 		do
-			count := 0
-			discard_items
+			area.wipe_out
+		end
+
+feature -- REsizing
+
+	grow (i: INTEGER)
+		do
+			if i > area.capacity then
+				area := area.aliased_resized_area (i)
+			end
 		end
 
 feature -- Conversion
@@ -308,6 +373,36 @@ feature -- Duplication
 			end
 		end
 
+feature {HEAP_PRIORITY_QUEUE} -- Implementation
+
+	lower: INTEGER = 1
+			-- Lower bound for internal access to `area'.
+
+	area: SPECIAL [G]
+			-- Storage for queue
+
+	i_th (i: INTEGER): G
+		require
+			valid_index: area.valid_index (i - lower)
+		do
+			Result := area.item (i - lower)
+		end
+
+	put_i_th (v: G; i: INTEGER)
+		require
+			valid_index: area.valid_index (i - lower)
+		do
+			area.put (v, i - lower)
+		end
+
+	force_i_th (v: G; i: INTEGER)
+		require
+			valid_index: i >= lower and i <= count + lower
+			valid_upper: i = count + lower implies count < capacity
+		do
+			area.force (v, i - lower)
+		end
+
 feature {NONE} -- Inapplicable
 
 	replace (v: like item)
@@ -322,7 +417,7 @@ feature {NONE} -- Comparison
 			-- Otherwise False
 		do
 			if a /= Void and b /= Void then
-				Result := a < b
+				Result := a.is_less (b)
 			elseif a = Void and b /= Void then
 				Result := True
 			else
@@ -333,10 +428,6 @@ feature {NONE} -- Comparison
 			left_void_definition: (a = Void and b /= Void) implies Result
 			right_void_definition: (a /= Void and b = Void) implies not Result
 		end
-
-invariant
-
-	empty_means_storage_empty: is_empty implies all_default
 
 note
 	library:	"EiffelBase: Library of reusable components for Eiffel."

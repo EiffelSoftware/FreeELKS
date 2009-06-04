@@ -97,9 +97,9 @@ feature -- Elment change
 		local
 			a: like area
 		do
-			create a.make (count + s.count + 1)
+			create a.make_empty (count + s.count + 1)
 			a.copy_data (area, area_lower, 0, count)
-			a.copy_data (s.area, s.area_lower, count, s.count)
+			a.copy_data (s.area, s.area_lower, count, s.count + 1)
 			create Result.make_from_area_and_bounds (a, 0, count + s.count)
 		end
 
@@ -108,8 +108,8 @@ feature -- Elment change
 		local
 			a: like area
 		do
-			create a.make (count + 1)
-			a.copy_data (area, area_lower, 0, count)
+			create a.make_empty (count + 1)
+			a.copy_data (area, area_lower, 0, count + 1)
 			mirror_area (a, 0, count - 1)
 			create Result.make_from_area_and_bounds (a, 0, count)
 		end
@@ -119,8 +119,8 @@ feature -- Elment change
 		local
 			a: like area
 		do
-			create a.make (count + 1)
-			a.copy_data (area, area_lower, 0, count)
+			create a.make_empty (count + 1)
+			a.copy_data (area, area_lower, 0, count + 1)
 			to_lower_area (a, 0, count - 1)
 			create Result.make_from_area_and_bounds (a, 0, count)
 		end
@@ -130,8 +130,8 @@ feature -- Elment change
 		local
 			a: like area
 		do
-			create a.make (count + 1)
-			a.copy_data (area, area_lower, 0, count)
+			create a.make_empty (count + 1)
+			a.copy_data (area, area_lower, 0, count + 1)
 			to_upper_area (a, 0, count - 1)
 			create Result.make_from_area_and_bounds (a, 0, count)
 		end
@@ -140,11 +140,14 @@ feature -- Elment change
 			-- <Precursor>
 		local
 			a: like area
+			nb: INTEGER
 		do
 			if (1 <= start_index) and (start_index <= end_index) and (end_index <= count) then
-				create a.make (end_index - start_index + 2)
-				a.copy_data (area, area_lower + start_index - 1, 0, end_index - start_index + 1)
-				create Result.make_from_area_and_bounds (a, 0, end_index - start_index + 1)
+				nb := end_index - start_index + 1
+				create a.make_empty (nb + 1)
+				a.copy_data (area, area_lower + start_index - 1, 0, nb)
+				a.extend ('%/000/')
+				create Result.make_from_area_and_bounds (a, 0, nb)
 			else
 				Result := empty_string
 			end

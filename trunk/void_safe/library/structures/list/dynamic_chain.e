@@ -24,8 +24,11 @@ deferred class DYNAMIC_CHAIN [G] inherit
 
 feature -- Status report
 
-	extendible: BOOLEAN = True
+	extendible: BOOLEAN
 			-- May new items be added? (Answer: yes.)
+		do
+			Result := True
+		end
 
 	prunable: BOOLEAN
 			-- May items be removed? (Answer: yes.)
@@ -38,6 +41,8 @@ feature -- Element change
 	put_front (v: like item)
 			-- Add `v' at beginning.
 			-- Do not move cursor.
+		require
+			extendible: extendible
 		deferred
 		ensure
 	 		new_count: count = old count + 1
@@ -202,10 +207,6 @@ feature {DYNAMIC_CHAIN} -- Implementation
 		ensure
 			result_exists: Result /= Void
 		end
-
-invariant
-
-	extendible: extendible
 
 note
 	library:	"EiffelBase: Library of reusable components for Eiffel."

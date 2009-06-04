@@ -16,20 +16,21 @@ note
 deferred class CHAIN [G] inherit
 
 	CURSOR_STRUCTURE [G]
+		rename
+			put as sequence_put
 		undefine
 			prune_all
 		redefine
 			fill
-		select
-			put
 		end
 
 	INDEXABLE [G, INTEGER]
 		rename
 			item as i_th alias "[]",
-			put as put_i_th
+			put as put_i_th,
+			bag_put as sequence_put
 		undefine
-			prune_all
+			prune_all, sequence_put
 		redefine
 			fill
 		end
@@ -265,10 +266,14 @@ feature -- Element change
 	put (v: like item)
 			-- Replace current item by `v'.
 			-- (Synonym for `replace')
+		require
+			writeable: writable
+			replaceable: replaceable
 		do
 			replace (v)
-		ensure then
+		ensure
 	 		same_count: count = old count
+	 		is_inserted: is_inserted (v)
 		end
 
 	put_i_th (v: like item; i: INTEGER)

@@ -18,6 +18,8 @@ feature -- Measurement
 	capacity: INTEGER
 			-- Number of items that may be stored
 		deferred
+		ensure
+			capacity_non_negative: Result >= 0
 		end
 
 feature -- Status report

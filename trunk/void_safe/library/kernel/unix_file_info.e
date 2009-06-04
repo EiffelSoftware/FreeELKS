@@ -11,7 +11,7 @@ class UNIX_FILE_INFO inherit
 	TO_SPECIAL [CHARACTER]
 		rename
 			area as buffered_file_info,
-			make_area as make_buffered_file_info
+			make_empty_area as make_buffered_file_info
 		end
 
 create
@@ -23,7 +23,7 @@ feature -- Initialization
 	make
 			-- Creation procedure
 		do
-			make_buffered_file_info (stat_size)
+			make_filled_area ('%/000/', stat_size)
 		end
 
 feature -- Access

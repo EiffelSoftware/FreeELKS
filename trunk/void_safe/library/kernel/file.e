@@ -15,7 +15,7 @@ deferred class FILE inherit
 		undefine
 			prune
 		redefine
-			off, append
+			off, append, replaceable
 		end
 
 	IO_MEDIUM
@@ -571,6 +571,12 @@ feature -- Status report
 			-- May new items be added?
 		do
 			Result := mode >= Write_file
+		end
+
+	replaceable: BOOLEAN
+			-- <Precursor>
+		do
+			Result := False
 		end
 
 	file_prunable: BOOLEAN
@@ -1936,12 +1942,7 @@ feature {NONE} -- Inapplicable
 
 	replace (v: like item)
 			-- Replace current item by `v'.
-		require else
-			is_writable: file_writable
 		do
-		ensure then
-			item = v
-			count = old count
 		end
 
 	remove

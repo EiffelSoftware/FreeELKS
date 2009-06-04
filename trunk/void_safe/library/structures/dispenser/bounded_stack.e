@@ -117,7 +117,7 @@ feature -- Removal
 			not_empty: count /= 0
 		do
 			count := count - 1
-			fl.area.put_default (count)
+			fl.area.remove_tail (1)
 		end
 
 	wipe_out
