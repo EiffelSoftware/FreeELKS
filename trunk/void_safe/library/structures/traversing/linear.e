@@ -180,7 +180,6 @@ feature -- Iteration
 			-- Semantics not guaranteed if `action' changes the structure;
 			-- in such a case, apply iterator to clone of structure instead.
 		local
-			t: TUPLE [G]
 			c: detachable CURSOR
 			cs: detachable CURSOR_STRUCTURE [G]
 		do
@@ -189,14 +188,12 @@ feature -- Iteration
 				c := acs.cursor
 			end
 
-			create t
 			from
 				start
 			until
 				after
 			loop
-				t.put (item, 1)
-				action.call (t)
+				action.call ([item])
 				forth
 			end
 
@@ -210,7 +207,6 @@ feature -- Iteration
 			-- Semantics not guaranteed if `action' or `test' changes the structure;
 			-- in such a case, apply iterator to clone of structure instead.
 		local
-			t: TUPLE [G]
 			c: detachable CURSOR
 			cs: detachable CURSOR_STRUCTURE [G]
 		do
@@ -219,15 +215,13 @@ feature -- Iteration
 				c := acs.cursor
 			end
 
-			create t
 			from
 				start
 			until
 				after
 			loop
-				t.put (item, 1)
-				if test.item (t) then
-					action.call (t)
+				if test.item ([item]) then
+					action.call ([item])
 				end
 				forth
 			end
@@ -244,10 +238,7 @@ feature -- Iteration
 		local
 			c: detachable CURSOR
 			cs: detachable  CURSOR_STRUCTURE [G]
-			t: TUPLE [G]
 		do
-			create t
-
 			if attached {CURSOR_STRUCTURE [G]} Current as acs then
 				cs := acs
 				c := acs.cursor
@@ -258,8 +249,7 @@ feature -- Iteration
 			until
 				after or Result
 			loop
-				t.put (item, 1)
-				Result := test.item (t)
+				Result := test.item ([item])
 				forth
 			end
 
@@ -275,10 +265,7 @@ feature -- Iteration
 		local
 			c: detachable CURSOR
 			cs: detachable  CURSOR_STRUCTURE [G]
-			t: TUPLE [G]
 		do
-			create t
-
 			if attached {CURSOR_STRUCTURE [G]} Current as acs then
 				cs := acs
 				c := acs.cursor
@@ -290,8 +277,7 @@ feature -- Iteration
 			until
 				after or not Result
 			loop
-				t.put (item, 1)
-				Result := test.item (t)
+				Result := test.item ([item])
 				forth
 			end
 
