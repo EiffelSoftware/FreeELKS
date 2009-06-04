@@ -21,6 +21,8 @@ feature -- Basic operations
 
 	eif_is_object_id_of_current (an_id: INTEGER): BOOLEAN
 			-- Is `an_id' the associated object ID of `Current'.
+		obsolete
+			"Use `eif_id_object (an_id) = Current' instead."
 		require
 			an_id_non_negative: an_id >= 0
 		external
@@ -29,8 +31,6 @@ feature -- Basic operations
 
 	eif_object_id (an_object: ANY): INTEGER
 			-- New identifier for `an_object'
-		obsolete
-			"Use `eif_current_object_id'."
 		external
 			"built_in"
 		ensure
@@ -40,6 +40,8 @@ feature -- Basic operations
 
 	eif_current_object_id: INTEGER
 			-- New identifier for Current
+		obsolete
+			"Use `eif_object_id (Current)' instead."
 		external
 			"built_in"
 		ensure
