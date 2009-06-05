@@ -227,7 +227,7 @@ feature -- Conversion
 			end
 		ensure
 			as_string_8_not_void: Result /= Void
-			identity: (same_type ("") and Result = Current) or (not same_type ("") and Result /= Current)
+			identity: (conforms_to ("") and Result = Current) or (not conforms_to ("") and Result /= Current)
 		end
 
 	as_string_32, to_string_32: STRING_32
@@ -252,7 +252,7 @@ feature -- Conversion
 			end
 		ensure
 			as_string_32_not_void: Result /= Void
-			identity: (same_type (create {STRING_32}.make_empty) and Result = Current) or (not same_type (create {STRING_32}.make_empty) and Result /= Current)
+			identity: (conforms_to (create {STRING_32}.make_empty) and Result = Current) or (not conforms_to (create {STRING_32}.make_empty) and Result /= Current)
 		end
 
 feature -- Duplication
