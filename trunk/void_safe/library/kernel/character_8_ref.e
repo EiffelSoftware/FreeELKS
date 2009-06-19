@@ -409,6 +409,7 @@ feature {NONE} -- Implementation
 			Result.extend (is_punctuation_flag)
 			Result.extend (is_punctuation_flag)
 			Result.extend (is_control_flag)
+			Result.fill_with (0, 128, 255)
 		ensure
 			internal_character_types_not_void: Result /= Void
 		end
