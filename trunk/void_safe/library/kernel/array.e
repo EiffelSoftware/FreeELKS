@@ -74,14 +74,11 @@ feature -- Initialization
 		require
 			valid_bounds: min_index <= max_index + 1
 			has_default: min_index <= max_index implies ({G}).has_default
-		local
-			n: INTEGER
 		do
 			lower := min_index
 			upper := max_index
 			if min_index <= max_index then
-				n := max_index - min_index + 1
-				make_filled_area (({G}).default, n)
+				make_filled_area (({G}).default, max_index - min_index + 1)
 			else
 				make_empty_area (0)
 			end
