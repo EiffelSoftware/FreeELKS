@@ -390,10 +390,10 @@ feature -- Element change
 			-- to current array starting at index `index_pos'.
 		require
 			other_not_void: other /= Void
-			valid_start_pos: other.valid_index (start_pos)
-			valid_end_pos: other.valid_index (end_pos)
-			valid_bounds: (start_pos <= end_pos) or (start_pos = end_pos + 1)
-			valid_index_pos: valid_index (index_pos)
+			valid_start_pos: start_pos >= other.lower
+			valid_end_pos: end_pos <= other.upper
+			valid_bounds: start_pos <= end_pos + 1
+			valid_index_pos: index_pos >= lower
 			enough_space: (upper - index_pos) >= (end_pos - start_pos)
 		do
 			area.copy_data (other.area, start_pos - other.lower, index_pos - lower, end_pos - start_pos + 1)
