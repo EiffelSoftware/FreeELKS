@@ -404,8 +404,6 @@ feature -- Element change
 
 feature -- Iteration
 
-feature -- Iteration
-
 	do_all (action: PROCEDURE [ANY, TUPLE [G]])
 			-- Apply `action' to every item, from first to last.
 			-- Semantics not guaranteed if `action' changes the structure;
