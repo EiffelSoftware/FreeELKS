@@ -73,7 +73,7 @@ feature -- Initialization
 			-- (Make array empty if `min_index' = `max_index' + 1).
 		require
 			valid_bounds: min_index <= max_index + 1
-			has_default: ({G}).has_default
+			has_default: min_index <= max_index implies ({G}).has_default
 		local
 			n: INTEGER
 		do
@@ -81,8 +81,10 @@ feature -- Initialization
 			upper := max_index
 			if min_index <= max_index then
 				n := max_index - min_index + 1
+				make_filled_area (({G}).default, n)
+			else
+				make_empty_area (0)
 			end
-			make_filled_area (({G}).default, n)
 		ensure
 			lower_set: lower = min_index
 			upper_set: upper = max_index
