@@ -112,28 +112,38 @@ feature -- Creation
 			capacity_set: Result.capacity = count
 		end
 
-	type_of (object: detachable ANY): detachable TYPE [detachable ANY]
+	type_of (object: detachable ANY): TYPE [detachable ANY]
 			-- Type object for `object'.
 		do
 			if object /= Void then
 				Result := type_of_type (dynamic_type (object))
 			else
-				if attached {TYPE [detachable ANY]} new_instance_of (dynamic_type_from_string ("TYPE [NONE]")) as l_result then
-					Result := l_result
-				end
+				Result := {NONE}
 			end
 		ensure
 			result_not_void: Result /= Void
 		end
 
-	type_of_type (type_id: INTEGER): detachable TYPE [detachable ANY]
+	type_of_type (type_id: INTEGER): TYPE [detachable ANY]
 			-- Return type for type id `type_id'.
 		require
 			type_id_nonnegative: type_id >= 0
+		local
+			l_result: detachable TYPE [detachable ANY]
+			l_type_id: INTEGER
+			l_type_string: STRING
 		do
-			if attached {TYPE [detachable ANY]} new_instance_of (dynamic_type_from_string ("TYPE [" + type_name_of_type (type_id) + "]")) as l_result then
-				Result := l_result
-			end
+				-- Pre allocate for a typical type name size.
+			create l_type_string.make (25)
+			l_type_string.append (type_keyword)
+			l_type_string.append_character (' ')
+			l_type_string.append_character ('[')
+			l_type_string.append (type_name_of_type (type_id))
+			l_type_string.append_character (']')
+			l_type_id := dynamic_type_from_string (l_type_string)
+			l_result ?= new_instance_of (l_type_id)
+			check result_attached: attached l_result end
+			Result := l_result
 		ensure
 			result_not_void: Result /= Void
 		end
