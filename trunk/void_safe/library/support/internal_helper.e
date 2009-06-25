@@ -241,4 +241,9 @@ feature {NONE} -- ECMA mapping helper
 	attached_keyword: STRING = "attached"
 	detachable_keyword: STRING = "detachable"
 			-- Symbols use for attachment marks.
+
+feature {NONE} -- Type creation
+
+	type_keyword: STRING = "TYPE"
+			-- Used for creating type objects.
 end
