@@ -29,14 +29,13 @@ feature -- Access
 			generator_not_empty: not Result.is_empty
 		end
 
- 	generating_type: STRING
-			-- Name of current object's generating type
+	generating_type: TYPE [like Current]
+			-- Type of current object
 			-- (type of which it is a direct instance)
-		external
-			"built_in"
+		do
+			Result := {like Current}
  		ensure
  			generating_type_not_void: Result /= Void
-			generating_type_not_empty: not Result.is_empty
  		end
 
 feature -- Status report
@@ -271,7 +270,7 @@ feature {NONE} -- Retrieval
 			else
 				create l_msg.make_from_string ("Mismatch: ")
 				create l_exc
-				l_msg.append (generating_type)
+				l_msg.append (generating_type.name)
 				l_exc.raise_retrieval_exception (l_msg)
 			end
 		end
