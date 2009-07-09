@@ -102,8 +102,6 @@ feature -- Comparison
 	is_equal (other: like Current): BOOLEAN
 			-- Is `other' attached to an object considered
 			-- equal to current object?
-		local
-			l_internal: INTERNAL
 		do
 			Result := type_id = other.type_id
 		end
