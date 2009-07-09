@@ -20,7 +20,9 @@ create
 	make_by_pointer,
 	make_by_pointer_and_count,
 	make_shared_from_pointer,
-	make_shared_from_pointer_and_count
+	make_shared_from_pointer_and_count,
+	own_from_pointer,
+	own_from_pointer_and_count
 
 feature {NONE} -- Initialization
 
@@ -78,6 +80,26 @@ feature {NONE} -- Initialization
 		do
 			count := a_length
 			create managed_data.share_from_pointer (a_ptr, a_length + 1)
+		end
+
+	own_from_pointer (a_ptr: POINTER)
+			-- New instance using `a_ptr' as memory. Current will free pointed memory
+			-- by `a_ptr' when collected.
+		require
+			a_ptr_not_null: a_ptr /= default_pointer
+		do
+			own_from_pointer_and_count (a_ptr, c_strlen (a_ptr))
+		end
+
+	own_from_pointer_and_count (a_ptr: POINTER; a_length: INTEGER)
+			-- New instance using `a_ptr' as memory. Current will free pointed memory
+			-- by `a_ptr' when collected.
+		require
+			a_ptr_not_null: a_ptr /= default_pointer
+			a_length_non_negative: a_length >= 0
+		do
+			count := a_length
+			create managed_data.own_from_pointer (a_ptr, a_length)
 		end
 
 feature -- Initialization
