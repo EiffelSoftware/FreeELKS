@@ -152,35 +152,20 @@ feature -- Status report
 
 	frozen is_ignorable: BOOLEAN
 			-- Is current exception ignorable?
-		local
-			l_internal: INTERNAL
 		do
-			create l_internal
-			if attached {TYPE [EXCEPTION]} l_internal.type_of (Current) as l_type then
-				Result := exception_manager.is_ignorable (l_type)
-			end
+			Result := exception_manager.is_ignorable (generating_type)
 		end
 
 	frozen is_raisable: BOOLEAN
 			-- Is current exception raisable by `raise'?
-		local
-			l_internal: INTERNAL
 		do
-			create l_internal
-			if attached {TYPE [EXCEPTION]} l_internal.type_of (Current) as l_type then
-				Result := exception_manager.is_raisable (l_type)
-			end
+			Result := exception_manager.is_raisable (generating_type)
 		end
 
 	frozen is_ignored: BOOLEAN
 			-- If set, current exception is not raised.
-		local
-			l_internal: INTERNAL
 		do
-			create l_internal
-			if attached {TYPE [EXCEPTION]} l_internal.type_of (Current) as l_type then
-				Result := exception_manager.is_ignored (l_type)
-			end
+			Result := exception_manager.is_ignored (generating_type)
 		ensure
 			is_ignored_implies_is_ignorable: Result implies is_ignorable
 			not_is_caught: Result = not is_caught
