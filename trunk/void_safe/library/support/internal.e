@@ -116,7 +116,7 @@ feature -- Creation
 			-- Type object for `object'.
 		do
 			if object /= Void then
-				Result := type_of_type (dynamic_type (object))
+				Result := object.generating_type
 			else
 				Result := {NONE}
 			end
