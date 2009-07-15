@@ -312,15 +312,9 @@ feature -- Duplication
 	copy (other: like Current)
 			-- Reset to be the same interval as `other'.
 		do
-			lower_internal := other.lower_internal
-			upper_internal := other.upper_internal
-			lower_defined := other.lower_defined
-			upper_defined := other.upper_defined
-		ensure then
-			same_lower: lower = other.lower
-			same_upper: upper = other.upper
-			same_lower_defined: lower_defined = other.lower_defined
-			same_upper_defined: upper_defined = other.upper_defined
+			if other /= Current then
+				standard_copy (other)
+			end
 		end
 
 	subinterval (start_pos, end_pos: INTEGER): like Current

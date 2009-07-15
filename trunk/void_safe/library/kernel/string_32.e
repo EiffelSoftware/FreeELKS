@@ -187,7 +187,7 @@ feature -- Status report
 
 feature -- Element change
 
-	set (t: like Current; n1, n2: INTEGER)
+	set (t: READABLE_STRING_32; n1, n2: INTEGER)
 			-- Set current string to substring of `t' from indices `n1'
 			-- to `n2', or to empty string if no such substring.
 		require
@@ -203,7 +203,7 @@ feature -- Element change
 			is_substring: Current ~ (t.substring (n1, n2))
 		end
 
-	subcopy (other: like Current; start_pos, end_pos, index_pos: INTEGER)
+	subcopy (other: READABLE_STRING_32; start_pos, end_pos, index_pos: INTEGER)
 			-- Copy characters of `other' within bounds `start_pos' and
 			-- `end_pos' to current string starting at index `index_pos'.
 		require
@@ -216,9 +216,9 @@ feature -- Element change
 		local
 			l_other_area, l_area: like area
 		do
-			l_other_area := other.area
-			l_area := area
 			if end_pos >= start_pos then
+				l_other_area := other.area
+				l_area := area
 				if l_area /= l_other_area then
 					l_area.copy_data (l_other_area, start_pos - 1, index_pos - 1,
 						end_pos - start_pos + 1)
@@ -1315,16 +1315,17 @@ feature -- Removal
 	wipe_out
 			-- Remove all characters.
 		do
-			create area.make_filled ('%/000/', 1)
 			count := 0
 			internal_hash_code := 0
 		ensure then
 			is_empty: count = 0
-			empty_capacity: capacity = 0
+			same_capacity: capacity = old capacity
 		end
 
 	clear_all
 			-- Reset all characters.
+		obsolete
+			"Use `wipe_out' instead."
 		do
 			count := 0
 			internal_hash_code := 0
@@ -1345,21 +1346,14 @@ feature -- Resizing
 			-- Rearrange string so that it can accommodate
 			-- at least `newsize' characters.
 			-- Do not lose any previously entered character.
-		local
-			area_count: INTEGER
 		do
-			area_count := area.count
-			if newsize >= area_count then
-				area := area.aliased_resized_area_with_default ('%/000/', newsize + 1)
-			end
+			area := area.aliased_resized_area_with_default ('%/000/', newsize + 1)
 		end
 
 	grow (newsize: INTEGER)
 			-- Ensure that the capacity is at least `newsize'.
 		do
-			if newsize > capacity then
-				resize (newsize)
-			end
+			resize (newsize)
 		end
 
 feature -- Conversion
