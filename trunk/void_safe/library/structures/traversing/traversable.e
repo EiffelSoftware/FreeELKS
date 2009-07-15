@@ -42,14 +42,14 @@ feature -- Cursor movement
 			-- Move to first position if any.
 		deferred
 		end
-		
+
 feature -- Iteration
 
-		
+
 	do_all (action: PROCEDURE [ANY, TUPLE [G]])
 			-- Apply `action' to every item.
 			-- Semantics not guaranteed if `action' changes the structure;
-			-- in such a case, apply iterator to clone of structure instead. 
+			-- in such a case, apply iterator to clone of structure instead.
 		require
 			action_exists: action /= Void
 		do
@@ -60,10 +60,10 @@ feature -- Iteration
 	 test: FUNCTION [ANY, TUPLE [G], BOOLEAN])
 			-- Apply `action' to every item that satisfies `test'.
 			-- Semantics not guaranteed if `action' or `test' changes the structure;
-			-- in such a case, apply iterator to clone of structure instead. 
+			-- in such a case, apply iterator to clone of structure instead.
 		require
 			action_exists: action /= Void
-			test_exits: test /= Void
+			test_exists: test /= Void
 			-- test.is_pure
 		do
 			linear_representation.do_if (action, test)
@@ -72,7 +72,7 @@ feature -- Iteration
 	there_exists (test: FUNCTION [ANY, TUPLE [G], BOOLEAN]): BOOLEAN
 			-- Is `test' true for at least one item?
 		require
-			test_exits: test /= Void
+			test_exists: test /= Void
 			-- test.is_pure
 		do
 			Result := linear_representation.there_exists (test)
@@ -81,7 +81,7 @@ feature -- Iteration
 	for_all (test: FUNCTION [ANY, TUPLE [G], BOOLEAN]): BOOLEAN
 			-- Is `test' true for all items?
 		require
-			test_exits: test /= Void
+			test_exists: test /= Void
 			-- test.is_pure
 		do
 			Result := linear_representation.for_all (test)
