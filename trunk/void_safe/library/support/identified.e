@@ -99,9 +99,11 @@ feature -- Duplication
 		local
 			int_id: INTEGER
 		do
-			int_id := internal_id
-			standard_copy (other)
-			internal_id := int_id
+			if other /= Current then
+				int_id := internal_id
+				standard_copy (other)
+				internal_id := int_id
+			end
 		end
 
 feature {NONE} -- Removal
