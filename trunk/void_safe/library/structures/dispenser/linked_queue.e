@@ -138,34 +138,33 @@ feature -- Duplication
 			-- to `other', so as to yield equal objects.
 		local
 			cur: detachable like cursor
-			obj_comparison: BOOLEAN
 		do
-			obj_comparison := other.object_comparison
-			standard_copy (other)
-			if not other.is_empty then
-				internal_wipe_out
-				if attached {like cursor} other.cursor as l_cur then
-					cur := l_cur
+			if other /= Current then
+				standard_copy (other)
+				if not other.is_empty then
+					internal_wipe_out
+					if attached {like cursor} other.cursor as l_cur then
+						cur := l_cur
+					end
+					from
+						other.start
+					until
+						other.off
+					loop
+						ll_extend (other.ll_item)
+							-- For speeding up next insertion, we go
+							-- to the end, that way `extend' does not
+							-- need to traverse the list completely.
+						forth
+						other.forth
+					end
+					if cur /= Void then
+						other.go_to (cur)
+					end
 				end
-				from
-					other.start
-				until
-					other.off
-				loop
-					ll_extend (other.ll_item)
-						-- For speeding up next insertion, we go
-						-- to the end, that way `extend' does not
-						-- need to traverse the list completely.
-					forth
-					other.forth
-				end
-				if cur /= Void then
-					other.go_to (cur)
-				end
+				after := True
+				before := False
 			end
-			object_comparison := obj_comparison
-			after := True
-			before := False
 		end
 
 feature {NONE} -- Not applicable
