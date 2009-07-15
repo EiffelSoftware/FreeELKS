@@ -603,10 +603,8 @@ feature -- Duplication
 			-- to `other', so as to yield equal objects.
 		local
 			cur: detachable LINKED_LIST_CURSOR [G]
-			obj_comparison: BOOLEAN
 		do
 			if other /= Current then
-				obj_comparison := other.object_comparison
 				standard_copy (other)
 				if not other.is_empty then
 					internal_wipe_out
@@ -629,7 +627,6 @@ feature -- Duplication
 						other.go_to (cur)
 					end
 				end
-				object_comparison := obj_comparison
 			end
 		end
 
