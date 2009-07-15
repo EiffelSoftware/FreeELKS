@@ -128,22 +128,8 @@ feature -- Creation
 			-- Return type for type id `type_id'.
 		require
 			type_id_nonnegative: type_id >= 0
-		local
-			l_result: detachable TYPE [detachable ANY]
-			l_type_id: INTEGER
-			l_type_string: STRING
 		do
-				-- Pre allocate for a typical type name size.
-			create l_type_string.make (25)
-			l_type_string.append (type_keyword)
-			l_type_string.append_character (' ')
-			l_type_string.append_character ('[')
-			l_type_string.append (type_name_of_type (type_id))
-			l_type_string.append_character (']')
-			l_type_id := dynamic_type_from_string (l_type_string)
-			l_result ?= new_instance_of (l_type_id)
-			check result_attached: attached l_result end
-			Result := l_result
+			Result := c_new_type_instance_of (type_id)
 		ensure
 			result_not_void: Result /= Void
 		end
@@ -1151,6 +1137,14 @@ feature {NONE} -- Implementation
 			"C macro use %"eif_macros.h%""
 		alias
 			"RTLNSMART"
+		end
+
+	c_new_type_instance_of (type_id: INTEGER): TYPE [detachable ANY]
+			-- New instance of TYPE for object of type `type_id'.
+		external
+			"C macro use %"eif_macros.h%""
+		alias
+			"RTLNTY"
 		end
 
 	c_set_dynamic_type (obj: SPECIAL [detachable ANY]; dtype: INTEGER)
