@@ -601,9 +601,10 @@ feature -- Resizing
 		ensure
 			Result_not_void: Result /= Void
 			Result_different_from_current: Result /= Current
-			new_count: Result.count = n.min (old count)
-			new_capacity: Result.capacity = n
+			new_count: Result.count = old count
 			preserved: Result.same_items (Current, 0, 0, n.min (old count))
+			capacity_preserved: n <= capacity implies Result.capacity = capacity
+			capcity_increased: n > capacity implies Result.capacity = n
 		end
 
 	resized_area_with_default (a_default_value: T; n: INTEGER): like Current
@@ -623,29 +624,30 @@ feature -- Resizing
 			Result_not_void: Result /= Void
 			Result_different_from_current: Result /= Current
 			new_count: Result.count = n
-			new_capacity: Result.capacity = n
 			preserved: Result.same_items (Current, 0, 0, n.min (old count))
+			capacity_preserved: n <= capacity implies Result.capacity = capacity
+			capcity_increased: n > capacity implies Result.capacity = n
 		end
 
 	aliased_resized_area (n: INTEGER): like Current
 			-- Try to resize `Current' with a count of `n', if not
 			-- possible a new copy
 		require
-			n_non_negative: n >= 0
+			n_non_negative: n > count
 		external
 			"built_in"
 		ensure
 			Result_not_void: Result /= Void
-			new_count: Result.count = n.min (old count)
+			new_count: Result.count = old count
 			new_capacity: Result.capacity = n
-			preserved: Result.same_items (old twin, 0, 0, n.min (old count))
+			preserved: Result.same_items (old twin, 0, 0, old count)
 		end
 
 	aliased_resized_area_with_default (a_default_value: T; n: INTEGER): like Current
 			-- Try to resize `Current' with a count of `n', if not
 			-- possible a new copy. Non yet initialized entries are set to `a_default_value'.
 		require
-			n_non_negative: n >= 0
+			n_non_negative: n > count
 		local
 			i: INTEGER
 		do
@@ -662,7 +664,7 @@ feature -- Resizing
 			Result_not_void: Result /= Void
 			new_count: Result.count = n
 			new_capacity: Result.capacity = n
-			preserved: Result.same_items (old twin, 0, 0, n.min (old count))
+			preserved: Result.same_items (old twin, 0, 0, old count)
 		end
 
 feature -- Removal
