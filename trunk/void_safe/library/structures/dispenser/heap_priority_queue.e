@@ -220,17 +220,19 @@ feature -- Removal
 		local
 			i, j: INTEGER
 			up: like item
+			nb: INTEGER
 			stop: BOOLEAN
 		do
-			if count > 0 then
+			nb := count - 1
+			if nb > 0 then
 				from
 					i := 1
-					up := i_th (count + 1)
+					up := i_th (nb + 1)
 				until
-					stop or i > count // 2
+					stop or i > nb // 2
 				loop
 					j := 2 * i
-					if (j < count) and safe_less_than (i_th (j), i_th (j + 1)) then
+					if (j < nb) and safe_less_than (i_th (j), i_th (j + 1)) then
 						j := j + 1
 					end
 					stop := not safe_less_than (up, i_th (j))
