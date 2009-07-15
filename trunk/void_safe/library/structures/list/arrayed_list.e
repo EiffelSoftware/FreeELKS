@@ -216,6 +216,8 @@ feature -- Iteration
 			-- `action' receives item and its index.
 			-- Semantics not guaranteed if `action' changes the structure;
 			-- in such a case, apply iterator to clone of structure instead.
+		require
+			action_not_void: action /= Void
 		local
 			i, j, nb: INTEGER
 			l_area: like area_v2
@@ -239,6 +241,9 @@ feature -- Iteration
 			-- `action' and `test' receive the item and its index.
 			-- Semantics not guaranteed if `action' or `test' changes the structure;
 			-- in such a case, apply iterator to clone of structure instead.
+		require
+			action_not_void: action /= Void
+			test_not_void: test /= Void
 		local
 			i, j, nb: INTEGER
 			l_area: like area_v2
