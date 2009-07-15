@@ -130,8 +130,10 @@ feature {IMMUTABLE_STRING_8} -- Duplication
 	copy (other: like Current)
 			-- <Precursor>
 		do
-				-- Because it is immutable we can simply share the `area' from `other'.
-			standard_copy (other)
+			if other /= Current then
+					-- Because it is immutable we can simply share the `area' from `other'.
+				standard_copy (other)
+			end
 		ensure then
 			new_result_count: count = other.count
 			-- same_characters: For every `i' in 1..`count', `item' (`i') = `other'.`item' (`i')

@@ -84,8 +84,10 @@ feature -- Duplication
 	copy (other: like Current)
 			-- Use same function as `other'.
 		do
-			Precursor (other)
-			last_result := other.last_result
+			if other /= Current then
+				Precursor (other)
+				last_result := other.last_result
+			end
 		end
 
 feature -- Obsolete
