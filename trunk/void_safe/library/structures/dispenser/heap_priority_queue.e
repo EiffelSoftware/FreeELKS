@@ -208,7 +208,7 @@ feature -- Duplication
 			-- <Precursor>
 		do
 			if other /= Current then
-				standard_copy (Current)
+				standard_copy (other)
 				area := area.twin
 			end
 		end
