@@ -218,18 +218,12 @@ feature -- Duplication
 	copy (other: like Current)
 			-- Use same routine as `other'.
 		do
-			open_map := other.open_map
-			rout_disp := other.rout_disp
-			calc_rout_addr := other.calc_rout_addr
-			encaps_rout_disp := other.encaps_rout_disp
-			class_id := other.class_id
-			feature_id := other.feature_id
-			is_precompiled := other.is_precompiled
-			is_basic := other.is_basic
-			is_target_closed := other.is_target_closed
-			is_inline_agent := other.is_inline_agent
-			closed_operands := other.closed_operands
-			open_count := other.open_count
+			if other /= Current then
+				standard_copy (other)
+				if attached operands as l_operands then
+					operands := l_operands.twin
+				end
+			end
 		ensure then
 			same_call_status: other.callable implies callable
 		end
