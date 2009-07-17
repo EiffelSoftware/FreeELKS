@@ -129,7 +129,7 @@ feature -- Creation
 		require
 			type_id_nonnegative: type_id >= 0
 		do
-			Result := c_new_type_instance_of (type_id)
+			Result := c_new_type_instance_of (dynamic_type_from_string ("TYPE [" + type_name_of_type (type_id) + "]"))
 		ensure
 			result_not_void: Result /= Void
 		end
