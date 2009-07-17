@@ -194,7 +194,7 @@ feature -- Conversion
 			Result := as_string_8
 		ensure
 			as_string_8_not_void: Result /= Void
-			identity: (is_string_8 and Result = Current) or (not is_string_8 and Result /= Current)
+			identity: (conforms_to ("") and Result = Current) or (not conforms_to ("") and Result /= Current)
 		end
 
 	as_string_8: STRING_8
