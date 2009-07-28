@@ -44,6 +44,7 @@ feature -- Initialization
 			set_defaults (w)
 			decimals := d
 			decimal := '.'
+			trailing_zeros_shown := True
 		ensure
 			blank_fill: fill_character = ' '
 			show_sign_negative: show_sign_negative
@@ -53,6 +54,7 @@ feature -- Initialization
 			leading_sign: leading_sign
 			decimals_set: decimals = d
 			decimal_point: decimal = '.'
+			trailing_zeros_shown: trailing_zeros_shown
 		end
 
 feature -- Access
