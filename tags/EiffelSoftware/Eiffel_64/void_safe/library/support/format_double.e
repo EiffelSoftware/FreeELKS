@@ -158,7 +158,7 @@ feature -- Status setting
 		do
 			trailing_zeros_shown := True
 		ensure
-			trailing_zeros_shown_set: not trailing_zeros_shown
+			trailing_zeros_shown_set: trailing_zeros_shown
 		end
 
 	hide_zero
@@ -174,7 +174,7 @@ feature -- Status setting
 		do
 			trailing_zeros_shown := False
 		ensure
-			trailing_zeros_shown_set: trailing_zeros_shown
+			trailing_zeros_shown_set: not trailing_zeros_shown
 		end
 
 feature -- Conversion
