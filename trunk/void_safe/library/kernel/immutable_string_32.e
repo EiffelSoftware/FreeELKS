@@ -125,7 +125,7 @@ feature {NONE} -- Initialization
 			end
 		end
 
-feature {IMMUTABLE_STRING_8} -- Duplication
+feature {IMMUTABLE_STRING_32} -- Duplication
 
 	copy (other: like Current)
 			-- <Precursor>
