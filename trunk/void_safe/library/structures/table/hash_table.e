@@ -25,12 +25,11 @@ class HASH_TABLE [G, K -> detachable HASHABLE] inherit
 	TABLE [detachable G, K]
 		rename
 			has as has_item,
-			wipe_out as clear_all,
 			extend as collection_extend
 		export
 			{NONE} prune_all
 		redefine
-			copy, is_equal, clear_all, has_item
+			copy, is_equal, wipe_out, has_item
 		end
 
 	MISMATCH_CORRECTOR
@@ -335,7 +334,7 @@ feature -- Status report
 	prunable: BOOLEAN
 			-- May items be removed? (Answer: yes.)
 		do
-			Result := False
+			Result := True
 		end
 
 	conflict: BOOLEAN
@@ -830,10 +829,37 @@ feature -- Removal
 					(has_default = old has_default)
 		end
 
-	clear_all, wipe_out
+	prune (v: detachable G)
+			-- Remove first occurrence of `v', if any,
+			-- after cursor position.
+			-- Move cursor to right neighbor.
+			-- (or after if no right neighbor or `v' does not occur)
+		do
+				-- No need to check if we are before because `iteration_position' is either
+				-- a valid position or `off' (see invariant `valid_iteration_position').
+				-- Thus we can start iterating right away.
+			if object_comparison then
+				from
+				until
+					after or else item_for_iteration ~ v
+				loop
+					forth
+				end
+			else
+				from
+				until
+					after or else item_for_iteration = v
+				loop
+					forth
+				end
+			end
+			if not after then
+				remove (key_for_iteration)
+			end
+		end
+
+	wipe_out
 			-- Reset all items to default values; reset status.
-		require else
-			prunable: True
 		local
 			l_default_value: detachable G
 		do
@@ -852,6 +878,13 @@ feature -- Removal
 			count_equal_to_zero: count = 0
 			has_default_set: not has_default
 			no_status: not special_status
+		end
+
+	clear_all
+		obsolete
+			"Use `wipe_out' instead."
+		do
+			wipe_out
 		end
 
 feature -- Conversion
@@ -882,11 +915,13 @@ feature -- Duplication
 	copy (other: like Current)
 			-- Re-initialize from `other'.
 		do
-			standard_copy (other)
-			set_content (other.content.twin)
-			set_keys (other.keys.twin)
-			set_deleted_marks (other.deleted_marks.twin)
-			set_indexes_map (other.indexes_map.twin)
+			if other /= Current then
+				standard_copy (other)
+				set_content (other.content.twin)
+				set_keys (other.keys.twin)
+				set_deleted_marks (other.deleted_marks.twin)
+				set_indexes_map (other.indexes_map.twin)
+			end
 		end
 
 feature {NONE} -- Transformation
@@ -1397,11 +1432,6 @@ feature {NONE} -- Implementation
 	minimum_capacity: INTEGER = 2
 
 feature {NONE} -- Inapplicable
-
-	prune (v: detachable G)
-			-- Remove one occurrence of `v' if any.
-		do
-		end
 
 	collection_extend (v: detachable G)
 			-- Insert a new occurrence of `v'.
