@@ -128,8 +128,12 @@ feature -- Resizing
 			-- at least `newsize' characters.
 			-- Do not lose any previously entered character.
 		require
-			new_size_non_negative: newsize >= 0
+			new_size_large_enough: newsize >= count
 		deferred
+		ensure
+			same_count: count = old count
+			capacity_large_enough: capacity >= newsize
+			same_content: elks_checking implies same_string (old twin)
 		end
 
 invariant

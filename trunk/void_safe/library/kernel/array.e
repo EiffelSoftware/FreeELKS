@@ -520,6 +520,74 @@ feature -- Removal
 			default_items: all_default
 		end
 
+	keep_head (n: INTEGER)
+			-- Remove all characters except for the first `n';
+			-- do nothing if `n' >= `count'.
+		require
+			non_negative_argument: n >= 0
+		do
+			if n < count then
+				upper := lower + n - 1
+				area := area.aliased_resized_area (n)
+			end
+		ensure
+			new_count: count = n.min (old count)
+			same_lower: lower = old lower
+		end
+
+	keep_tail (n: INTEGER)
+			-- Remove all characters except for the last `n';
+			-- do nothing if `n' >= `count'.
+		require
+			non_negative_argument: n >= 0
+		local
+			nb: INTEGER
+		do
+			nb := count
+			if n < nb then
+				area.overlapping_move (nb - n, 0, n)
+				lower := upper - n + 1
+				area := area.aliased_resized_area (n)
+			end
+		ensure
+			new_count: count = n.min (old count)
+			same_upper: upper = old upper
+		end
+
+	remove_head (n: INTEGER)
+			-- Remove first `n' characters;
+			-- if `n' > `count', remove all.
+		require
+			n_non_negative: n >= 0
+		do
+			if n > count then
+				upper := lower - 1
+				area := area.aliased_resized_area (0)
+			else
+				keep_tail (count - n)
+			end
+		ensure
+			new_count: count = (old count - n).max (0)
+			same_upper: upper = old upper
+		end
+
+	remove_tail (n: INTEGER)
+			-- Remove last `n' characters;
+			-- if `n' > `count', remove all.
+		require
+			n_non_negative: n >= 0
+		do
+			if n > count then
+				upper := lower - 1
+				area := area.aliased_resized_area (0)
+			else
+				keep_head (count - n)
+			end
+		ensure
+			new_count: count = (old count - n).max (0)
+			same_lower: lower = old lower
+		end
+
 feature -- Resizing
 
 	grow (i: INTEGER)
