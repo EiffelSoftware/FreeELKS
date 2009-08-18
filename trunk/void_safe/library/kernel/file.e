@@ -1385,7 +1385,7 @@ feature -- Input
 			l := last_string
 			l_buffer := read_data_buffer
 			from
-				l.clear_all
+				l.wipe_out
 				str_cap := l_buffer.capacity
 			until
 				done
@@ -1512,7 +1512,7 @@ feature -- Input
 			l := last_string
 			l_buffer := read_data_buffer
 			from
-				l.clear_all
+				l.wipe_out
 				str_cap := l_buffer.capacity
 			until
 				done
