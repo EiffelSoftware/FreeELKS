@@ -471,19 +471,24 @@ feature {BINARY_SEARCH_TREE, BINARY_SEARCH_TREE_SET} -- Implementation
 				else
 					Result := right_child
 					if Result = Void then
+							-- No right child.
 						Result := left_child
 						if Result /= Void then
+								-- Has left child, move it up.
 							Result.attach_to_parent (par)
 						end
 					elseif not has_left then
+							-- Has no left, but has right, move it up.
 						Result.attach_to_parent (par)
 					else
-						c := right_child
-						if c /= Void then
-							m := c.min_node
-							m.remove_node
-							item := m.item
-						end
+							-- Has both left and right children, make the
+							-- smallest element of the right_child tree the
+							-- Current item.
+						c := Result
+						check Result_is_right_child: c = right_child end
+						m := c.min_node
+						m.remove_node
+						item := m.item
 						Result := Current
 					end
 				end
