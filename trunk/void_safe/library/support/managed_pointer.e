@@ -42,6 +42,7 @@ feature {NONE} -- Initialization
 				(create {EXCEPTIONS}).raise ("No more memory")
 			end
 			count := n
+			is_shared := False
 		ensure
 			item_set: item /= default_pointer
 			count_set: count = n
@@ -60,6 +61,7 @@ feature {NONE} -- Initialization
 				(create {EXCEPTIONS}).raise ("No more memory")
 			end
 			put_array (data, 0)
+			is_shared := False
 		ensure
 			item_set: item /= default_pointer
 			count_set: count = data.count
@@ -78,6 +80,7 @@ feature {NONE} -- Initialization
 			end
 			item.memory_copy (a_ptr, n)
 			count := n
+			is_shared := False
 		ensure
 			item_set: item /= default_pointer
 			count_set: count = n
@@ -102,6 +105,8 @@ feature {NONE} -- Initialization
 	own_from_pointer (a_ptr: POINTER; n: INTEGER)
 			-- Use directly `a_ptr' with count `n' to hold current data and free
 			-- its associated C memory when Current is collected.
+			-- It assumes that `a_ptr' was allocated using the C-`malloc' routine and thus
+			-- will be freed by calling the C-`free' routine.
 		require
 			a_ptr_valid: a_ptr = default_pointer implies n = 0
 			n_non_negative: n >= 0
@@ -161,21 +166,26 @@ feature -- Duplication
 			-- and current is not large enough to hold `other' create
 			-- a new pointer area and `is_shared' is set to `False'.
 		do
-			if count >= other.count then
-					-- No need to reallocate, it is safe to just copy.
-				item.memory_copy (other.item, other.count)
-			else
-					-- We need to reallocate memory here
-				if is_shared then
-						-- Before `item' was shared, so we simply allocate
-						-- a new memory area from `other' and reset
-						-- the `is_shared' flag.
-					is_shared := False
+			if other /= Current then
+				if item = other.item then
+						-- Copy was most likely called via `twin' but even
+						-- if it is not, it makes sense to duplicate the memory.
 					make_from_pointer (other.item, other.count)
-				else
-						-- Simply resize Current and copy data.
-					resize (other.count)
+				elseif count >= other.count then
+						-- No need to reallocate, it is safe to just copy.
 					item.memory_copy (other.item, other.count)
+				else
+						-- We need to reallocate memory here
+					if is_shared then
+							-- Before `item' was shared, so we simply allocate
+							-- a new memory area from `other' and reset
+							-- the `is_shared' flag.
+						make_from_pointer (other.item, other.count)
+					else
+							-- Simply resize Current and copy data.
+						resize (other.count)
+						item.memory_copy (other.item, other.count)
+					end
 				end
 			end
 		ensure then
