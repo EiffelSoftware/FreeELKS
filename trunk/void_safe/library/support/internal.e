@@ -113,7 +113,7 @@ feature -- Creation
 		end
 
 	type_of (object: detachable ANY): TYPE [detachable ANY]
-			-- Type object for `object'.
+			-- Associated TYPE instance of `object'
 		do
 			if object /= Void then
 				Result := object.generating_type
@@ -125,11 +125,11 @@ feature -- Creation
 		end
 
 	type_of_type (type_id: INTEGER): TYPE [detachable ANY]
-			-- Return type for type id `type_id'.
+			-- Associated TYPE instance for an object of type id `type_id'
 		require
 			type_id_nonnegative: type_id >= 0
 		do
-			Result := c_new_type_instance_of (dynamic_type_from_string ("TYPE [" + type_name_of_type (type_id) + "]"))
+			Result := c_new_type_instance_of (type_id)
 		ensure
 			result_not_void: Result /= Void
 		end
