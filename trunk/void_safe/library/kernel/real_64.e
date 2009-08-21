@@ -33,8 +33,7 @@ create
 	make_from_reference
 
 convert
-	make_from_reference ({REAL_64_REF}),
-	truncated_to_real: {REAL_32}
+	make_from_reference ({REAL_64_REF})
 
 feature -- Comparison
 
