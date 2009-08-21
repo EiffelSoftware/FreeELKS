@@ -127,7 +127,7 @@ feature -- Status reporting
 	parsed_real: REAL
 			-- Parsed real value
 		do
-			Result := parsed_double
+			Result := parsed_double.truncated_to_real
 		end
 
 feature -- Status setting

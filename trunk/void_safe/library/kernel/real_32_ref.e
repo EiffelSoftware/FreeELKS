@@ -53,14 +53,14 @@ feature -- Access
 			-- Neutral element for "*" and "/"
 		do
 			create Result
-			Result.set_item (1.0)
+			Result.set_item ({REAL_32} 1.0)
 		end
 
 	zero: like Current
 			-- Neutral element for "+" and "-"
 		do
 			create Result
-			Result.set_item (0.0)
+			Result.set_item ({REAL_32} 0.0)
 		end
 
 feature -- Comparison
@@ -208,9 +208,9 @@ feature -- Conversion
 	rounded_real_32: REAL_32
 			-- Rounded integral value
 		do
-			Result := sign * ((abs + 0.5).floor_real_32)
+			Result := sign * ((abs + {REAL_32} 0.5).floor_real_32)
 		ensure
-			definition: Result = sign * ((abs + 0.5).floor_real_32)
+			definition: Result = sign * ((abs + {REAL_32} 0.5).floor_real_32)
 		end
 
 feature -- Basic operations

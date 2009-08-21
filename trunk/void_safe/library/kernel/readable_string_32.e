@@ -990,7 +990,7 @@ feature -- Conversion
 		require
 			represents_a_real: is_real
 		do
-			Result := to_double
+			Result := to_double.truncated_to_real
 		end
 
 	to_double: DOUBLE
