@@ -93,12 +93,12 @@ feature -- Initialization
 			n >= 0
 		local
 			i, nb: INTEGER
-			new_table: HASH_TABLE [G, K]
+			new_table: like Current
 			l_content: like content
 			l_keys: like keys
 		do
 			from
-				create new_table.make (keys.count.max (n))
+				new_table := empty_duplicate (keys.count.max (n))
 				l_content := content
 				l_keys := keys
 				nb := l_keys.count
@@ -924,6 +924,18 @@ feature -- Duplication
 			end
 		end
 
+feature {NONE} -- Duplication
+
+	empty_duplicate (n: INTEGER): like Current
+			-- Create an empty copy of Current that can accommodate `n' items
+		require
+			n_non_negative: n >= 0
+		do
+			create Result.make (n)
+		ensure
+			empty_duplicate_attached: Result /= Void
+		end
+
 feature {NONE} -- Transformation
 
 	correct_mismatch
@@ -933,7 +945,7 @@ feature {NONE} -- Transformation
 			l_keys: detachable SPECIAL [K]
 			l_deleted_marks, l_old_deleted_marks: detachable SPECIAL [BOOLEAN]
 			i, l_capacity, l_count: INTEGER
-			l_new_table: HASH_TABLE [G, K]
+			l_new_table: like Current
 		do
 			if not mismatch_information.has ("hash_table_version_64") then
 					-- In version 5.1 and earlier, `content', `keys' and `deleted_marks'
@@ -985,7 +997,7 @@ feature {NONE} -- Transformation
 						-- Now we build the new HASH_TABLE from the old one.
 					from
 						l_capacity := l_keys.count
-						create l_new_table.make (l_count)
+						l_new_table := empty_duplicate (l_count)
 					until
 						i = l_capacity
 					loop
