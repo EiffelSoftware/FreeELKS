@@ -88,13 +88,13 @@ feature -- Initialization
 			n >= 0
 		local
 			i: INTEGER
-			new_table: HASH_TABLE [G, K]
+			new_table: like Current
 			l_content: like content
 			l_keys: like keys
 		do
 				-- (Could also use iteration facilities.)
 			from
-				create new_table.make (count.max (n))
+				new_table := empty_duplicate (count.max (n))
 				l_content := content
 				l_keys := keys
 			until
@@ -869,6 +869,18 @@ feature -- Duplication
 			set_keys (other.keys.twin)
 			set_content (other.content.twin)
 			set_deleted_marks (other.deleted_marks.twin)
+		end
+
+feature {NONE} -- Empty duplicate
+
+	empty_duplicate (n: INTEGER): like Current
+			-- Create an empty copy of Current that can accommodate `n' items
+		require
+			n_non_negative: n >= 0
+		do
+			create Result.make (n)
+		ensure
+			empty_duplicate_not_void: Result /= Void
 		end
 
 feature {NONE} -- Transformation
