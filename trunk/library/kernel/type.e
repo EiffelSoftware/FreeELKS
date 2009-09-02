@@ -10,14 +10,72 @@ class
 	TYPE [G]
 
 inherit
-	ANY
+	HASHABLE
 		rename
 			default as any_default
 		redefine
-			is_equal
+			is_equal, out
+		end
+
+	DEBUG_OUTPUT
+		rename
+			default as any_default
+		redefine
+			is_equal, out
 		end
 
 create {NONE}
+
+feature -- Access
+
+	name: IMMUTABLE_STRING_8
+			-- Name of Eiffel type represented by `Current', using Eiffel style guidelines
+			-- as specified in OOSC2 (e.g. COMPARABLE, HASH_TABLE [FOO, BAR], ...)
+		do
+			if attached internal_name as l_name then
+				Result := l_name
+			else
+				create Result.make_from_string (runtime_name)
+				internal_name := Result
+			end
+		ensure
+			name_not_void: Result /= Void
+		end
+
+	generic_parameter_type (i: INTEGER): TYPE [detachable ANY]
+			-- `i'-th generic parameter of Eiffel type represented by `Current'
+		require
+			i_large_enough: i >= 1
+			i_small_enough: i <= generic_parameter_count
+		external
+			"built_in"
+		ensure
+			generic_parameter_not_void: Result /= Void
+		end
+
+	type_id: INTEGER
+			-- Id of the Eiffel type represented by `Current'
+		external
+			"built_in"
+		ensure
+			type_id_not_negative: Result >= 0
+		end
+
+	hash_code: INTEGER
+			-- Hash code value
+		do
+			Result := type_id
+		end
+
+feature -- Measurement
+
+	generic_parameter_count: INTEGER
+			-- Number of generic parameters in Eiffel type represented by `Current'
+		external
+			"built_in"
+		ensure
+			generic_parameter_count_not_negative: Result >= 0
+		end
 
 feature -- Status report
 
@@ -33,12 +91,8 @@ feature -- Comparison
 	is_equal (other: like Current): BOOLEAN
 			-- Is `other' attached to an object considered
 			-- equal to current object?
-		local
-			l_internal: INTERNAL
 		do
-			create l_internal
-			Result := l_internal.generic_dynamic_type (Current, 1) =
-				l_internal.generic_dynamic_type (other, 1)
+			Result := type_id = other.type_id
 		end
 
 feature -- Conversion
@@ -70,6 +124,36 @@ feature -- Conversion
 			has_default: has_default
 		external
 			"built_in"
+		end
+
+feature -- Output
+
+	out: STRING
+			-- <Precursor>
+		do
+			Result := name
+		end
+
+	debug_output: STRING
+			-- <Precursor>
+		do
+			Result := name
+		end
+
+feature {NONE} -- Implementation: Access
+
+	internal_name: detachable IMMUTABLE_STRING_8
+			-- Storage for once per object `name'
+
+feature {NONE} -- Implementation
+
+	runtime_name: STRING
+			-- Name of Eiffel type represented by `Current', using Eiffel style guidelines
+			-- as specified in OOSC2 (e.g. COMPARABLE, HASH_TABLE [FOO, BAR], ...)
+		external
+			"built_in"
+		ensure
+			name_not_void: Result /= Void
 		end
 
 end
