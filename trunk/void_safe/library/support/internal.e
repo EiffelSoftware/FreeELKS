@@ -101,7 +101,6 @@ feature -- Creation
 			count_valid: count >= 0
 			type_id_nonnegative: type_id >= 0
 			special_type: is_special_any_type (type_id)
-			detachable_type: not is_attached_type (generic_dynamic_type_of_type (type_id, 1))
 		do
 			create Result.make_empty (count)
 			c_set_dynamic_type (Result, type_id)
