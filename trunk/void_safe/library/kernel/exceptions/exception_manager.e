@@ -32,7 +32,7 @@ feature -- Raise
 
 feature -- Status setting
 
-	ignore (a_exception: TYPE [EXCEPTION])
+	ignore (a_exception: TYPE [detachable EXCEPTION])
 			-- Ignore type of `a_exception'.
 		require
 			a_exception_not_void: a_exception /= Void
@@ -43,7 +43,7 @@ feature -- Status setting
 			is_caught: is_ignored (a_exception)
 		end
 
-	catch (a_exception: TYPE [EXCEPTION])
+	catch (a_exception: TYPE [detachable EXCEPTION])
 			-- Set type of `a_exception' `is_caught'.
 		require
 			a_exception_not_void: a_exception /= Void
@@ -53,7 +53,7 @@ feature -- Status setting
 			is_ignored: not is_ignored (a_exception)
 		end
 
-	set_is_ignored (a_exception: TYPE [EXCEPTION]; a_ignored: BOOLEAN)
+	set_is_ignored (a_exception: TYPE [detachable EXCEPTION]; a_ignored: BOOLEAN)
 			-- Set type of `a_exception' to be `a_ignored'.
 		require
 			a_exception_not_void: a_exception /= Void
@@ -66,19 +66,19 @@ feature -- Status setting
 
 feature -- Status report
 
-	is_ignorable (a_exception: TYPE [EXCEPTION]): BOOLEAN
+	is_ignorable (a_exception: TYPE [detachable EXCEPTION]): BOOLEAN
 			-- If set, type of `a_exception' is ignorable.
 		external
 			"built_in"
 		end
 
-	is_raisable (a_exception: TYPE [EXCEPTION]): BOOLEAN
+	is_raisable (a_exception: TYPE [detachable EXCEPTION]): BOOLEAN
 			-- If set, type of `a_exception' is raisable.
 		external
 			"built_in"
 		end
 
-	is_ignored (a_exception: TYPE [EXCEPTION]): BOOLEAN
+	is_ignored (a_exception: TYPE [detachable EXCEPTION]): BOOLEAN
 			-- If set, type of `a_exception' is not raised.
 		external
 			"built_in"
@@ -86,7 +86,7 @@ feature -- Status report
 			not_is_caught: Result = not is_caught (a_exception)
 		end
 
-	is_caught (a_exception: TYPE [EXCEPTION]): BOOLEAN
+	is_caught (a_exception: TYPE [detachable EXCEPTION]): BOOLEAN
 			-- If set, type of `a_exception' is raised.
 		external
 			"built_in"

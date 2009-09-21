@@ -29,11 +29,11 @@ feature -- Access
 			generator_not_empty: not Result.is_empty
 		end
 
-	generating_type: TYPE [like Current]
+	generating_type: TYPE [detachable like Current]
 			-- Type of current object
 			-- (type of which it is a direct instance)
 		do
-			Result := {like Current}
+			Result := {detachable like Current}
  		ensure
  			generating_type_not_void: Result /= Void
  		end
