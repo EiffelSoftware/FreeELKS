@@ -23,7 +23,8 @@ inherit
 	STRING_GENERAL
 		rename
 			append as append_string_general,
-			same_string as same_string_general
+			same_string as same_string_general,
+			plus as plus_string_general
 		undefine
 			copy, is_equal, out
 		redefine
@@ -667,12 +668,20 @@ feature -- Element change
 		end
 
 	plus alias "+" (s: READABLE_STRING_8): like Current
-			-- Append a copy of 's' at the end of a copy of Current,
+			-- Append a copy of `s' at the end of a copy of Current,
 			-- Then return the Result.
 		do
 			Result := new_string (count + s.count)
 			Result.append (Current)
 			Result.append (s)
+		end
+
+	plus_string_general (s: READABLE_STRING_GENERAL): like Current
+			-- <Precursor>
+		do
+			Result := new_string (count + s.count)
+			Result.append (Current)
+			Result.append_string_general (s)
 		end
 
 	append_string (s: detachable READABLE_STRING_8)
