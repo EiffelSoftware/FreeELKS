@@ -15,7 +15,8 @@ deferred class
 inherit
 	READABLE_STRING_GENERAL
 		rename
-			same_string as same_string_general
+			same_string as same_string_general,
+			plus as plus_string_general
 		redefine
 			copy, is_equal, out
 		end
