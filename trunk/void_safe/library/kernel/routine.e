@@ -295,9 +295,9 @@ feature {ROUTINE} -- Implementation
 
 	frozen is_inline_agent: BOOLEAN
 
-	frozen set_rout_disp (a_rout_disp, a_encaps_rout_disp, a_calc_rout_addr: POINTER
-						  a_class_id, a_feature_id: INTEGER; a_open_map: ARRAY [INTEGER]
-						  a_is_precompiled, a_is_basic, a_is_target_closed, a_is_inline_agent: BOOLEAN
+	frozen set_rout_disp (a_rout_disp, a_encaps_rout_disp, a_calc_rout_addr: POINTER;
+						  a_class_id, a_feature_id: INTEGER; a_open_map: like open_map;
+						  a_is_precompiled, a_is_basic, a_is_target_closed, a_is_inline_agent: BOOLEAN;
 						  a_closed_operands: TUPLE; a_open_count: INTEGER)
 			-- Initialize object.
 		require
@@ -320,9 +320,9 @@ feature {ROUTINE} -- Implementation
 			open_count := a_open_count
 		end
 
-	frozen set_rout_disp_int (a_rout_disp, a_encaps_rout_disp, a_calc_rout_addr: POINTER
-						  	  a_class_id, a_feature_id: INTEGER; a_open_map: ARRAY [INTEGER]
-	 						  a_is_precompiled, a_is_basic, a_is_target_closed, a_is_inline_agent: BOOLEAN
+	frozen set_rout_disp_int (a_rout_disp, a_encaps_rout_disp, a_calc_rout_addr: POINTER;
+						  	  a_class_id, a_feature_id: INTEGER; a_open_map: like open_map;
+	 						  a_is_precompiled, a_is_basic, a_is_target_closed, a_is_inline_agent: BOOLEAN;
 							  a_closed_operands: TUPLE; a_open_count: INTEGER)
 			-- Initialize object.
 		require
