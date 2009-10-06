@@ -40,7 +40,7 @@ create
 	make_from_cil
 
 convert
-	to_cil: {NATIVE_ARRAY [G], detachable NATIVE_ARRAY [G]},
+	to_cil: {NATIVE_ARRAY [G]},
 	to_special: {SPECIAL [G]},
 	make_from_cil ({NATIVE_ARRAY [G]})
 
