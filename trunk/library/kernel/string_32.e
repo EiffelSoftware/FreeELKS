@@ -71,9 +71,9 @@ create
 	make_from_cil
 
 convert
-	to_cil: {SYSTEM_STRING, detachable SYSTEM_STRING},
-	make_from_cil ({SYSTEM_STRING, attached SYSTEM_STRING, detachable SYSTEM_STRING}),
-	as_string_8: {READABLE_STRING_8, detachable READABLE_STRING_8, STRING_8, detachable STRING_8}
+	to_cil: {SYSTEM_STRING},
+	make_from_cil ({SYSTEM_STRING}),
+	as_string_8: {READABLE_STRING_8, STRING_8}
 
 feature -- Initialization
 
