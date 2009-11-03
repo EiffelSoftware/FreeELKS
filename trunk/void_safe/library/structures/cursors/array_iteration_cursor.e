@@ -35,7 +35,7 @@ feature -- Access
 			Result := array[index.to_integer_32]
 		end
 
-	index: NATURAL
+	index: INTEGER
 			-- <Precursor>
 
 feature -- Status report
@@ -43,7 +43,7 @@ feature -- Status report
 	after: BOOLEAN
 			-- <Precursor>
 		do
-			Result := index > array.upper.to_natural_32
+			Result := index > array.upper
 		end
 
 feature -- Cursor movement
@@ -51,7 +51,7 @@ feature -- Cursor movement
 	start
 			-- <Precursor>
 		do
-			index := array.lower.to_natural_32
+			index := array.lower
 		end
 
 	forth

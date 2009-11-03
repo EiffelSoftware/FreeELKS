@@ -19,7 +19,7 @@ feature -- Access
 		deferred
 		end
 
-	index: NATURAL
+	index: INTEGER
 			-- Index position of cursor in the iteration.
 		deferred
 		ensure
