@@ -81,7 +81,7 @@ feature -- Initialization
 
 feature -- Access
 
-	parent: detachable FIXED_TREE [G]
+	parent: detachable like Current
 			-- Parent of current node
 
 	child_item: like item
@@ -414,7 +414,7 @@ feature {NONE} -- Implementation
 
 feature {FIXED_TREE} -- Implementation
 
-	fixed_list: FIXED_LIST [detachable FIXED_TREE [G]]
+	fixed_list: FIXED_LIST [detachable like Current]
 
 	set_fixed_list (a_list: like fixed_list)
 			-- Set `fixed_list' with `a_list'
@@ -466,7 +466,7 @@ feature -- Access
 			Result := fixed_list.item
 		end
 
-	array_item (n: INTEGER): detachable FIXED_TREE [G]
+	array_item (n: INTEGER): detachable like Current
 		do
 			Result := fixed_list.i_th (n)
 		end
@@ -481,7 +481,7 @@ feature -- Access
 			Result := fixed_list.first
 		end
 
-	search_child (v: FIXED_TREE [like item])
+	search_child (v: like Current)
 		do
 			fixed_list.search (v)
 		end
@@ -543,7 +543,7 @@ feature -- Access
 			fixed_list.go_to (p)
 		end
 
-	index_of (v: FIXED_TREE [like item]; i: INTEGER): INTEGER
+	index_of (v: like Current; i: INTEGER): INTEGER
 		do
 			Result := fixed_list.index_of (v, i)
 		end
@@ -557,7 +557,7 @@ feature -- Access
 			create fixed_list.make (fixed_list.count)
 		end
 
-	put_i_th (v: FIXED_TREE [like item]; n: INTEGER)
+	put_i_th (v: like Current; n: INTEGER)
 		do
 			fixed_list.put_i_th (v, n)
 		end
@@ -586,7 +586,7 @@ feature {NONE} -- private access fixed_list
 			fixed_list.make_filled (n)
 		end
 
-	fl_extend (v: FIXED_TREE [like item])
+	fl_extend (v: like Current)
 		do
 			fixed_list.extend (v)
 		end
@@ -616,27 +616,27 @@ feature {NONE} -- private access fixed_list
 			Result := fixed_list.extendible
 		end
 
-	fl_put (v: FIXED_TREE [like item])
+	fl_put (v: like Current)
 		do
 			fixed_list.put (v)
 		end
 
-	fl_replace (v: detachable FIXED_TREE [G])
+	fl_replace (v: detachable like Current)
 		do
 			fixed_list.replace (v)
 		end
 
-	fl_fill (other: CONTAINER [FIXED_TREE [G]])
+	fl_fill (other: CONTAINER [like Current])
 		do
 			--fixed_list.fill (other)
 		end
 
-	fl_lin_rep: LINEAR [detachable FIXED_TREE [G]]
+	fl_lin_rep: LINEAR [detachable like Current]
 		do
 			Result := fixed_list.linear_representation
 		end
 
-	fl_has (v: FIXED_TREE [like item]): BOOLEAN
+	fl_has (v: like Current): BOOLEAN
 		do
 			Result := fixed_list.has (v)
 		end

@@ -302,7 +302,7 @@ feature {NONE} -- Inapplicable
 feature {LINKED_TREE} -- Implementation
 
 
-	new_cell (v: like item): LINKED_TREE [G]
+	new_cell (v: like item): like Current
 			-- New cell containing `v'
 		do
 			create Result.make (v)

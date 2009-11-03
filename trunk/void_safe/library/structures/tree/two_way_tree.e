@@ -307,7 +307,7 @@ feature -- Removal
 
 feature {TWO_WAY_TREE} -- Implementation
 
-	new_cell (v: like item): TWO_WAY_TREE [G]
+	new_cell (v: like item): like Current
 			-- New cell containing `v'
 		do
 			create Result.make (v)
