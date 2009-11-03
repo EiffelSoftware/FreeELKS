@@ -25,6 +25,11 @@ class ARRAY [G] inherit
 			copy, is_equal
 		end
 
+	ITERABLE [G]
+		redefine
+			copy, is_equal
+		end
+
 	TO_SPECIAL [G]
 		export
 			{ARRAY} set_area
@@ -168,6 +173,12 @@ feature -- Access
 					i := i + 1
 				end
 			end
+		end
+
+	new_cursor: ITERATION_CURSOR [G]
+			-- <Precursor>
+		do
+			create {ARRAY_ITERATION_CURSOR[G]} Result.make (Current)
 		end
 
 feature -- Measurement
