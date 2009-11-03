@@ -53,7 +53,7 @@ feature -- Initialization
 
 feature -- Access
 
-	parent: detachable BINARY_TREE [G]
+	parent: detachable like Current
 			-- Parent of current node
 
 	child_index: INTEGER
