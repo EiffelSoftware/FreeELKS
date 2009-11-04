@@ -25,11 +25,6 @@ class ARRAY [G] inherit
 			copy, is_equal
 		end
 
-	ITERABLE [G]
-		redefine
-			copy, is_equal
-		end
-
 	TO_SPECIAL [G]
 		export
 			{ARRAY} set_area
@@ -173,12 +168,6 @@ feature -- Access
 					i := i + 1
 				end
 			end
-		end
-
-	new_cursor: ITERATION_CURSOR [G]
-			-- <Precursor>
-		do
-			create {ARRAY_ITERATION_CURSOR[G]} Result.make (Current)
 		end
 
 feature -- Measurement
@@ -788,4 +777,14 @@ invariant
 --	index_set_has_same_bounds: ((index_set.lower = lower) and
 --				(index_set.upper = lower + count - 1))
 
+note
+	copyright: "Copyright (c) 1984-2009, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
+	source: "[
+			Eiffel Software
+			5949 Hollister Ave., Goleta, CA 93117 USA
+			Telephone 805-685-1006, Fax 805-685-6869
+			Website http://www.eiffel.com
+			Customer support http://support.eiffel.com
+		]"
 end

@@ -7,7 +7,7 @@ note
 	revision: "$Revision$"
 
 class
-	ARRAY_ITERATION_CURSOR [G]
+	INDEXABLE_ITERATION_CURSOR [G]
 
 inherit
 	ITERATION_CURSOR [G]
@@ -17,22 +17,25 @@ create
 
 feature {NONE} -- Initialization
 
-	make (a_array: like array)
-			-- Initialize cursor using a {ARRAY} based array `a_array'.
+	make (a_indexable: like indexable)
+			-- Initialize cursor using a {ARRAY} based indexable `a_indexable'.
 		require
-			a_array_attached: attached a_array
+			a_indexable_attached: attached a_indexable
 		do
-			array := a_array
+			indexable := a_indexable
 		ensure
-			array_set: array = a_array
+			indexable_set: indexable = a_indexable
 		end
 
 feature -- Access
 
 	item: G
 			-- <Precursor>
+		local
+			l_indexable: like indexable
 		do
-			Result := array[index.to_integer_32]
+			l_indexable := indexable
+			Result := l_indexable[(index + l_indexable.index_set.lower - 1)]
 		end
 
 	index: INTEGER
@@ -43,7 +46,9 @@ feature -- Status report
 	after: BOOLEAN
 			-- <Precursor>
 		do
-			Result := index > array.upper
+			Result := index > indexable.index_set.count
+		ensure then
+			index_small_enough: not Result implies index <= indexable.index_set.count
 		end
 
 feature -- Cursor movement
@@ -51,7 +56,7 @@ feature -- Cursor movement
 	start
 			-- <Precursor>
 		do
-			index := array.lower
+			index := 1
 		end
 
 	forth
@@ -62,11 +67,11 @@ feature -- Cursor movement
 
 feature {NONE} -- Implementation
 
-	array: ARRAY [G]
+	indexable: INDEXABLE [G, INTEGER_32]
 			-- Structure to iterate over.
 
 invariant
-	array_attached: attached array
+	indexable_attached: attached indexable
 
 note
 	copyright: "Copyright (c) 1984-2009, Eiffel Software and others"
