@@ -780,12 +780,11 @@ feature -- Removal
 				l_pos := position
 				if key = l_default_key then
 					has_default := False
-				else
-					deleted_marks.put (True, l_pos)
-					indexes_map.put (-l_pos + ht_deleted_position, item_position)
-					if iteration_position = l_pos then
-						forth
-					end
+				end
+				deleted_marks.put (True, l_pos)
+				indexes_map.put (-l_pos + ht_deleted_position, item_position)
+				if iteration_position = l_pos then
+					forth
 				end
 				count := count - 1
 					-- For void-safety concerns and to avoid leaking too many objects,
