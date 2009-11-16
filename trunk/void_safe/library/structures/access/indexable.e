@@ -21,16 +21,6 @@ deferred class INDEXABLE [G, H -> INTEGER] inherit
 			valid_index
 		end
 
-	ITERABLE [G]
-
-feature -- Access
-
-	new_cursor: ITERATION_CURSOR [G]
-			-- <Precursor>
-		do
-			create {INDEXABLE_ITERATION_CURSOR[G]} Result.make (Current)
-		end
-
 feature -- Measurement
 
 	index_set: INTEGER_INTERVAL
