@@ -1217,7 +1217,7 @@ feature {NONE} -- Implementation
 			l_default_key: detachable K
 			hash_value, increment, l_pos, l_item_pos, l_capacity: INTEGER
 			l_first_deleted_position: INTEGER
-			stop: BOOLEAN
+			stop: INTEGER
 			l_keys: like keys
 			l_indexes: like indexes_map
 			l_deleted_marks: like deleted_marks
@@ -1237,11 +1237,13 @@ feature {NONE} -- Implementation
 					l_indexes := indexes_map
 					l_deleted_marks := deleted_marks
 					l_capacity := capacity
+					stop := l_capacity
 					hash_value := key.hash_code
 					increment := 1 + hash_value \\ (l_capacity - 1)
 					l_item_pos := (hash_value \\ l_capacity) - increment
+					control := not_found_constant
 				until
-					stop
+					stop = 0
 				loop
 						-- Go to next increment.
 					l_item_pos := (l_item_pos + increment) \\ l_capacity
@@ -1254,22 +1256,21 @@ feature {NONE} -- Implementation
 							end
 						end
 						if same_keys (l_key, key) then
-							stop := True
+							stop := 1
 							control := found_constant
 						end
 					elseif l_pos = ht_impossible_position then
-						stop := True
-						control := not_found_constant
+						stop := 1
 					elseif l_first_deleted_position = ht_impossible_position then
 						l_pos := -l_pos + ht_deleted_position
 						check l_pos_valid: l_pos < l_deleted_marks.count end
 						if not l_deleted_marks [l_pos] then
-							stop := True
-							control := not_found_constant
+							stop := 1
 						else
 							l_first_deleted_position := l_item_pos
 						end
 					end
+					stop := stop - 1
 				end
 				item_position := l_item_pos
 			end
