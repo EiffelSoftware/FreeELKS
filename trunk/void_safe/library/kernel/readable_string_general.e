@@ -71,7 +71,7 @@ feature -- Access
 feature -- Status report
 
 	is_immutable: BOOLEAN
-			-- Can the character sequence of `Current' be changed?
+			-- Can the character sequence of `Current' be not changed?
 		do
 			Result := False
 		end
