@@ -37,7 +37,7 @@ feature {NONE} -- Initialization
 		require
 			n_non_negative: n >= 0
 		do
-			item := item.memory_calloc (1, n.max (1))
+			item := item.memory_calloc (n.max (1), 1)
 			if item = default_pointer then
 				(create {EXCEPTIONS}).raise ("No more memory")
 			end
