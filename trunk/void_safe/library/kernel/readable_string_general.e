@@ -338,6 +338,8 @@ feature {NONE} -- Implementation
 			dotnet_convertor_not_void: Result /= Void
 		end
 
+feature {READABLE_STRING_GENERAL} -- Implementation
+
 	internal_hash_code: INTEGER
 			-- Cache for `hash_code'
 

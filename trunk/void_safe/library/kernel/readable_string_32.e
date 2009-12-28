@@ -366,16 +366,23 @@ feature -- Comparison
 			-- Is string made of same character sequence as `other'
 			-- (possibly with a different capacity)?
 		local
-			l_count: INTEGER
-		do
-			if other = Current then
-				Result := True
-			else
-				l_count := count
-				if l_count = other.count then
-					Result := area.same_items (other.area, other.area_lower, area_lower, l_count)
-				end
-			end
+  			l_count: INTEGER
+			l_hash, l_other_hash: like internal_hash_code
+  		do
+  			if other = Current then
+  				Result := True
+  			else
+  				l_count := count
+  				if l_count = other.count then
+						-- Let's compare the content if and only if the hash_code are the same or not yet computed.
+					l_hash := internal_hash_code
+					l_other_hash := other.internal_hash_code
+					if l_hash = 0 or else l_other_hash = 0 or else l_hash = l_other_hash then
+ 						Result := area.same_items (other.area, other.area_lower, area_lower, l_count)
+					end
+  				end
+  			end
+
 		end
 
 	is_case_insensitive_equal (other: like Current): BOOLEAN
