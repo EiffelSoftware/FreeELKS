@@ -140,12 +140,13 @@ feature -- Access
 		do
 			create dir_temp.make_open_read (name)
 			from
+				dir_temp.start
 				dir_temp.readentry
 				e := dir_temp.lastentry
 			until
 				Result or e = Void
 			loop
-				Result := e ~ entry_name
+				Result := e.same_string (entry_name)
 				dir_temp.readentry
 				e := dir_temp.lastentry
 			end
