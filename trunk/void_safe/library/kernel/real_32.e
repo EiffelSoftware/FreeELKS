@@ -13,6 +13,9 @@ frozen expanded class REAL_32 inherit
 	REAL_32_REF
 		redefine
 			is_less,
+			is_nan,
+			is_negative_infinity,
+			is_positive_infinity,
 			truncated_to_integer,
 			truncated_to_integer_64,
 			to_double,
@@ -40,6 +43,26 @@ feature -- Comparison
 
 	is_less alias "<" (other: REAL_32): BOOLEAN
 			-- Is `other' greater than current real?
+		external
+			"built_in"
+		end
+
+feature -- Status Report
+
+	is_nan: BOOLEAN
+			-- Is current the representation of `nan'?
+		external
+			"built_in"
+		end
+
+	is_negative_infinity: BOOLEAN
+			-- Is current the representation of `negative_infinity'?
+		external
+			"built_in"
+		end
+
+	is_positive_infinity: BOOLEAN
+			-- Is current the representation of `positive_infinity'?
 		external
 			"built_in"
 		end

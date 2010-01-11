@@ -13,6 +13,9 @@ frozen expanded class REAL_64 inherit
 	REAL_64_REF
 		redefine
 			is_less,
+			is_nan,
+			is_negative_infinity,
+			is_positive_infinity,
 			truncated_to_integer,
 			truncated_to_integer_64,
 			truncated_to_real,
@@ -39,6 +42,26 @@ feature -- Comparison
 
 	is_less alias "<" (other: REAL_64): BOOLEAN
 			-- Is `other' greater than current double?
+		external
+			"built_in"
+		end
+
+feature -- Status Report
+
+	is_nan: BOOLEAN
+			-- Is current the representation of `nan'?
+		external
+			"built_in"
+		end
+
+	is_negative_infinity: BOOLEAN
+			-- Is current the representation of `negative_infinity'?
+		external
+			"built_in"
+		end
+
+	is_positive_infinity: BOOLEAN
+			-- Is current the representation of `positive_infinity'?
 		external
 			"built_in"
 		end

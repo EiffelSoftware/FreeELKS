@@ -63,6 +63,24 @@ feature -- Access
 			Result.set_item (0.0)
 		end
 
+	nan: REAL_64
+			-- Representation of not a number (NaN)
+		external
+			"built_in static"
+		end
+
+	negative_infinity: REAL_64
+			-- Representation of negative infinity
+		external
+			"built_in static"
+		end
+
+	positive_infinity: REAL_64
+			-- Representation of positive infinity
+		external
+			"built_in static"
+		end
+
 feature -- Comparison
 
 	is_less alias "<" (other: like Current): BOOLEAN
@@ -116,6 +134,24 @@ feature -- Status report
 			-- (True if it is not its type's default.)
 		do
 			Result := item /= 0.0
+		end
+
+	is_nan: BOOLEAN
+			-- Is current the representation of `nan'?
+		do
+			Result := item.is_nan
+		end
+
+	is_negative_infinity: BOOLEAN
+			-- Is current the representation of `negative_infinity'?
+		do
+			Result := item.is_negative_infinity
+		end
+
+	is_positive_infinity: BOOLEAN
+			-- Is current the representation of `positive_infinity'?
+		do
+			Result := item.is_positive_infinity
 		end
 
 feature {NONE} -- Conversion
@@ -297,6 +333,6 @@ feature {NONE} -- Implementation
 		end
 
 invariant
-	sign_times_abs: sign * abs = item
+	sign_times_abs: not item.is_nan implies sign * abs = item
 
 end
