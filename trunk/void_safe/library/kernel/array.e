@@ -344,14 +344,16 @@ feature -- Element change
 
 	force (v: like item; i: INTEGER)
 			-- Assign item `v' to `i'-th entry.
-			-- Always applicable: resize the array if `i' falls out of
-			-- currently defined bounds; preserve existing items.
+			-- Resize the array if `i' falls out of currently defined bounds; preserve existing items.
+			-- In void-safe mode, if ({G}).has_default does not hold, then you can only insert at either
+			-- `lower - 1' or `upper + 1' position in the ARRAY.
 		require
-			has_default: ({G}).has_default
+			has_default: ({G}).has_default or else i = lower - 1 or else i = upper + 1
 		local
 			old_size, new_size: INTEGER
 			new_lower, new_upper: INTEGER
 			offset: INTEGER
+			l_default_item: G
 		do
 			new_lower := lower.min (i)
 			new_upper := upper.max (i)
@@ -362,16 +364,32 @@ feature -- Element change
 					new_size := old_size + additional_space
 				end
 			end
+			l_default_item := v
 			if empty_area then
-				make_filled_area (({G}).default, new_size)
+					-- If the initial size is more than 1 items, we have no choice
+					-- but to use {G}.default to fill the entries.
+				if new_size > 1 then
+					l_default_item := ({G}).default
+				end
+				make_filled_area (l_default_item, new_size)
 			else
 				if new_size > old_size then
-					set_area (area.aliased_resized_area_with_default (({G}).default, new_size))
+						-- If we need to add more than one entry, we have no choice
+						-- but to use {G}.default to fill the entries.
+					if new_size > old_size + 1 then
+						l_default_item := ({G}).default
+					end
+					set_area (area.aliased_resized_area_with_default (l_default_item, new_size))
 				end
 				if new_lower < lower then
 					offset := lower - new_lower
 					area.move_data (0, offset, capacity)
-					area.fill_with (({G}).default, 0, offset - 2)
+						-- If we need to shift more than one entry to the right, we have no choice
+						-- but to use {G}.default to fill the entries.
+					if new_lower < lower - 1 then
+						l_default_item := ({G}).default
+					end
+					area.fill_with (l_default_item, 0, offset - 2)
 				end
 			end
 			lower := new_lower
