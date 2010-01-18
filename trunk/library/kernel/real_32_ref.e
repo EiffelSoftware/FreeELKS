@@ -53,14 +53,32 @@ feature -- Access
 			-- Neutral element for "*" and "/"
 		do
 			create Result
-			Result.set_item (1.0)
+			Result.set_item ({REAL_32} 1.0)
 		end
 
 	zero: like Current
 			-- Neutral element for "+" and "-"
 		do
 			create Result
-			Result.set_item (0.0)
+			Result.set_item ({REAL_32} 0.0)
+		end
+
+	nan: REAL_32
+			-- Representation of not a number (NaN)
+		external
+			"built_in static"
+		end
+
+	negative_infinity: REAL_32
+			-- Representation of negative infinity
+		external
+			"built_in static"
+		end
+
+	positive_infinity: REAL_32
+			-- Representation of positive infinity
+		external
+			"built_in static"
 		end
 
 feature -- Comparison
@@ -116,6 +134,24 @@ feature -- Status report
 			-- (True if it is not its type's default.)
 		do
 			Result := item /= 0.0
+		end
+
+	is_nan: BOOLEAN
+			-- Is current the representation of `nan'?
+		do
+			Result := item.is_nan
+		end
+
+	is_negative_infinity: BOOLEAN
+			-- Is current the representation of `negative_infinity'?
+		do
+			Result := item.is_negative_infinity
+		end
+
+	is_positive_infinity: BOOLEAN
+			-- Is current the representation of `positive_infinity'?
+		do
+			Result := item.is_positive_infinity
 		end
 
 feature {NONE} -- Initialization
@@ -208,9 +244,9 @@ feature -- Conversion
 	rounded_real_32: REAL_32
 			-- Rounded integral value
 		do
-			Result := sign * ((abs + 0.5).floor_real_32)
+			Result := sign * ((abs + {REAL_32} 0.5).floor_real_32)
 		ensure
-			definition: Result = sign * ((abs + 0.5).floor_real_32)
+			definition: Result = sign * ((abs + {REAL_32} 0.5).floor_real_32)
 		end
 
 feature -- Basic operations
@@ -296,6 +332,6 @@ feature {NONE} -- Implementation
 		end
 
 invariant
-	sign_times_abs: sign * abs = item
+	sign_times_abs: not item.is_nan implies sign * abs = item
 
 end
