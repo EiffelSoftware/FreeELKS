@@ -259,7 +259,11 @@ feature -- Status report
 	all_default: BOOLEAN
 			-- Are all items set to default values?
 		do
-			Result := ({G}).has_default and then area.filled_with (({G}).default, 0, upper - lower)
+			if count > 0 then
+				Result := ({G}).has_default and then area.filled_with (({G}).default, 0, upper - lower)
+			else
+				Result := True
+			end
 		ensure
 			definition: Result = (count = 0 or else
 				((not attached item (upper) as i or else i = i.default) and
@@ -353,48 +357,52 @@ feature -- Element change
 			old_size, new_size: INTEGER
 			new_lower, new_upper: INTEGER
 			offset: INTEGER
-			l_default_item: G
+			l_increased_by_one: BOOLEAN
 		do
 			new_lower := lower.min (i)
 			new_upper := upper.max (i)
 			new_size := new_upper - new_lower + 1
-			if not empty_area then
-				old_size := area.count
-				if new_size > old_size and new_size - old_size < additional_space then
-					new_size := old_size + additional_space
-				end
-			end
-			l_default_item := v
+			l_increased_by_one := (i = upper + 1) or (i = lower - 1)
 			if empty_area then
-					-- If the initial size is more than 1 items, we have no choice
-					-- but to use {G}.default to fill the entries.
-				if new_size > 1 then
-					l_default_item := ({G}).default
+					-- List is empty. First we create an empty SPECIAL of the right capacity.
+				make_empty_area (new_size.max (additional_space))
+				if not l_increased_by_one then
+						-- We need to fill the SPECIAL for `0' to `new_size - 2' with the default value.
+					area.fill_with (({G}).default, 0, new_size - 2)
 				end
-				make_filled_area (l_default_item, new_size)
+				area.extend (v)
 			else
+				old_size := area.capacity
 				if new_size > old_size then
-						-- If we need to add more than one entry, we have no choice
-						-- but to use {G}.default to fill the entries.
-					if new_size > old_size + 1 then
-						l_default_item := ({G}).default
-					end
-					set_area (area.aliased_resized_area_with_default (l_default_item, new_size))
+					set_area (area.aliased_resized_area (new_size.max (old_size + additional_space)))
 				end
 				if new_lower < lower then
+						-- We have inserted below the previous `lower'. We need to shift entries to the right
+						-- before we can insert `v'.
 					offset := lower - new_lower
 					area.move_data (0, offset, capacity)
-						-- If we need to shift more than one entry to the right, we have no choice
-						-- but to use {G}.default to fill the entries.
-					if new_lower < lower - 1 then
-						l_default_item := ({G}).default
+					if not l_increased_by_one then
+						area.fill_with (({G}).default, 1, offset - 2)
 					end
-					area.fill_with (l_default_item, 0, offset - 2)
+						-- Insert `v' at the new lower position.
+					area.put (v, 0)
+				else
+					if new_size > area.count then
+							-- We are adding to the new `upper' position. First we fill the non-initialized
+							-- elements if any up to `new_size - 2' (i.e. up the the item prior to `upper').
+						if not l_increased_by_one then
+							area.fill_with (({G}).default, area.count, new_size - 2)
+						end
+							-- Add `v' at upper position.
+						area.extend (v)
+					else
+							-- Here `lower' hasn't changed
+						area.put (v, i - lower)
+					end
 				end
 			end
 			lower := new_lower
 			upper := new_upper
-			put (v, i)
 		ensure
 			inserted: item (i) = v
 			higher_count: count >= old count
@@ -782,7 +790,7 @@ feature {NONE} -- Implementation
 	empty_area: BOOLEAN
 			-- Is `area' empty?
 		do
-			Result := area = Void or else area.count = 0
+			Result := area = Void or else area.capacity = 0
 		end
 
 invariant
