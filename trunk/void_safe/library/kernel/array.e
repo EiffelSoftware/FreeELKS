@@ -410,6 +410,16 @@ feature -- Element change
 			upper_set: upper = (old upper).max (i)
 		end
 
+	fill_with (v: G)
+			-- Set items between `lower' and `upper' with `v'.
+		do
+			area.fill_with (v, 0, upper - lower)
+		ensure
+			same_capacity: capacity = old capacity
+			count_definition: count = old count
+			filled: filled_with (v)
+		end
+
 	subcopy (other: ARRAY [like item]; start_pos, end_pos, index_pos: INTEGER)
 			-- Copy items of `other' within bounds `start_pos' and `end_pos'
 			-- to current array starting at index `index_pos'.
