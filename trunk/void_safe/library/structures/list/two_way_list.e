@@ -21,7 +21,7 @@ class TWO_WAY_LIST [G] inherit
 			merge_right, merge_left, new_cell,
 			remove, remove_left, remove_right, wipe_out,
 			previous, finish, move, islast, new_chain,
-			forth, back, cursor
+			forth, back, cursor, new_cursor
 		select
 			put_front,
 			merge_right,
@@ -44,7 +44,7 @@ class TWO_WAY_LIST [G] inherit
 			put_left, merge_left, remove, new_chain,
 			remove_left, finish, islast, first_element, extend,
 			last_element, previous, new_cell, remove_right,
-			forth, back, cursor
+			forth, back, cursor, new_cursor
 		end
 
 create
@@ -69,6 +69,12 @@ feature -- Access
 			-- Current cursor position
 		do
 			create Result.make (active, after, before)
+		end
+
+	new_cursor: TWO_WAY_LIST_ITERATION_CURSOR [G]
+			-- <Precursor>
+		do
+			create Result.make (Current)
 		end
 
 feature -- Status report
@@ -489,9 +495,9 @@ feature {TWO_WAY_LIST} -- Implementation
 		end
 
 invariant
-
 	non_empty_list_has_two_endpoints: not is_empty implies
 				(first_element /= Void and last_element /= Void)
+	empty_list_has_no_endpoints: is_empty implies last_element = Void
 	first_element_constraint: attached first_element as f implies
 				f.left = Void
 	last_element_constraint: attached last_element as l implies

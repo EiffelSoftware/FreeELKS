@@ -8,15 +8,44 @@ note
 	date: "$Date$"
 	revision: "$Revision$"
 
-deferred class INDEXABLE [G, H -> INTEGER] inherit
+deferred class READABLE_INDEXABLE [G]
 
-	TABLE [G, INTEGER]
-		rename
-			valid_key as valid_index,
-			force as put
+inherit
+	ITERABLE [G]
+
+feature -- Access
+
+	item alias "[]" (i: INTEGER): G
+			-- Entry at position `i'
+		require
+			valid_index: valid_index (i)
+		deferred
 		end
 
-	READABLE_INDEXABLE [G]
+	new_cursor: INDEXABLE_ITERATION_CURSOR [G]
+			-- <Precursor>
+		do
+			create Result.make (Current)
+		end
+
+feature -- Measurement
+
+	index_set: INTEGER_INTERVAL
+			-- Range of acceptable indexes
+		deferred
+		ensure
+			not_void: Result /= Void
+		end
+
+feature -- Status report
+
+	valid_index (i: INTEGER): BOOLEAN
+			-- Is `i' a valid index?
+		deferred
+		ensure
+			only_if_in_index_set:
+				Result implies ((i >= index_set.lower) and (i <= index_set.upper))
+		end
 
 note
 	library:	"EiffelBase: Library of reusable components for Eiffel."

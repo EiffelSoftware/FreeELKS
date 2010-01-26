@@ -18,6 +18,8 @@ inherit
 			debug_output
 		end
 
+	READABLE_INDEXABLE [T]
+
 create
 	make_empty,
 	make_filled,
@@ -62,9 +64,6 @@ feature -- Access
 	item alias "[]" (i: INTEGER): T assign put
 			-- Item at `i'-th position
 			-- (indices begin at 0)
-		require
-			index_big_enough: i >= 0
-			index_small_enough: i < count
 		external
 			"built_in"
 		end
@@ -73,8 +72,7 @@ feature -- Access
 			-- Item at `i'-th position
 			-- (indices begin at 0)
 		require
-			index_big_enough: i >= 0
-			index_small_enough: i < count
+			valid_index: valid_index (i)
 		do
 			Result := item (i)
 		end
@@ -141,6 +139,12 @@ feature -- Access
 			to_array_attached: Result /= Void
 			to_array_lower_set: Result.lower = 1
 			to_array_upper_set: Result.upper = count
+		end
+
+	index_set: INTEGER_INTERVAL
+			-- <Precursor>
+		do
+			create Result.make (lower, upper)
 		end
 
 feature -- Measurement
@@ -233,8 +237,6 @@ feature -- Status report
 			-- Is `i' within the bounds of Current?
 		do
 			Result := (0 <= i) and (i < count)
-		ensure
-			definition: Result = ((0 <= i) and (i < count))
 		end
 
 feature -- Element change
@@ -243,8 +245,7 @@ feature -- Element change
 			-- Replace `i'-th item by `v'.
 			-- (Indices begin at 0.)
 		require
-			index_big_enough: i >= 0
-			index_small_enough: i < count
+			valid_index: valid_index (i)
 		external
 			"built_in"
 		ensure

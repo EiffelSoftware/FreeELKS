@@ -1,8 +1,5 @@
 note
-	description: "[
-		Augments data strcutures and then like with an external interation cursor, specification
-		according to ECMA 3.5.1.1, for compatibility across...loop...end loop construct.
-		]"
+	description: "Structure that can be iterated over using `across...loop...end'."
 	library: "Free implementation of ELKS library"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -13,10 +10,10 @@ deferred class
 feature -- Access
 
 	new_cursor: ITERATION_CURSOR [G]
-			-- Fresh cursor associated with current structure.
+			-- Fresh cursor associated with current structure
 		deferred
 		ensure
-			result_attached: attached Result
+			result_attached: Result /= Void
 		end
 
 note

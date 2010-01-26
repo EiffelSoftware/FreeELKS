@@ -18,7 +18,8 @@ class LINKED_LIST [G] inherit
 			go_i_th, put_left, move, wipe_out,
 			isfirst, islast, is_inserted,
 			first, last, finish, merge_left, merge_right,
-			readable, start, before, after, off, copy
+			readable, start, before, after, off, copy,
+			new_cursor
 		end
 
 create
@@ -98,6 +99,19 @@ feature -- Access
 		do
 			create Result.make (active, after, before)
 		end
+
+feature -- Access: Cursor
+
+	new_cursor: LINKED_LIST_ITERATION_CURSOR [G]
+			-- <Precursor>
+		do
+			create Result.make (Current)
+		end
+
+feature {LINKED_LIST, LINKED_LIST_ITERATION_CURSOR} -- Access
+
+	first_element: detachable like new_cell
+			-- Head of list
 
 feature -- Measurement
 
@@ -685,9 +699,6 @@ feature {LINKED_LIST} -- Implementation
 	active: like first_element
 			-- Element at cursor position
 
-	first_element: detachable like new_cell
-			-- Head of list
-
 	last_element: like first_element
 			-- Tail of list
 		local
@@ -741,14 +752,14 @@ invariant
 
 note
 	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2008, Eiffel Software and others"
+	copyright:	"Copyright (c) 1984-2009, Eiffel Software and others"
 	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
-			 Eiffel Software
-			 356 Storke Road, Goleta, CA 93117 USA
-			 Telephone 805-685-1006, Fax 805-685-6869
-			 Website http://www.eiffel.com
-			 Customer support http://support.eiffel.com
+			Eiffel Software
+			5949 Hollister Ave., Goleta, CA 93117 USA
+			Telephone 805-685-1006, Fax 805-685-6869
+			Website http://www.eiffel.com
+			Customer support http://support.eiffel.com
 		]"
 
 end -- class LINKED_LIST

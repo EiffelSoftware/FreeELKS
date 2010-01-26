@@ -21,6 +21,11 @@ inherit
 			copy, is_equal, out
 		end
 
+	READABLE_INDEXABLE [CHARACTER_8]
+		redefine
+			copy, is_equal, out
+		end
+
 convert
 	to_cil: {SYSTEM_STRING},
 	as_string_8: {STRING_8},
@@ -352,7 +357,7 @@ feature -- Measurement
 			-- Range of acceptable indexes
 		do
 			create Result.make (1, count)
-		ensure
+		ensure then
 			index_set_not_void: Result /= Void
 			index_set_count: Result.count = count
 		end
