@@ -32,6 +32,15 @@ class HASH_TABLE [G, K -> detachable HASHABLE] inherit
 			copy, is_equal, wipe_out, has_item
 		end
 
+	READABLE_INDEXABLE [G]
+		rename
+			item as iteration_item,
+			valid_index as valid_iteration_index,
+			index_set as iteration_index_set
+		redefine
+			copy, is_equal, new_cursor
+		end
+
 	MISMATCH_CORRECTOR
 		export
 			{NONE} all
@@ -262,6 +271,18 @@ feature -- Access
 			cursor_not_void: Result /= Void
 		end
 
+	new_cursor: HASH_TABLE_ITERATION_CURSOR [G, K]
+			-- <Precursor>
+		do
+			create Result.make (Current)
+		end
+
+	iteration_item (i: INTEGER): G
+			-- <Precursor>
+		do
+			Result := content.item (i)
+		end
+
 feature -- Measurement
 
 	count: INTEGER
@@ -300,6 +321,12 @@ feature -- Measurement
 				end
 			end
 			iteration_position := old_iteration_position
+		end
+
+	iteration_index_set: INTEGER_INTERVAL
+			-- <Precursor>
+		do
+			create Result.make (next_iteration_position (-1), previous_iteration_position (keys.count))
 		end
 
 feature -- Comparison
@@ -383,16 +410,9 @@ feature -- Status report
 			-- Can cursor be moved to position `c'?
 		require
 			c_not_void: c /= Void
-		local
-			cursor_position: INTEGER
 		do
 			if attached {HASH_TABLE_CURSOR} c as ht_cursor then
-				cursor_position := ht_cursor.position
-				Result :=
-						(is_off_position (cursor_position)) or else
-							((cursor_position >= 0) and
-							(cursor_position <= keys.count) and then
-							truly_occupied (cursor_position))
+				Result := valid_iteration_index (ht_cursor.position)
 			end
 		end
 
@@ -431,6 +451,18 @@ feature -- Status report
 			end
 		end
 
+	valid_iteration_index (i: INTEGER): BOOLEAN
+			-- <Precursor>
+		local
+			cursor_position: INTEGER
+		do
+			cursor_position := i
+			Result := (is_off_position (cursor_position)) or else
+						((cursor_position >= 0) and
+						(cursor_position <= keys.count) and then
+						truly_occupied (cursor_position))
+		end
+
 feature -- Cursor movement
 
 	start
@@ -445,24 +477,8 @@ feature -- Cursor movement
 			-- or `off' if no such position remains.
 		require
 			not_off: not off
-		local
-			stop: BOOLEAN
-			l_deleted_marks: like deleted_marks
-			pos_for_iter, table_size: INTEGER
 		do
-			pos_for_iter := iteration_position + 1
-			l_deleted_marks := deleted_marks
-			table_size := content.count
-			if pos_for_iter < table_size and then l_deleted_marks.item (pos_for_iter) then
-				from
-				until
-					stop
-				loop
-					pos_for_iter := pos_for_iter + 1
-					stop := pos_for_iter >= table_size or else not l_deleted_marks.item (pos_for_iter)
-				end
-			end
-			iteration_position := pos_for_iter
+			iteration_position := next_iteration_position (iteration_position)
 		end
 
 	go_to (c: CURSOR)
@@ -502,6 +518,50 @@ feature -- Cursor movement
 			"Use found_item instead."
 		do
 			Result := found_item
+		end
+
+feature {HASH_TABLE_ITERATION_CURSOR} -- Cursor movement
+
+	next_iteration_position (a_position: like iteration_position): like iteration_position
+			-- Given an iteration position, advanced to the next one taking into account deleted
+			-- slots in the `content' and `keys' structures.
+		require
+			a_position_big_enough: a_position >= -1
+			a_position_small_enough: a_position < keys.count
+		local
+			l_deleted_marks: like deleted_marks
+			l_table_size: INTEGER
+		do
+			Result := a_position + 1
+			l_deleted_marks := deleted_marks
+			l_table_size := content.count
+			from
+			until
+				Result >= l_table_size or else not l_deleted_marks.item (Result)
+			loop
+				Result := Result + 1
+			end
+		end
+
+	previous_iteration_position (a_position: like iteration_position): like iteration_position
+			-- Given an iteration position, go to the previous one taking into account deleted
+			-- slots in the `content' and `keys' structures.
+		require
+			a_position_big_enough: a_position >= 0
+			a_position_small_enough: a_position <= keys.count
+		local
+			l_deleted_marks: like deleted_marks
+			l_table_size: INTEGER
+		do
+			Result := a_position - 1
+			l_deleted_marks := deleted_marks
+			l_table_size := content.count
+			from
+			until
+				Result <= 0 or else not l_deleted_marks.item (Result)
+			loop
+				Result := Result - 1
+			end
 		end
 
 feature -- Element change
@@ -1022,13 +1082,15 @@ feature {NONE} -- Transformation
 	hash_table_version_64: BOOLEAN
 			-- Fake attribute for versioning purposes. Used in `correct_mismatch'.
 
-feature {HASH_TABLE} -- Implementation: content attributes and preservation
+feature {HASH_TABLE, HASH_TABLE_ITERATION_CURSOR} -- Implementation: content attributes and preservation
 
 	content: SPECIAL [G]
 			-- Array of contents
 
 	keys: SPECIAL [K]
 			-- Array of keys
+
+feature {HASH_TABLE} -- Implementation: content attributes and preservation
 
 	indexes_map: SPECIAL [INTEGER]
 			-- Indexes of items in `content', and `keys'.
@@ -1515,11 +1577,11 @@ note
 	copyright:	"Copyright (c) 1984-2009, Eiffel Software and others"
 	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
-			 Eiffel Software
-			 356 Storke Road, Goleta, CA 93117 USA
-			 Telephone 805-685-1006, Fax 805-685-6869
-			 Website http://www.eiffel.com
-			 Customer support http://support.eiffel.com
+			Eiffel Software
+			5949 Hollister Ave., Goleta, CA 93117 USA
+			Telephone 805-685-1006, Fax 805-685-6869
+			Website http://www.eiffel.com
+			Customer support http://support.eiffel.com
 		]"
 
 end -- class HASH_TABLE

@@ -14,6 +14,9 @@ note
 class
 	ARGUMENTS
 
+inherit
+	ITERABLE [STRING]
+
 feature -- Access
 
 	argument (i: INTEGER): STRING
@@ -62,6 +65,14 @@ feature -- Access
 			Result := argument (0)
 		ensure
 			definition: Result ~ argument (0)
+		end
+
+feature -- Access: Cursor
+
+	new_cursor: ITERATION_CURSOR [STRING]
+			-- <Precursor>
+		do
+			Result := argument_array.new_cursor
 		end
 
 feature -- Status report
