@@ -110,4 +110,12 @@ feature -- Internal C routines
 			"return eif_attached_type((EIF_TYPE_INDEX) $a_type)"
 		end
 
+	frozen is_field_transient_of_type (i: INTEGER; a_type: INTEGER): BOOLEAN
+			-- Is `i-th' field (zero based index) a transient field?
+		external
+			"C inline use %"eif_struct.h%""
+		alias
+			"return EIF_IS_TRANSIENT_ATTRIBUTE(System(To_dtype($a_type)), $i);"
+		end
+
 end

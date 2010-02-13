@@ -41,6 +41,10 @@ feature -- Status report
 			Result := object_action /= Void
 		end
 
+	is_skip_transient: BOOLEAN
+			-- Do we skip transient attribute during traversal?
+			--| Default: False, i.e. transient attributes will be processed.
+
 feature -- Element change
 
 	set_root_object (an_object: like root_object)
@@ -61,6 +65,14 @@ feature -- Element change
 			object_action := an_object_action
 		ensure
 			an_object_action_set: object_action = an_object_action and is_object_action_set
+		end
+
+	set_is_skip_transient (v: like is_skip_transient)
+			-- Set `is_skip_transient' with `v'.
+		do
+			is_skip_transient := v
+		ensure
+			is_skip_transient_set: is_skip_transient = v
 		end
 
 feature -- Basic operations
@@ -206,10 +218,12 @@ feature {NONE} -- Implementation
 						i = nb
 					loop
 						if l_int.field_type_of_type (i, l_dtype) = {INTERNAL}.reference_type then
-							l_field := l_int.field (i, l_object)
-							if l_field /= Void and then not l_int.is_marked (l_field) then
-								l_int.mark (l_field)
-								l_objects_to_visit.put (l_field)
+							if not is_skip_transient or else not l_int.is_field_transient_of_type (i, l_dtype) then
+								l_field := l_int.field (i, l_object)
+								if l_field /= Void and then not l_int.is_marked (l_field) then
+									l_int.mark (l_field)
+									l_objects_to_visit.put (l_field)
+								end
 							end
 						end
 						i := i + 1
