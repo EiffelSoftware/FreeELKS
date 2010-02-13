@@ -194,6 +194,28 @@ feature -- Status report
 			Result := {ISE_RUNTIME}.is_attached_type (a_type_id)
 		end
 
+	is_field_transient (i: INTEGER; object: ANY): BOOLEAN
+			-- Is `i'-th field of `object' a transient attribute?
+			-- I.e. an attribute that does not need to be stored?
+		require
+			object_not_void: object /= Void
+			index_large_enough: i >= 1
+			index_small_enough: i <= field_count (object)
+		do
+			Result := is_field_transient_of_type (i, {ISE_RUNTIME}.dynamic_type (object))
+		end
+
+	is_field_transient_of_type (i: INTEGER; a_type_id: INTEGER): BOOLEAN
+			-- Is `i'-th field of `object' a transient attribute?
+			-- I.e. an attribute that does not need to be stored?
+		require
+			a_type_non_negative: a_type_id >= 0
+			index_large_enough: i >= 1
+			index_small_enough: i <= field_count_of_type (a_type_id)
+		do
+			Result := {ISE_RUNTIME}.is_field_transient_of_type (i - 1, a_type_id)
+		end
+
 feature -- Access
 
 	none_type: INTEGER = -2
@@ -756,6 +778,26 @@ feature -- Measurement
 			"ei_count_field_of_type"
 		end
 
+	persistent_field_count (object: ANY): INTEGER
+			-- Number of logical fields in `object' that are not transient.
+		require
+			object_not_void: object /= Void
+		do
+			Result := persistent_field_count_of_type (dynamic_type (object))
+		ensure
+			count_positive: Result >= 0
+		end
+
+	persistent_field_count_of_type (a_type_id: INTEGER): INTEGER
+			-- Number of logical fields in dynamic type `type_id' that are not transient.
+		require
+			a_type_non_negative: a_type_id >= 0
+		external
+			"C macro signature (EIF_INTEGER): EIF_INTEGER use %"eif_internal.h%""
+		alias
+			"ei_count_persistent_field_of_type"
+		end
+
 	bit_size (i: INTEGER; object: ANY): INTEGER
 			-- Size (in bit) of the `i'-th bit field of `object'
 		require
@@ -811,6 +853,7 @@ feature -- Measurement
 		do
 			create l_traverse
 			l_traverse.set_root_object (object)
+			l_traverse.set_is_skip_transient (False)
 			l_traverse.traverse
 			l_objects := l_traverse.visited_objects
 			if l_objects /= Void then
