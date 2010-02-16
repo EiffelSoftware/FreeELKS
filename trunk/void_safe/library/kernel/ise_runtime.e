@@ -14,7 +14,7 @@ class
 
 feature -- Feature specific to ISE runtime.
 
-	frozen c_generator_of_type (type_id: INTEGER): STRING
+	frozen c_generator_of_type (a_type_id: INTEGER): STRING
 			-- Name of the generating class of current object
 		external
 			"C use %"eif_out.h%""
@@ -27,7 +27,7 @@ feature -- Feature specific to ISE runtime.
 			"c_check_assert"
 		end
 
- 	frozen c_generating_type_of_type (type_id: INTEGER): STRING
+ 	frozen c_generating_type_of_type (a_type_id: INTEGER): STRING
  		external
  			"C signature (int16): EIF_REFERENCE use %"eif_gen_conf.h%""
  		alias
@@ -45,9 +45,9 @@ feature -- Feature specific to ISE runtime.
 			]"
 		end
 
-	frozen once_objects (a_result_type: INTEGER): SPECIAL [ANY]
+	frozen once_objects (a_result_type_id: INTEGER): SPECIAL [ANY]
 			-- Once objects initialized in current system.
-			-- `a_result_type' is the dynamic type of `SPECIAL [ANY]'.
+			-- `a_result_type_id' is the dynamic type of `SPECIAL [ANY]'.
 		external
 			"C signature (EIF_INTEGER): EIF_REFERENCE use %"eif_memory_analyzer.h%""
 		alias
@@ -86,36 +86,58 @@ feature -- Internal C routines
 			"eif_set_pre_ecma_mapping($v)"
 		end
 
-	frozen is_attached_type (a_type: INTEGER): BOOLEAN
+	frozen is_attached_type (a_type_id: INTEGER): BOOLEAN
 			-- Is `a_type' an attached type?
 		external
 			"C inline  use %"eif_gen_conf.h%""
 		alias
-			"return eif_is_attached_type((EIF_TYPE_INDEX) $a_type)"
+			"return eif_is_attached_type((EIF_TYPE_INDEX) $a_type_id)"
 		end
 
-	frozen detachable_type (a_type: INTEGER): INTEGER
+	frozen detachable_type (a_type_id: INTEGER): INTEGER
 			-- Detachable version of `a_type'
 		external
 			"C inline  use %"eif_gen_conf.h%""
 		alias
-			"return eif_non_attached_type((EIF_TYPE_INDEX) $a_type)"
+			"return eif_non_attached_type((EIF_TYPE_INDEX) $a_type_id)"
 		end
 
-	frozen attached_type (a_type: INTEGER): INTEGER
+	frozen attached_type (a_type_id: INTEGER): INTEGER
 			-- Attached version of `a_type'
 		external
 			"C inline  use %"eif_gen_conf.h%""
 		alias
-			"return eif_attached_type((EIF_TYPE_INDEX) $a_type)"
+			"return eif_attached_type((EIF_TYPE_INDEX) $a_type_id)"
 		end
 
-	frozen is_field_transient_of_type (i: INTEGER; a_type: INTEGER): BOOLEAN
+	frozen is_field_transient_of_type (i: INTEGER; a_type_id: INTEGER): BOOLEAN
 			-- Is `i-th' field (zero based index) a transient field?
 		external
 			"C inline use %"eif_struct.h%""
 		alias
-			"return EIF_IS_TRANSIENT_ATTRIBUTE(System(To_dtype($a_type)), $i);"
+			"return EIF_IS_TRANSIENT_ATTRIBUTE(System(To_dtype($a_type_id)), $i);"
+		end
+
+	persistent_field_count_of_type (a_type_id: INTEGER): INTEGER
+			-- Number of logical fields in dynamic type `type_id' that are not transient.
+		external
+			"C inline use %"eif_eiffel.h%""
+		alias
+			"return (System(To_dtype($a_type_id)).cn_persistent_nbattr);"
+		end
+
+	storable_version_of_type (a_type_id: INTEGER): detachable STRING
+		external
+			"C inline use %"eif_eiffel.h%""
+		alias
+			"[
+				char *l_version = System(To_dtype($a_type_id)).cn_version;
+				if (l_version) {
+					return RTMS(l_version);
+				} else {
+					return NULL;
+				}
+			]"
 		end
 
 end
