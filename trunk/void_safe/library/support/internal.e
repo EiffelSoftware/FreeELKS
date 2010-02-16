@@ -342,6 +342,14 @@ feature -- Access
 			dynamic_type_nonnegative: Result >= 0
 		end
 
+	storable_version_of_type (a_type_id: INTEGER): detachable STRING
+			-- Storable version if any specified.
+		require
+			a_type_id_nonnegative: a_type_id >= 0
+		do
+			Result := {ISE_RUNTIME}.storable_version_of_type (a_type_id)
+		end
+
 	field (i: INTEGER; object: ANY): detachable ANY
 			-- Object attached to the `i'-th field of `object'
 			-- (directly or through a reference)
@@ -783,7 +791,7 @@ feature -- Measurement
 		require
 			object_not_void: object /= Void
 		do
-			Result := persistent_field_count_of_type (dynamic_type (object))
+			Result := {ISE_RUNTIME}.persistent_field_count_of_type (dynamic_type (object))
 		ensure
 			count_positive: Result >= 0
 		end
@@ -792,10 +800,8 @@ feature -- Measurement
 			-- Number of logical fields in dynamic type `type_id' that are not transient.
 		require
 			a_type_non_negative: a_type_id >= 0
-		external
-			"C macro signature (EIF_INTEGER): EIF_INTEGER use %"eif_internal.h%""
-		alias
-			"ei_count_persistent_field_of_type"
+		do
+			Result := {ISE_RUNTIME}.persistent_field_count_of_type (a_type_id)
 		end
 
 	bit_size (i: INTEGER; object: ANY): INTEGER
