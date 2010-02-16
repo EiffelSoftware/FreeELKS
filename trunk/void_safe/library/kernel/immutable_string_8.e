@@ -76,6 +76,7 @@ feature {NONE} -- Initialization
 			make (l_count)
 			if l_count > 0 then
 				dotnet_convertor.read_system_string_into_area_8 (a_system_string, area)
+				count := l_count
 			end
 		end
 
