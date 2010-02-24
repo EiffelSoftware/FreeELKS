@@ -176,7 +176,7 @@ feature {NONE} -- Implementation
 				l_dtype := l_int.dynamic_type (l_object)
 				if l_int.is_special_type (l_dtype) then
 					if l_int.is_special_any_type (l_dtype) then
-						if attached {SPECIAL [ANY]} l_object as l_sp then
+						if attached {SPECIAL [detachable ANY]} l_object as l_sp then
 							from
 								i := 0
 								nb := l_sp.count
