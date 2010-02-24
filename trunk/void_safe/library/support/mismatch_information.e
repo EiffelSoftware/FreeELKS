@@ -62,6 +62,20 @@ feature -- Access
 			result_exists: Result /= Void
 		end
 
+	stored_version: detachable STRING
+			-- Version associated to `class_name' in the stored system.
+
+	current_version: detachable STRING
+			-- Version associated to `class_name' in the current system/
+
+feature -- Status report
+
+	is_version_mismatched: BOOLEAN
+			-- Is the `stored_version' different from the current system version?
+		do
+			Result := stored_version /= current_version
+		end
+
 feature -- Output
 
 	out: STRING
@@ -120,14 +134,25 @@ feature {NONE} -- Implementation
 	set_callback_pointers
 			-- Sets call-back pointers in the run-time
 		once
-			set_mismatch_information_access (Current, $clear_all, $internal_put)
+			set_mismatch_information_access (Current, $clear_all, $internal_put, $set_versions)
+		end
+
+	set_versions (a_stored_version: like stored_version; a_current_version: like current_version)
+			-- Set `stored_version' with `a_stored_version'.
+			-- Set `current_version' with `a_current_version'.
+		do
+			stored_version := a_stored_version
+			current_version := a_current_version
+		ensure
+			stored_version_set: stored_version = a_stored_version
+			current_version_set: current_version = a_current_version
 		end
 
 feature {NONE} -- Externals
 
-	set_mismatch_information_access (obj: ANY; init, add: POINTER)
+	set_mismatch_information_access (obj: ANY; init, add, set_vers: POINTER)
 		external
-			"C signature (EIF_OBJECT, EIF_PROCEDURE, EIF_PROCEDURE) use <eif_retrieve.h>"
+			"C signature (EIF_OBJECT, EIF_PROCEDURE, EIF_PROCEDURE, EIF_PROCEDURE) use <eif_retrieve.h>"
 		end
 
 invariant
