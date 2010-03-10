@@ -66,9 +66,10 @@ feature -- Access
 			-- Version associated to `class_name' in the stored system.
 
 	current_version: detachable STRING
-			-- Version associated to `class_name' in the current system/
+			-- Version associated to `class_name' in the current system.
 
 	type_name_key: STRING = "_type_name"
+			-- Associated key for retrieving the type name of a mismatch.
 
 feature -- Status report
 
