@@ -126,17 +126,12 @@ feature -- Internal C routines
 			"return (System(To_dtype($a_type_id)).cn_persistent_nbattr);"
 		end
 
-	storable_version_of_type (a_type_id: INTEGER): detachable STRING
+	storable_version_of_type (a_type_id: INTEGER): POINTER
 		external
 			"C inline use %"eif_eiffel.h%""
 		alias
 			"[
-				char *l_version = System(To_dtype($a_type_id)).cn_version;
-				if (l_version) {
-					return RTMS(l_version);
-				} else {
-					return NULL;
-				}
+				return System(To_dtype($a_type_id)).cn_version;
 			]"
 		end
 
