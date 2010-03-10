@@ -62,13 +62,14 @@ feature -- Access
 			result_exists: Result /= Void
 		end
 
-	stored_version: detachable STRING
+	stored_version: detachable IMMUTABLE_STRING_8
 			-- Version associated to `class_name' in the stored system.
 
-	current_version: detachable STRING
-			-- Version associated to `class_name' in the current system/
+	current_version: detachable IMMUTABLE_STRING_8
+			-- Version associated to `class_name' in the current system.
 
 	type_name_key: STRING = "_type_name"
+			-- Associated key for retrieving the type name of a mismatch.
 
 feature -- Status report
 
@@ -144,10 +145,39 @@ feature {NONE} -- Implementation
 			put (value, l_key)
 		end
 
+	set_string_versions (a_stored_version, a_current_version: POINTER)
+			-- Set `stored_version' with `a_stored_version'.
+			-- Set `current_version' with `a_current_version'.
+		local
+			l_null: POINTER
+			l_imm: IMMUTABLE_STRING_8
+		do
+			if a_stored_version /= l_null then
+				create l_imm.make_from_c (a_stored_version)
+				if l_imm.is_empty then
+					stored_version := Void
+				else
+					stored_version := l_imm
+				end
+			else
+				stored_version := Void
+			end
+			if a_current_version /= l_null then
+				create l_imm.make_from_c (a_current_version)
+				if l_imm.is_empty then
+					current_version := Void
+				else
+					current_version := l_imm
+				end
+			else
+				current_version := Void
+			end
+		end
+
 	set_callback_pointers
 			-- Sets call-back pointers in the run-time
 		once
-			set_mismatch_information_access (Current, $clear_all, $internal_put, $set_versions)
+			set_mismatch_information_access (Current, $clear_all, $internal_put, $set_string_versions)
 		end
 
 feature {NONE} -- Externals
