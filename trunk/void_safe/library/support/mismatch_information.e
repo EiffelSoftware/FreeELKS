@@ -20,7 +20,7 @@ note
 class MISMATCH_INFORMATION
 
 inherit
-	HASH_TABLE [ANY, STRING]
+	HASH_TABLE [detachable ANY, STRING]
 		redefine
 			default_create,
 			out
@@ -29,7 +29,7 @@ inherit
 create {MISMATCH_CORRECTOR}
 	default_create
 
-create {MISMATCH_INFORMATION}
+create {MISMATCH_INFORMATION, SED_RECOVERABLE_DESERIALIZER}
 	make
 
 feature -- Initialization
@@ -49,9 +49,9 @@ feature -- Access
 			r: detachable STRING
 		do
 			check
-				has_class_entry: has (Class_key)
+				has_class_entry: has (type_name_key)
 			end
-			if attached {STRING} item (Class_key) as l_result then
+			if attached {STRING} item (type_name_key) as l_result then
 				r := l_result
 			end
 			check
@@ -68,12 +68,27 @@ feature -- Access
 	current_version: detachable STRING
 			-- Version associated to `class_name' in the current system/
 
+	type_name_key: STRING = "_type_name"
+
 feature -- Status report
 
 	is_version_mismatched: BOOLEAN
 			-- Is the `stored_version' different from the current system version?
 		do
 			Result := stored_version /= current_version
+		end
+
+feature -- Settings
+
+	set_versions (a_stored_version: like stored_version; a_current_version: like current_version)
+			-- Set `stored_version' with `a_stored_version'.
+			-- Set `current_version' with `a_current_version'.
+		do
+			stored_version := a_stored_version
+			current_version := a_current_version
+		ensure
+			stored_version_set: stored_version = a_stored_version
+			current_version_set: current_version = a_current_version
 		end
 
 feature -- Output
@@ -98,7 +113,7 @@ feature -- Output
 				after
 			loop
 				k := key_for_iteration
-				if k /~ Class_key then
+				if k /~ type_name_key then
 					Result.append ("  ")
 					if k = Void then
 						Result.append ("Void")
@@ -120,8 +135,6 @@ feature -- Output
 
 feature {NONE} -- Implementation
 
-	Class_key: STRING = "class"
-
 	internal_put (value: ANY; ckey: POINTER)
 			-- Allows run-time to insert items into table
 		local
@@ -137,26 +150,11 @@ feature {NONE} -- Implementation
 			set_mismatch_information_access (Current, $clear_all, $internal_put, $set_versions)
 		end
 
-	set_versions (a_stored_version: like stored_version; a_current_version: like current_version)
-			-- Set `stored_version' with `a_stored_version'.
-			-- Set `current_version' with `a_current_version'.
-		do
-			stored_version := a_stored_version
-			current_version := a_current_version
-		ensure
-			stored_version_set: stored_version = a_stored_version
-			current_version_set: current_version = a_current_version
-		end
-
 feature {NONE} -- Externals
 
 	set_mismatch_information_access (obj: ANY; init, add, set_vers: POINTER)
 		external
 			"C signature (EIF_OBJECT, EIF_PROCEDURE, EIF_PROCEDURE, EIF_PROCEDURE) use <eif_retrieve.h>"
 		end
-
-invariant
-	singleton: (create {MISMATCH_CORRECTOR}).mismatch_information /= Void implies
-		Current = (create {MISMATCH_CORRECTOR}).mismatch_information
 
 end
