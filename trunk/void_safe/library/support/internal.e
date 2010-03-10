@@ -362,12 +362,26 @@ feature -- Access
 			dynamic_type_nonnegative: Result >= 0
 		end
 
-	storable_version_of_type (a_type_id: INTEGER): detachable STRING
+	storable_version_of_type (a_type_id: INTEGER): detachable IMMUTABLE_STRING_8
 			-- Storable version if any specified.
 		require
 			a_type_id_nonnegative: a_type_id >= 0
+		local
+			l_result, l_null: POINTER
 		do
-			Result := {ISE_RUNTIME}.storable_version_of_type (a_type_id)
+			id_to_storable_version.search (a_type_id)
+			if id_to_storable_version.found then
+				Result := id_to_storable_version.found_item
+			else
+				l_result := {ISE_RUNTIME}.storable_version_of_type (a_type_id)
+				if l_result /= l_null then
+					create Result.make_from_c (l_result)
+					if Result.is_empty then
+						Result := Void
+					end
+				end
+				id_to_storable_version.put (Result, a_type_id)
+			end
 		end
 
 	field (i: INTEGER; object: ANY): detachable ANY
@@ -948,6 +962,14 @@ feature {NONE} -- Cached data
 			create Result.make (100)
 		ensure
 			internal_dynamic_type_string_table_not_void: Result /= Void
+		end
+
+	id_to_storable_version: HASH_TABLE [detachable IMMUTABLE_STRING_8, INTEGER]
+			-- Buffer for `storable_version_of_type' lookups index by type_id.
+		once
+			create Result.make (100)
+		ensure
+			id_to_storable_version_not_void: Result /= Void
 		end
 
 feature {NONE} -- Implementation
