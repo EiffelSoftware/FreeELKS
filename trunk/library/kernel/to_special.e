@@ -9,7 +9,7 @@ note
 class TO_SPECIAL [T]
 
 create
-	make_area
+	make_area, make_filled_area
 
 feature -- Access
 
