@@ -3,8 +3,8 @@ note
 	library: "Free implementation of ELKS library"
 	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
-	date: "$Date: 2008-05-09 08:41:30 +0200 (Fri, 09 May 2008) $"
-	revision: "$Revision: 6399 $"
+	date: "$Date$"
+	revision: "$Revision$"
 
 deferred class
 	STRING_GENERAL
