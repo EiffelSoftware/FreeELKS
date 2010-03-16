@@ -3,8 +3,8 @@ note
 	library: "Free implementation of ELKS library"
 	copyright: "Copyright (c) 2006, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
-	date: "$Date: $"
-	revision: "$Revision: $"
+	date: "$Date$"
+	revision: "$Revision$"
 
 class
 	FILE_COMPARER
