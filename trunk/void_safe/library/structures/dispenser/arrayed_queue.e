@@ -208,7 +208,7 @@ feature -- Status report
 		end
 
 	prunable: BOOLEAN
-			-- May items be removed? (Answer: yes.)
+			-- May items be removed? (Answer: no.)
 		do
 			Result := False
 		end
