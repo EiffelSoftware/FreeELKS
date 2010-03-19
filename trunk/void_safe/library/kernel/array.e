@@ -557,7 +557,7 @@ feature -- Removal
 		end
 
 	keep_head (n: INTEGER)
-			-- Remove all characters except for the first `n';
+			-- Remove all items except for the first `n';
 			-- do nothing if `n' >= `count'.
 		require
 			non_negative_argument: n >= 0
@@ -572,7 +572,7 @@ feature -- Removal
 		end
 
 	keep_tail (n: INTEGER)
-			-- Remove all characters except for the last `n';
+			-- Remove all items except for the last `n';
 			-- do nothing if `n' >= `count'.
 		require
 			non_negative_argument: n >= 0
@@ -591,7 +591,7 @@ feature -- Removal
 		end
 
 	remove_head (n: INTEGER)
-			-- Remove first `n' characters;
+			-- Remove first `n' items;
 			-- if `n' > `count', remove all.
 		require
 			n_non_negative: n >= 0
@@ -608,7 +608,7 @@ feature -- Removal
 		end
 
 	remove_tail (n: INTEGER)
-			-- Remove last `n' characters;
+			-- Remove last `n' items;
 			-- if `n' > `count', remove all.
 		require
 			n_non_negative: n >= 0
