@@ -310,9 +310,10 @@ feature -- Removal
 			area.wipe_out
 		end
 
-feature -- REsizing
+feature -- Resizing
 
 	grow (i: INTEGER)
+			-- <Precursor>
 		do
 			if i > area.capacity then
 				area := area.aliased_resized_area (i)
