@@ -320,6 +320,19 @@ feature -- Resizing
 			end
 		end
 
+	trim
+			-- <Precursor>
+		local
+			n: like count
+		do
+			n := count
+			if n < capacity then
+				area := area.aliased_resized_area (n)
+			end
+		ensure then
+			same_items: linear_representation.is_equal (old linear_representation)
+		end
+
 feature -- Conversion
 
 	linear_representation: ARRAYED_LIST [G]
@@ -434,7 +447,7 @@ feature {NONE} -- Comparison
 
 note
 	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2008, Eiffel Software and others"
+	copyright:	"Copyright (c) 1984-2010, Eiffel Software and others"
 	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			 Eiffel Software

@@ -300,6 +300,39 @@ feature -- Removal
 			count := 0
 		end
 
+feature -- Resizing
+
+	trim
+			-- <Precursor>
+		local
+			i: like lower
+			j: like lower
+			n: like count
+			m: like capacity
+		do
+			n := count
+			m := capacity
+			if n < m then
+					-- There are some unused slots.
+				i := out_index - lower
+				j := in_index - lower
+				if i < j then
+						-- All unused slots are in front of array.
+					area.move_data (i, 0, n)
+					out_index := lower
+				elseif n > 0 then
+						-- Unused slots are in middle of array.
+					area.move_data (i, j, m - i)
+						-- `out_index' will be equal to `in_index'.
+					out_index := j + lower
+				end
+					-- All unused slots for removal are at end of array.
+				area := area.aliased_resized_area (n)
+			end
+		ensure then
+			same_items: linear_representation.is_equal (old linear_representation)
+		end
+
 feature -- Conversion
 
 	linear_representation: ARRAYED_LIST [G]

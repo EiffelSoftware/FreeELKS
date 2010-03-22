@@ -591,6 +591,19 @@ feature -- Resizing
 			capacity_set: capacity >= new_capacity
 		end
 
+	trim
+			-- <Precursor>
+		local
+			n: like count
+		do
+			n := count
+			if n < capacity then
+				area_v2 := area_v2.aliased_resized_area (n)
+			end
+		ensure then
+			same_items: to_array.same_items (old to_array)
+		end
+
 feature -- Duplication
 
 	copy (other: like Current)
@@ -829,7 +842,7 @@ invariant
 
 note
 	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2008, Eiffel Software and others"
+	copyright:	"Copyright (c) 1984-2010, Eiffel Software and others"
 	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			 Eiffel Software
@@ -838,11 +851,5 @@ note
 			 Website http://www.eiffel.com
 			 Customer support http://support.eiffel.com
 		]"
-
-
-
-
-
-
 
 end -- class ARRAYED_LIST
