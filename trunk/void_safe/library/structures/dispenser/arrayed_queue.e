@@ -24,6 +24,13 @@ inherit
 			is_equal, copy, is_empty
 		end
 
+	MISMATCH_CORRECTOR
+		export {NONE}
+			all
+		redefine
+			is_equal, copy, correct_mismatch
+		end
+
 create
 	make
 
@@ -35,11 +42,11 @@ feature -- Initialization
 			non_negative_argument: n >= 0
 		do
 			create area.make_empty (n)
-			in_index := 1
 			out_index := 1
-				-- One entry is kept free
+			count := 0
 		ensure
 			capacity_expected: capacity = n
+			is_empty: is_empty
 		end
 
 feature -- Access
@@ -58,30 +65,32 @@ feature -- Access
 			i, j, nb: INTEGER
 		do
 			i := out_index - lower
-			j := in_index - lower
+			j := count
 			nb := area.capacity
 			if object_comparison then
 				from
 				until
-					i = j or v ~ area.item (i)
+					j = 0 or v ~ area.item (i)
 				loop
 					i := i + 1
 					if i = nb then
 						i := 0
 					end
+					j := j - 1
 				end
 			else
 				from
 				until
-					i = j or v = area.item (i)
+					j = 0 or v = area.item (i)
 				loop
 					i := i + 1
 					if i = nb then
 						i := 0
 					end
+					j := j - 1
 				end
 			end
-			Result := (i /= j)
+			Result := j > 0
 		end
 
 feature -- Comparison
@@ -90,8 +99,10 @@ feature -- Comparison
 		local
 			i, j: INTEGER
 			nb, other_nb: INTEGER
+			c: INTEGER
 		do
-			if count = other.count and object_comparison = other.object_comparison then
+			c := count
+			if c = other.count and object_comparison = other.object_comparison then
 				i := out_index - lower
 				j := other.out_index - lower
 				nb := area.capacity
@@ -100,7 +111,7 @@ feature -- Comparison
 				if object_comparison then
 					from
 					until
-						i = (in_index - lower) or not Result
+						c = 0 or not Result
 					loop
 						Result := area.item (i) ~ other.area.item (j)
 						j := j + 1
@@ -111,11 +122,12 @@ feature -- Comparison
 						if i = nb then
 							i := 0
 						end
+						c := c - 1
 					end
 				else
 					from
 					until
-						i = (in_index - lower) or not Result
+						c = 0 or not Result
 					loop
 						Result := area.item (i) = other.area.item (j)
 						j := j + 1
@@ -126,6 +138,7 @@ feature -- Comparison
 						if i = nb then
 							i := 0
 						end
+						c := c - 1
 					end
 				end
 			end
@@ -134,32 +147,26 @@ feature -- Comparison
 feature -- Measurement
 
 	count: INTEGER
-			-- Number of items.
-		local
-			l_capacity: like capacity
-		do
-			l_capacity := capacity
-			if l_capacity > 0 then
-				Result := (in_index - out_index + l_capacity) \\ l_capacity
-			end
-		end
+			-- Number of items
 
 	capacity: INTEGER
+			-- <Precursor>
 		do
 			Result := area.capacity
 		end
 
 	occurrences (v: G): INTEGER
+			-- <Precursor>
 		local
 			i, j, nb: INTEGER
 		do
 			i := out_index - lower
-			j := in_index - lower
+			j := count
 			nb := area.capacity
 			if object_comparison then
 				from
 				until
-					i = j
+					j = 0
 				loop
 					if area.item (i) ~ v then
 						Result := Result + 1
@@ -168,11 +175,12 @@ feature -- Measurement
 					if i = nb then
 						i := 0
 					end
+					j := j - 1
 				end
 			else
 				from
 				until
-					i = j
+					j = 0
 				loop
 					if area.item (i) = v then
 						Result := Result + 1
@@ -181,6 +189,7 @@ feature -- Measurement
 					if i = nb then
 						i := 0
 					end
+					j := j - 1
 				end
 			end
 		end
@@ -198,7 +207,7 @@ feature -- Status report
 	is_empty, off: BOOLEAN
 			-- Is the structure empty?
 		do
-			Result := (in_index = out_index)
+			Result := count = 0
 		end
 
 	extendible: BOOLEAN
@@ -218,21 +227,17 @@ feature -- Element change
 	extend, put, force (v: G)
 			-- Add `v' as newest item.
 		local
-			l_in_index: like in_index
 			l_capacity: like capacity
+			l_count: like count
 		do
 			l_capacity := capacity
-			if count >= l_capacity - 1 then
+			l_count := count
+			if l_count >= l_capacity then
 				grow (l_capacity + additional_space)
 				l_capacity := capacity
 			end
-			l_in_index := in_index
-			area.force (v, l_in_index - lower)
-			l_in_index := (l_in_index + 1) \\ l_capacity
-			if l_in_index = 0 then
-				l_in_index := l_capacity
-			end
-			in_index := l_in_index
+			area.force (v, in_index - lower)
+			count := l_count + 1
 		end
 
 	replace (v: like item)
@@ -258,18 +263,12 @@ feature -- Removal
 		require else
 			writable: writable
 		local
-			l_out_index: like out_index
 			l_removed_index: like out_index
-			l_capacity: like capacity
 		do
 			l_removed_index := out_index
-			l_capacity := capacity
-			l_out_index := (l_removed_index + 1) \\ l_capacity
-			if l_out_index = 0 then
-				l_out_index := l_capacity
-			end
-			out_index := l_out_index
-			if in_index = l_out_index then
+			out_index := l_removed_index \\ capacity + 1
+			count := count - 1
+			if count = 0 then
 					-- No more elements in the queue, simply reset Current to its default state.
 				wipe_out
 			else
@@ -298,7 +297,7 @@ feature -- Removal
 		do
 			area.wipe_out
 			out_index := 1
-			in_index := 1
+			count := 0
 		end
 
 feature -- Conversion
@@ -311,17 +310,42 @@ feature -- Conversion
 		do
 			from
 				i := out_index - lower
-				j := in_index - lower
+				j := count
 				nb := area.capacity
 				create Result.make (count)
 			until
-				i = j
+				j = 0
 			loop
 				Result.extend (area.item (i))
 				i := i + 1
 				if i = nb then
 					i := 0
 				end
+				j := j - 1
+			end
+		end
+
+feature -- Retrieval
+
+	correct_mismatch
+		do
+			if
+				not mismatch_information.has ("count") and then
+				attached {SPECIAL [G]} mismatch_information.item ("area") as a and then
+				attached {INTEGER} mismatch_information.item ("in_index") as i and then
+				attached {INTEGER} mismatch_information.item ("out_index") as o and then
+				attached {BOOLEAN} mismatch_information.item ("object_comparison") as c
+			then
+				area := a
+				out_index := o
+				if a.capacity = 0 then
+					count := 0
+				else
+					count := (i - o + a.capacity) \\ a.capacity
+				end
+				object_comparison := c
+			else
+				Precursor
 			end
 		end
 
@@ -335,6 +359,14 @@ feature {ARRAYED_QUEUE} -- Implementation
 
 	in_index: INTEGER
 			-- Position for next insertion
+		local
+			c: like capacity
+		do
+			c := capacity
+			if c > 0 then
+				Result := (out_index - lower + count) \\ c + lower
+			end
+		end
 
 	grow (n: INTEGER)
 		local
@@ -342,7 +374,7 @@ feature {ARRAYED_QUEUE} -- Implementation
 			nb: INTEGER
 		do
 			new_capacity := area.capacity.max (n)
-			if in_index >= out_index then
+			if count = 0 or else in_index > out_index then
 					-- Case were queue is not full and data is contiguous from
 					-- oldest item to the newest one.
 				area := area.aliased_resized_area (new_capacity)
@@ -383,12 +415,11 @@ feature {NONE} -- Implementation
 		end
 
 invariant
-	not_full: not full
 	extendible: extendible
 
 note
 	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2008, Eiffel Software and others"
+	copyright:	"Copyright (c) 1984-2010, Eiffel Software and others"
 	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			 Eiffel Software
