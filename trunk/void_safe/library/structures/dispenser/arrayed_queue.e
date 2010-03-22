@@ -345,7 +345,7 @@ feature -- Conversion
 				i := out_index - lower
 				j := count
 				nb := area.capacity
-				create Result.make (count)
+				create Result.make (j)
 			until
 				j = 0
 			loop
@@ -358,7 +358,7 @@ feature -- Conversion
 			end
 		end
 
-feature -- Retrieval
+feature {NONE} -- Retrieval
 
 	correct_mismatch
 		do
