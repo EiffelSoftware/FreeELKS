@@ -398,6 +398,8 @@ feature {ARRAYED_QUEUE} -- Implementation
 			c := capacity
 			if c > 0 then
 				Result := (out_index - lower + count) \\ c + lower
+			else
+				Result := out_index
 			end
 		end
 
