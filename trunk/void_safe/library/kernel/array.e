@@ -699,6 +699,19 @@ feature -- Resizing
 			no_high_lost: upper = max_index or else upper = old upper
 		end
 
+	trim
+			-- <Precursor>
+		local
+			n: like count
+		do
+			n := count
+			if n < capacity then
+				area := area.aliased_resized_area (n)
+			end
+		ensure then
+			same_items: same_items (old twin)
+		end
+
 feature -- Conversion
 
 	to_c: ANY
@@ -814,7 +827,7 @@ invariant
 --				(index_set.upper = lower + count - 1))
 
 note
-	copyright: "Copyright (c) 1984-2009, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2010, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
