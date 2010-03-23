@@ -34,7 +34,7 @@ class HEAP_PRIORITY_QUEUE [G -> COMPARABLE] inherit
 			{HEAP_PRIORITY_QUEUE}
 				put_i_th, area, i_th, valid_index, upper, lower, subarray
 		redefine
-			full, prunable, prune,
+			full, prunable, prune, trim,
 			put, extendible, wipe_out,
 			linear_representation,
 			index_set, is_equal, extend
@@ -252,6 +252,15 @@ feature -- Removal
 			discard_items
 		end
 
+feature -- Resizing
+
+	trim
+			-- <Precursor>
+		do
+			Precursor
+			upper := lower + count - 1
+		end
+
 feature -- Conversion
 
 	linear_representation: ARRAYED_LIST [G]
@@ -340,7 +349,7 @@ invariant
 
 note
 	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2008, Eiffel Software and others"
+	copyright:	"Copyright (c) 1984-2010, Eiffel Software and others"
 	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			 Eiffel Software
