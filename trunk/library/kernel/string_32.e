@@ -4,7 +4,7 @@ note
 		in a contiguous range.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2010, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date: $"
 	revision: "$Revision: $"
@@ -1370,6 +1370,19 @@ feature -- Resizing
 			if newsize > capacity then
 				resize (newsize)
 			end
+		end
+
+	trim
+			-- <Precursor>
+		local
+			n: like count
+		do
+			n := count
+			if n < capacity then
+				area := area.resized_area (n)
+			end
+		ensure then
+			same_string: same_string (old twin)
 		end
 
 feature -- Conversion

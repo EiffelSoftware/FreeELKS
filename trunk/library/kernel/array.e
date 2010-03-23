@@ -6,7 +6,7 @@ note
 		]"
 
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2010, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -619,6 +619,19 @@ feature -- Resizing
 		ensure
 			no_low_lost: lower = min_index or else lower = old lower
 			no_high_lost: upper = max_index or else upper = old upper
+		end
+
+	trim
+			-- <Precursor>
+		local
+			n: like count
+		do
+			n := count
+			if n < capacity then
+				area := area.resized_area (n)
+			end
+		ensure then
+			same_items: linear_representation.is_equal (old linear_representation)
 		end
 
 feature -- Conversion
