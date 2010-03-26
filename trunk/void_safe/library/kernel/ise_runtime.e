@@ -113,9 +113,17 @@ feature -- Internal C routines
 	frozen is_field_transient_of_type (i: INTEGER; a_type_id: INTEGER): BOOLEAN
 			-- Is `i-th' field (zero based index) a transient field?
 		external
-			"C inline use %"eif_struct.h%""
+			"C inline use %"eif_eiffel.h%""
 		alias
 			"return EIF_IS_TRANSIENT_ATTRIBUTE(System(To_dtype($a_type_id)), $i);"
+		end
+
+	frozen is_field_expanded_of_type (i: INTEGER; a_type_id: INTEGER): BOOLEAN
+			-- Is `i'-th field of `object' an expanded attribute?
+		external
+			"C inline use %"eif_eiffel.h%""
+		alias
+			"return ((System(To_dtype($a_type_id)).cn_types[$i] & SK_HEAD) == SK_EXP);"
 		end
 
 	persistent_field_count_of_type (a_type_id: INTEGER): INTEGER
