@@ -6,13 +6,6 @@ note
 	date: "$Date$"
 	revision: "$Revision$"
 
---********************************************************************************--
---	Open questions:
---
---	feature 'traverse', outer loop: variant (termination?) and invariant
---	inner loop: invariant
---********************************************************************************--
-
 deferred class
 	OBJECT_GRAPH_TRAVERSABLE
 
