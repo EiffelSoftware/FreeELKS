@@ -27,7 +27,7 @@ class ARRAYED_SET [G] inherit
 			put as al_put,
 			prune as al_prune
 		export
-			{ANY} valid_cursor_index, readable, writable, to_array
+			{ANY} valid_cursor_index, readable, writable, to_array, new_cursor
 			{ARRAYED_SET} go_to, area, area_v2, cursor, full, i_th, lower, upper,
 				valid_cursor
 			{NONE} all
