@@ -15,7 +15,7 @@ inherit
 			target_index as iteration_position
 		redefine
 			item,
-			off,
+			after,
 			forth,
 			target
 		end
@@ -36,14 +36,14 @@ feature -- Access
 		require
 			is_valid: is_valid
 			is_set: is_set
-			valid_position: not off
+			valid_position: not after
 		do
 			Result := target.keys [iteration_position]
 		end
 
 feature -- Status report
 
-	off: BOOLEAN
+	after: BOOLEAN
 			-- <Precursor>
 		local
 			l_pos: like iteration_position

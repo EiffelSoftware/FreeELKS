@@ -14,7 +14,7 @@ inherit
 		redefine
 			start,
 			item,
-			off,
+			after,
 			forth,
 			target,
 			active
@@ -39,7 +39,7 @@ feature -- Access
 
 feature -- Status report
 
-	off: BOOLEAN
+	after: BOOLEAN
 			-- <Precursor>
 		do
 			Result := active = Void
