@@ -181,7 +181,7 @@ feature -- Cursor movement
 			if i > 0 then
 				from
 				until
-					(counter = i) or else off
+					(counter = i) or else after
 				loop
 					forth
 					counter := counter + 1
