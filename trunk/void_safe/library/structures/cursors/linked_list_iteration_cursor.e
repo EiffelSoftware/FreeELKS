@@ -14,7 +14,7 @@ inherit
 		redefine
 			start,
 			item,
-			off,
+			after,
 			forth,
 			target
 		end
@@ -42,7 +42,7 @@ feature -- Access
 
 feature -- Status report
 
-	off: BOOLEAN
+	after: BOOLEAN
 			-- <Precursor>
 		do
 			if is_reversed then

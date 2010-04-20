@@ -35,7 +35,7 @@ feature -- Access
 		require
 			is_valid: is_valid
 			is_set: is_set
-			valid_position: not off
+			valid_position: not after
 		deferred
 		end
 
@@ -77,20 +77,9 @@ feature -- Status report
 	is_set: BOOLEAN
 			-- Are changes to traversal policy prohibited? 			
 
-	off: BOOLEAN
-			-- Is cursor currently off, indicating `start' should be called?
-		deferred
-		end
-
-	frozen after: BOOLEAN
+	after: BOOLEAN
 			-- Is there no valid cursor position to the right of cursor?
-			--
-			--| Retained for compatibility with the 6.5 compiler.
-			--| Uncomment obsolete clause when compiler has switched to use `off'
---		obsolete
---			"Use `off' instead."
-		do
-			Result := off
+		deferred
 		end
 
 feature -- Status setting
@@ -122,7 +111,7 @@ feature -- Cursor movement
 		require
 			is_valid: is_valid
 			is_set: is_set
-			valid_position: not off
+			valid_position: not after
 		do
 			cursor_index := cursor_index + 1
 		ensure

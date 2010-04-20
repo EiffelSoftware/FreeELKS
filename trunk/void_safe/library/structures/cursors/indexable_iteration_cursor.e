@@ -144,7 +144,7 @@ feature -- Cursor movement
 
 feature -- Status report
 
-	off: BOOLEAN
+	after: BOOLEAN
 			-- <Precursor>
 		do
 			Result := not target.valid_index (target_index)
