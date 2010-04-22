@@ -453,14 +453,8 @@ feature -- Status report
 
 	valid_iteration_index (i: INTEGER): BOOLEAN
 			-- <Precursor>
-		local
-			cursor_position: INTEGER
 		do
-			cursor_position := i
-			Result := (is_off_position (cursor_position)) or else
-						((cursor_position >= 0) and
-						(cursor_position <= keys.count) and then
-						truly_occupied (cursor_position))
+			Result := (is_off_position (i)) or else ((i >= 0) and (i <= keys.count) and then truly_occupied (i))
 		end
 
 feature -- Cursor movement
