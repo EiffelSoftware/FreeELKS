@@ -26,10 +26,8 @@ feature{NONE} -- Initialization
 		ensure
 			leading_separators_set: leading_separators ~ " "
 			trailing_separators_set: trailing_separators ~ " "
-			leading_separators_not_acceptable:
-				not leading_separators_acceptable
-			trailing_separatorsnot_acceptable:
-				not trailing_separators_acceptable
+			leading_separators_not_acceptable: not leading_separators_acceptable
+			trailing_separatorsnot_acceptable: not trailing_separators_acceptable
 		end
 
 feature	-- State machine setting
