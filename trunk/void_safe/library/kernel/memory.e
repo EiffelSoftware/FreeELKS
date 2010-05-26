@@ -482,11 +482,9 @@ feature {NONE} -- Implementation
 	special_any_dynamic_type: INTEGER
 			-- Dynamic type ID of an instance of `SPECIAL [ANY]'
 		local
-			a: ARRAY [ANY]
 			spec: SPECIAL [ANY]
 		once
-			create a.make (0, 0)
-			spec := a.area
+			create spec.make_empty (0)
 			Result := internal_.dynamic_type (spec)
 		end
 
