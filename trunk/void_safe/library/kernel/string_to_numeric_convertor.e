@@ -35,7 +35,7 @@ feature -- Status reporting
 
 	conversion_type_valid (type: INTEGER): BOOLEAN
 			-- Is `type' to which string will be converted valid?
-			-- See `NUMBER_INFORMATION' for more information.
+			-- See `NUMERIC_INFORMATION' for more information.
 		deferred
 		end
 
@@ -56,7 +56,7 @@ feature -- Status reporting
 
 	conversion_type: INTEGER
 		-- Type to which a string will be converted
-		-- See `NUMBER_INFORMATION' for more information.
+		-- See `NUMERIC_INFORMATION' for more information.
 
 feature -- Reset
 
@@ -64,7 +64,7 @@ feature -- Reset
 			-- Reset this convertor to start a new parse session
 			-- and get ready for parsing integer of `type'.
 			-- Always call this feature before every new parse session.
-			-- See `NUMBER_INFORMATION' for more information about `type'.			
+			-- See `NUMERIC_INFORMATION' for more information about `type'.			
 		require
 			type_valid: conversion_type_valid (type)
 		deferred
@@ -125,7 +125,7 @@ feature -- Parse
 			-- `Reset' convertor to start a new parse session and
 			-- parse `s' to see if it is a number of `type'.
 			-- Make result available in `overflowed', `underflowed' and `parse_successful'.
-			-- See `NUMBER_INFORMATION' for more information about `type'.
+			-- See `NUMERIC_INFORMATION' for more information about `type'.
 		require
 			s_not_void: s /= Void
 			s_is_valid_as_string_8: s.is_valid_as_string_8
