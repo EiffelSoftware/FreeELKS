@@ -231,18 +231,24 @@ feature -- Access
 			j: INTEGER
 			old_iteration_position: INTEGER
 		do
-			old_iteration_position := iteration_position
-			from
-				create Result.make (1, count)
-				start
-			until
-				off
-			loop
-				j := j + 1
-				Result.put (key_for_iteration, j)
-				forth
+			if is_empty then
+				create Result.make (1, 0)
+			else
+				old_iteration_position := iteration_position
+				from
+					start
+					create Result.make_filled (key_for_iteration, 1, count)
+					j := 1
+					forth
+				until
+					off
+				loop
+					j := j + 1
+					Result.put (key_for_iteration, j)
+					forth
+				end
+				iteration_position := old_iteration_position
 			end
-			iteration_position := old_iteration_position
 		ensure
 			good_count: Result.count = count
  		end
