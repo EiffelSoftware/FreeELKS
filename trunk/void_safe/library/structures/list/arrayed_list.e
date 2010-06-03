@@ -376,10 +376,6 @@ feature -- Cursor movement
 			-- Move cursor to last position if any.
 		do
 			index := count
-		--| Temporary patch. Start moves the cursor
-		--| to the first element. If the list is empty
-		--| the cursor is before. The parents (CHAIN, LIST...)
-		--| and decendants (ARRAYED_TREE...) need to be revised.
 		ensure then
 			before_when_empty: is_empty implies before
 		end
