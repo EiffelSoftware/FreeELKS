@@ -55,7 +55,7 @@ deferred class CHAIN [G] inherit
 		export
 			{NONE}
 				sequential_index_of, sequential_has,
-				sequence_put
+				sequence_put, sequential_occurrences
 		redefine
 			off, fill, append
 		end
