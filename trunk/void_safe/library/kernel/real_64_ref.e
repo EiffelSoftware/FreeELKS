@@ -326,7 +326,10 @@ feature {NONE} -- Implementation
 	abs_ref: like Current
 			-- Absolute value
 		do
-			if item >= 0.0 then
+			if item = 0.0 then
+					-- Special case when `item' is `-0'.
+				Result := zero
+			elseif item > 0.0 then
 				Result := Current
 			else
 				Result := -Current
