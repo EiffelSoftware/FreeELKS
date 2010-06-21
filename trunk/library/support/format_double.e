@@ -256,14 +256,14 @@ feature {NONE} -- Implementation
 				from
 					i := Result.count
 				until
-					i = 1 or else Result.item (i) /= '0'
+					i <= 1 or else Result.item (i) /= '0'
 				loop
 					Result.remove (i)
 					i := i - 1
 				end
 			end
 		ensure
-			Result.count = decimals
+			valid_result: trailing_zeros_shown implies Result.count = decimals
 		end
 
 	separate_fraction (s: STRING): STRING
