@@ -433,16 +433,14 @@ feature {NONE} -- Comparison
 			-- Otherwise False
 		do
 			if a /= Void and b /= Void then
-				Result := a.is_less (b)
+				Result := a < b
 			elseif a = Void and b /= Void then
 				Result := True
 			else
 				Result := False
 			end
 		ensure
-			definition: (a /= Void and b /= Void) implies Result = (a < b)
-			left_void_definition: (a = Void and b /= Void) implies Result
-			right_void_definition: (a /= Void and b = Void) implies not Result
+			asymmetric: Result implies not safe_less_than (b, a)
 		end
 
 note
