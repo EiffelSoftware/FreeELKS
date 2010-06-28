@@ -359,13 +359,13 @@ feature -- Comparison
 feature -- Status report
 
 	full: BOOLEAN = False
-			-- Is structure filled to capacity? (Answer: no.)
+			-- Is structure filled to capacity?
 
 	extendible: BOOLEAN = False
-			-- May new items be added? (Answer: yes.)
+			-- May new items be added?
 
 	prunable: BOOLEAN
-			-- May items be removed? (Answer: yes.)
+			-- May items be removed?
 		do
 			Result := True
 		end
