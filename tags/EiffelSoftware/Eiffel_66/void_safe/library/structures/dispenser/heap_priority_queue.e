@@ -440,9 +440,7 @@ feature {NONE} -- Comparison
 				Result := False
 			end
 		ensure
-			definition: (a /= Void and b /= Void) implies Result = (a < b)
-			left_void_definition: (a = Void and b /= Void) implies Result
-			right_void_definition: (a /= Void and b = Void) implies not Result
+			asymmetric: Result implies not safe_less_than (b, a)
 		end
 
 note
