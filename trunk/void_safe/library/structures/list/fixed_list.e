@@ -16,7 +16,7 @@ inherit
 		undefine
 			resizable
 		redefine
-			extendible
+			extendible, make, make_filled, capacity
 		end
 
 	FIXED [G]
@@ -28,7 +28,26 @@ inherit
 create
 	make, make_filled
 
+feature -- Initialization
+
+	make (n: INTEGER_32)
+			-- <Precursor>
+		do
+			Precursor (n)
+			capacity := n
+		end
+
+	make_filled (n: INTEGER_32)
+			-- <Precursor>
+		do
+			Precursor (n)
+			capacity := n
+		end
+
 feature -- Status report
+
+	capacity: INTEGER
+			-- Requested capacity upon creation.
 
 	extendible: BOOLEAN
 			-- May new items be added?
