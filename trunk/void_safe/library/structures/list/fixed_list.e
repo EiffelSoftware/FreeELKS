@@ -33,15 +33,15 @@ feature -- Initialization
 	make (n: INTEGER_32)
 			-- <Precursor>
 		do
-			Precursor (n)
 			capacity := n
+			Precursor (n)
 		end
 
 	make_filled (n: INTEGER_32)
 			-- <Precursor>
 		do
-			Precursor (n)
 			capacity := n
+			Precursor (n)
 		end
 
 feature -- Status report

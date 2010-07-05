@@ -480,7 +480,7 @@ feature -- Element change
 			i: INTEGER
 		do
 			i := count + 1
-			if i > capacity then
+			if i > area_v2.capacity then
 				area_v2 := area_v2.aliased_resized_area (i + additional_space)
 			end
 			area_v2.extend (v)
@@ -536,7 +536,7 @@ feature -- Element change
 			if not other.is_empty then
 				l_old_count := count
 				l_new_count := l_old_count + other.count
-				if l_new_count > capacity then
+				if l_new_count > area_v2.capacity then
 					area_v2 := area_v2.aliased_resized_area (l_new_count)
 				end
 				area_v2.insert_data (other.area_v2, 0, index, other.count)
@@ -555,7 +555,7 @@ feature -- Element change
 				if c > 0 then
 					old_count := count
 					new_count := old_count + al.count
-					if new_count > capacity then
+					if new_count > area_v2.capacity then
 						area_v2 := area_v2.aliased_resized_area (new_count)
 					end
 					area_v2.copy_data (al.area_v2, 0, old_count, c)
@@ -570,7 +570,7 @@ feature -- Resizing
 	grow (i: INTEGER)
 			-- Change the capacity to at least `i'.
 		do
-			if i > capacity then
+			if i > area_v2.capacity then
 				area_v2 := area_v2.aliased_resized_area (i)
 			end
 		end
@@ -593,7 +593,7 @@ feature -- Resizing
 			n: like count
 		do
 			n := count
-			if n < capacity then
+			if n < area_v2.capacity then
 				area_v2 := area_v2.aliased_resized_area (n)
 			end
 		ensure then
