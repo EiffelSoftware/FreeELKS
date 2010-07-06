@@ -33,6 +33,7 @@ class ARRAY [G] inherit
 		end
 
 create
+	make_empty,
 	make,
 	make_filled,
 	make_from_array,
@@ -45,6 +46,18 @@ convert
 	make_from_cil ({NATIVE_ARRAY [G]})
 
 feature -- Initialization
+
+	make_empty (min_index: INTEGER)
+			-- Allocate empty array starting at `min_index'.
+		do
+			lower := min_index
+			upper := min_index - 1
+			make_empty_area (0)
+		ensure
+			lower_set: lower = min_index
+			upper_set: upper = min_index - 1
+			items_set: all_default
+		end
 
 	make_filled (a_default_value: G; min_index, max_index: INTEGER)
 			-- Allocate array; set index interval to
@@ -71,6 +84,8 @@ feature -- Initialization
 			-- Allocate array; set index interval to
 			-- `min_index' .. `max_index'; set all values to default.
 			-- (Make array empty if `min_index' = `max_index' + 1).
+		obsolete
+			" `make' is not void-safe statically. Use `make_empty' or `make_filled' instead. [07-2010]"
 		require
 			valid_bounds: min_index <= max_index + 1
 			has_default: min_index <= max_index implies ({G}).has_default
@@ -782,10 +797,13 @@ feature -- Duplication
 			valid_end_pos: end_pos <= upper
 			valid_bounds: (start_pos <= end_pos) or (start_pos = end_pos + 1)
 		do
-			create Result.make (start_pos, end_pos)
 			if start_pos <= end_pos then
+				create Result.make_filled (item (start_pos), start_pos, end_pos)
 					-- Only copy elements if needed.
 				Result.subcopy (Current, start_pos, end_pos, start_pos)
+			else
+					-- make empty
+				create Result.make_empty (start_pos)
 			end
 		ensure
 			lower: Result.lower = start_pos
