@@ -116,8 +116,8 @@ feature -- Removal
 		require else
 			not_empty: count /= 0
 		do
-			count := count - 1
 			fl.area.put_default (count)
+			count := count - 1
 		end
 
 	wipe_out
@@ -152,7 +152,7 @@ feature -- Conversion
 				create Result.make (count)
 				i := count
 			until
-				i < 0
+				i = 0
 			loop
 				Result.extend (fl.item (i))
 				i := i - 1
