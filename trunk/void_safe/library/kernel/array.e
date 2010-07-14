@@ -47,15 +47,15 @@ convert
 
 feature -- Initialization
 
-	make_empty (min_index: INTEGER)
-			-- Allocate empty array starting at `min_index'.
+	make_empty
+			-- Allocate empty array starting at `1'.
 		do
-			lower := min_index
-			upper := min_index - 1
+			lower := 1
+			upper := 0
 			make_empty_area (0)
 		ensure
-			lower_set: lower = min_index
-			upper_set: upper = min_index - 1
+			lower_set: lower = 1
+			upper_set: upper = 0
 			items_set: all_default
 		end
 
@@ -727,6 +727,20 @@ feature -- Resizing
 			same_items: same_items (old twin)
 		end
 
+	rebase (a_lower: like lower)
+			-- Without changing the actual content of `Current' we set `lower' to `a_lower'
+			-- and `upper' accordingly to `a_lower + count - 1'.
+		local
+			l_old_lower: like lower
+		do
+			l_old_lower := lower
+			lower := a_lower
+			upper := a_lower + (upper - l_old_lower)
+		ensure
+			lower_set: lower = a_lower
+			upper_set: upper = a_lower + old count - 1
+		end
+
 feature -- Conversion
 
 	to_c: ANY
@@ -803,7 +817,8 @@ feature -- Duplication
 				Result.subcopy (Current, start_pos, end_pos, start_pos)
 			else
 					-- make empty
-				create Result.make_empty (start_pos)
+				create Result.make_empty
+				Result.rebase (start_pos)
 			end
 		ensure
 			lower: Result.lower = start_pos

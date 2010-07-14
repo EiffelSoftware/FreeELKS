@@ -31,13 +31,15 @@ feature -- Initialization
 	make (i: INTEGER)
 			-- Create an empty tree.
 			-- `i' is an estimate of the number of nodes.
+		local
+			l_default: G
 		do
 			last := 1
 			active := 1
 			above := True
-			create item_table.make (1, i + 1)
-			create next_sibling_table.make (1, i + 1)
-			create first_child_table.make (1, i + 1)
+			create item_table.make_filled (l_default, 1, i + 1)
+			create next_sibling_table.make_filled (0, 1, i + 1)
+			create first_child_table.make_filled (0, 1, i + 1)
 		ensure
 			is_above: above
 			is_empty: is_empty
