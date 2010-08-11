@@ -27,6 +27,8 @@ feature {NONE} -- Initialization
 
 	make (n: INTEGER)
 			-- Create a special object for `n' entries.
+		obsolete
+			"{SPECIAL}.make is not void-safe and is being removed from the void-safe version. Use `make_filled' instead. [08-2010]"
 		require
 			non_negative_argument: n >= 0
 		external

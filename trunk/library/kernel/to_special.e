@@ -20,6 +20,8 @@ feature {NONE} -- Initialization
 
 	make_area (n: INTEGER)
 			-- Creates a special object for `n' entries.
+		obsolete
+			"{TO_SPECIAL}.make_area is not void-safe and is being removed from the void-safe version. Use `make_filled_area' instead. [08-2010]"
 		require
 			non_negative_argument: n >= 0
 		do
