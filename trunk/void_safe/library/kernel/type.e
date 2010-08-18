@@ -97,6 +97,12 @@ feature -- Status report
 			"built_in"
 		end
 
+	is_expanded: BOOLEAN
+			-- Is current type an expanded type?
+		external
+			"built_in"
+		end
+
 feature -- Comparison
 
 	is_equal (other: like Current): BOOLEAN
