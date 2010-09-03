@@ -122,7 +122,7 @@ feature -- Conversion
 			adapted: Result ~ g
 		end
 
-	attempt alias "#?" (obj: detachable ANY): detachable G
+	attempt alias "#?" (obj: detachable separate ANY): detachable G
 			-- Result of assignment attempt of `obj' to entity of type G
 		do
 			if attached {G} obj as l_g then
