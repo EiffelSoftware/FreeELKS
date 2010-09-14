@@ -281,7 +281,7 @@ feature -- Status report
 			end
 		ensure
 			definition: Result = (count = 0 or else
-				((not attached item (upper) as i or else i = i.default) and
+				((not attached item (upper) as i or else i = ({G}).default) and
 				subarray (lower, upper - 1).all_default))
 		end
 
