@@ -28,6 +28,7 @@ feature -- Initialization
 			v_not_void: v /= Void
 			not_expanded: not ({G}).is_expanded
 		do
+			clear
 			internal_item := create_weak_reference ($v)
 		ensure
 			item_set: item = v
