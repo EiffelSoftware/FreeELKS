@@ -645,7 +645,7 @@ feature -- Resizing
 			-- Change the capacity to at least `i'.
 		do
 			if i > capacity then
-				conservative_resize (lower, upper + i - capacity)
+				conservative_resize_with_default (({G}).default, lower, upper + i - capacity)
 			end
 		end
 
@@ -653,6 +653,8 @@ feature -- Resizing
 			-- Rearrange array so that it can accommodate
 			-- indices down to `min_index' and up to `max_index'.
 			-- Do not lose any previously entered item.
+		obsolete
+			" `conservative_resize' is not void-safe statically. Use `conservative_resize_with_default' instead. [07-2010]"
 		require
 			good_indices: min_index <= max_index
 			has_default: ({G}).has_default
@@ -703,7 +705,7 @@ feature -- Resizing
 			-- indices down to `min_index' and up to `max_index'.
 			-- Do not lose any previously entered item.
 		obsolete
-			"Use `conservative_resize' instead as future versions will implement `resize' as specified in ELKS."
+			"Use `conservative_resize_with_default' instead as future versions will implement `resize' as specified in ELKS."
 		require
 			good_indices: min_index <= max_index
 			has_default: ({G}).has_default
