@@ -575,10 +575,12 @@ feature -- Removal
 
 	wipe_out
 			-- Remove all items.
+		local
+			l_default: G
 		do
-			item_table.conservative_resize (1, Block_threshold + 1)
-			next_sibling_table.conservative_resize (1, Block_threshold + 1)
-			first_child_table.conservative_resize (1, Block_threshold + 1)
+			item_table.conservative_resize_with_default (l_default, 1, Block_threshold + 1)
+			next_sibling_table.conservative_resize_with_default (0, 1, Block_threshold + 1)
+			first_child_table.conservative_resize_with_default (0, 1, Block_threshold + 1)
 			item_table.clear_all
 			next_sibling_table.clear_all
 			first_child_table.clear_all
