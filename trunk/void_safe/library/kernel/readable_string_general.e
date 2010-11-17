@@ -199,7 +199,7 @@ feature -- Conversion
 
 	as_string_8: STRING_8
 			-- Convert `Current' as a STRING_8. If a code of `Current' is
-			-- node a valid code for a STRING_8 it is replaced with the null
+			-- not a valid code for a STRING_8 it is replaced with the null
 			-- character.
 		local
 			i, nb: INTEGER
