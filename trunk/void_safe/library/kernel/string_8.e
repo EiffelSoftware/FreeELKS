@@ -23,12 +23,14 @@ inherit
 	STRING_GENERAL
 		rename
 			append as append_string_general,
+			prepend as prepend_string_general,
 			same_string as same_string_general,
 			plus as plus_string_general
 		undefine
 			copy, is_equal, out
 		redefine
-			append_string_general
+			append_string_general,
+			prepend_string_general
 		end
 
 	INDEXABLE [CHARACTER_8, INTEGER]
@@ -579,6 +581,16 @@ feature -- Element change
 			internal_hash_code := 0
 		ensure
 			new_count: count = old count + 1
+		end
+
+	prepend_string_general (s: READABLE_STRING_GENERAL)
+			-- Prepend a copy of `s' at front.
+		do
+			if attached {READABLE_STRING_8} s as l_s8 then
+				prepend (l_s8)
+			else
+				Precursor {STRING_GENERAL} (s)
+			end
 		end
 
 	prepend (s: READABLE_STRING_8)
