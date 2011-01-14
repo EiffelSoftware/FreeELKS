@@ -24,12 +24,14 @@ inherit
 	STRING_GENERAL
 		rename
 			append as append_string_general,
+			prepend as prepend_string_general,
 			same_string as same_string_general,
 			plus as plus_string_general
 		undefine
 			copy, is_equal, out
 		redefine
-			append_string_general
+			append_string_general,
+			prepend_string_general
 		end
 
 	INDEXABLE [CHARACTER_32, INTEGER]
@@ -568,6 +570,16 @@ feature -- Element change
 		do
 			area.put (v.to_character_32, i - 1)
 			internal_hash_code := 0
+		end
+
+	prepend_string_general (s: READABLE_STRING_GENERAL)
+			-- Add `s' at front.
+		do
+			if attached {READABLE_STRING_32} s as l_s32 then
+				prepend (l_s32)
+			else
+				Precursor {STRING_GENERAL} (s)
+			end
 		end
 
 	precede, prepend_character (c: CHARACTER_32)

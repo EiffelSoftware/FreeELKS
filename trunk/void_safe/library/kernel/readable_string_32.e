@@ -237,7 +237,7 @@ feature -- Access
 			-- forall x : Result..last, item (x) /= c
 		end
 
-	substring_index_in_bounds (other: READABLE_STRING_32; start_pos, end_pos: INTEGER): INTEGER
+	substring_index_in_bounds (other: READABLE_STRING_GENERAL; start_pos, end_pos: INTEGER): INTEGER
 			-- Position of first occurrence of `other' at or after `start_pos'
 			-- and to or before `end_pos';
 			-- 0 if none.
@@ -283,7 +283,7 @@ feature -- Access
 			recurse: count > 1 implies Result.substring (2, count) ~ substring (2, count).string
 		end
 
-	substring_index (other: READABLE_STRING_32; start_index: INTEGER): INTEGER
+	substring_index (other: READABLE_STRING_GENERAL; start_index: INTEGER): INTEGER
 			-- Index of first occurrence of other at or after start_index;
 			-- 0 if none
 		require
@@ -303,7 +303,7 @@ feature -- Access
 				not substring (start_index, Result + other.count - 2).has_substring (other)
 		end
 
-	fuzzy_index (other: READABLE_STRING_32; start: INTEGER; fuzz: INTEGER): INTEGER
+	fuzzy_index (other: READABLE_STRING_GENERAL; start: INTEGER; fuzz: INTEGER): INTEGER
 			-- Position of first occurrence of `other' at or after `start'
 			-- with 0..`fuzz' mismatches between the string and `other'.
 			-- 0 if there are no fuzzy matches
@@ -520,10 +520,11 @@ feature -- Status report
 				(Result = substring (2, count).has (c))
 		end
 
-	has_substring (other: READABLE_STRING_32): BOOLEAN
+	has_substring (other: READABLE_STRING_GENERAL): BOOLEAN
 			-- Does `Current' contain `other'?
 		require
 			other_not_void: other /= Void
+			other_valid_string_8: other.is_valid_as_string_8
 		do
 			if other = Current then
 				Result := True
