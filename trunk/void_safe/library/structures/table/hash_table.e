@@ -704,6 +704,7 @@ feature -- Element change
 			l_new_pos, l_new_index_pos: like position
 		do
 			search_for_insertion (key)
+			check not_found: not_found end
 			if soon_full then
 				add_space
 				search_for_insertion (key)
@@ -1352,38 +1353,54 @@ feature {NONE} -- Implementation
 		local
 			l_default_key: detachable K
 			hash_value, increment, l_pos, l_item_pos, l_capacity: INTEGER
-			l_indexes_map: like indexes_map
+			l_first_deleted_position: INTEGER
+			stop: INTEGER
 			l_keys: like keys
+			l_indexes: like indexes_map
+			l_deleted_marks: like deleted_marks
 		do
+			l_first_deleted_position := ht_impossible_position
 			if key = l_default_key or key = Void then
 				check
 						-- Because of the precondition
 					not has_default
 				end
 				item_position := capacity
-				deleted_item_position := ht_impossible_position
 			else
 				from
 					l_keys := keys
-					l_indexes_map := indexes_map
-					hash_value := key.hash_code
+					l_indexes := indexes_map
+					l_deleted_marks := deleted_marks
 					l_capacity := capacity
+					stop := l_capacity
+					hash_value := key.hash_code
 					increment := 1 + hash_value \\ (l_capacity - 1)
-					l_item_pos := (hash_value \\ l_capacity)
-					l_pos := l_indexes_map.item (l_item_pos)
+					l_item_pos := (hash_value \\ l_capacity) - increment
+					control := not_found_constant
 				until
-					l_pos < 0
+					stop = 0
 				loop
+						-- Go to next increment.
 					l_item_pos := (l_item_pos + increment) \\ l_capacity
-					l_pos := l_indexes_map.item (l_item_pos)
+					l_pos := l_indexes [l_item_pos]
+					if l_pos >= 0 then
+							-- Because of precondition, we are sure there is no key corresponding to `key'.
+					elseif l_pos = ht_impossible_position then
+						stop := 1
+					elseif l_first_deleted_position = ht_impossible_position then
+						l_pos := -l_pos + ht_deleted_position
+						check l_pos_valid: l_pos < l_deleted_marks.count end
+						if not l_deleted_marks [l_pos] then
+							stop := 1
+						else
+							l_first_deleted_position := l_item_pos
+						end
+					end
+					stop := stop - 1
 				end
 				item_position := l_item_pos
-				if l_pos < ht_impossible_position then
-					deleted_item_position := l_item_pos
-				else
-					deleted_item_position := ht_impossible_position
-				end
 			end
+			deleted_item_position := l_first_deleted_position
 		ensure
 			deleted_item_at_deleted_position:
 				(deleted_item_position /= ht_impossible_position) implies (deleted (deleted_item_position))
