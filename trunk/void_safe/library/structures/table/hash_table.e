@@ -704,7 +704,6 @@ feature -- Element change
 			l_new_pos, l_new_index_pos: like position
 		do
 			search_for_insertion (key)
-			check not_found: not_found end
 			if soon_full then
 				add_space
 				search_for_insertion (key)
@@ -1376,7 +1375,6 @@ feature {NONE} -- Implementation
 					hash_value := key.hash_code
 					increment := 1 + hash_value \\ (l_capacity - 1)
 					l_item_pos := (hash_value \\ l_capacity) - increment
-					control := not_found_constant
 				until
 					stop = 0
 				loop
