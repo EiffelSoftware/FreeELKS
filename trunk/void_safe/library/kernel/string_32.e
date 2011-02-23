@@ -472,21 +472,24 @@ feature -- Element change
 
 	left_adjust
 			-- Remove leading whitespace.
-		require
-			is_valid_as_string_8: is_valid_as_string_8
 		local
 			nb, nb_space: INTEGER
 			l_area: like area
+			l_done: BOOLEAN
+			c: CHARACTER_32
 		do
 				-- Compute number of spaces at the left of current string.
 			from
 				nb := count - 1
 				l_area := area
 			until
-				nb_space > nb or else not l_area.item (nb_space).is_space
+				nb_space > nb or l_done
 			loop
+				c := l_area.item (nb_space)
+				l_done := not (c.is_character_8 and then c.is_space)
 				nb_space := nb_space + 1
 			end
+			nb_space := nb_space - 1
 
 			if nb_space > 0 then
 					-- Set new count value.
@@ -505,12 +508,11 @@ feature -- Element change
 
 	right_adjust
 			-- Remove trailing whitespace.
-		require
-			is_valid_as_string_8: is_valid_as_string_8
 		local
 			i, nb: INTEGER
 			nb_space: INTEGER
 			l_area: like area
+			c: CHARACTER_32
 		do
 				-- Compute number of spaces at the right of current string.
 			from
@@ -518,10 +520,16 @@ feature -- Element change
 				i := nb
 				l_area := area
 			until
-				i < 0 or else not l_area.item (i).is_space
+				i < 0
 			loop
-				nb_space := nb_space + 1
-				i := i - 1
+				c := l_area.item (i)
+				if c.is_character_8 and then not c.is_space then
+						-- We are done.
+					i := -1
+				else
+					nb_space := nb_space + 1
+					i := i - 1
+				end
 			end
 
 			if nb_space > 0 then
