@@ -185,6 +185,7 @@ feature -- String parsing
 					if c.is_digit then
 						part1 := 0
 						part2 := (c.code - 48).to_natural_64
+						l_state := 2
 						if conversion_type /= type_no_limitation then
 							if overflow_checker.will_overflow (part1, part2, conversion_type, sign) then
 								internal_overflowed := True
@@ -193,7 +194,6 @@ feature -- String parsing
 								l_state := 5
 							end
 						end
-						l_state := 2
 					else
 						l_state := 4
 					end
