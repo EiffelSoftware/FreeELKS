@@ -1266,18 +1266,13 @@ feature -- Removal
 			-- file descriptor and all information.
 		require
 			valid_file_name: fn /= Void
-		local
-			l: like last_string
 		do
 			name := fn
 			if mode /= Closed_file then
 				close
 			end
 			last_integer := 0
-			l := last_string
-			if l /= Void then
-				l.wipe_out
-			end
+			last_string.wipe_out
 			last_real := 0.0
 			last_character := '%U'
 			last_double := 0.0
