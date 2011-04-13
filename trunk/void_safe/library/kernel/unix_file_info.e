@@ -24,78 +24,107 @@ feature -- Initialization
 			-- Creation procedure
 		do
 			make_filled_area ('%/000/', stat_size)
+			is_following_symlinks := True
+			exists := False
+		ensure
+			not_exists: not exists
+			is_following_symlinks_set: is_following_symlinks
 		end
 
 feature -- Access
 
 	protection: INTEGER
 			-- Protection mode of file (12 lower bits)
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 0)
 		end
 
 	type: INTEGER
 			-- File type (4 bits, 12 lowest bits zeroed)
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 11)
 		end
 
 	inode: INTEGER
 			-- Inode number
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 1)
 		end
 
 	size: INTEGER
 			-- File size, in bytes
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 6)
 		end
 
 	user_id: INTEGER
 			-- UID of the file owner
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 4)
 		end
 
 	group_id: INTEGER
 			-- GID of the file
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 5)
 		end
 
 	date: INTEGER
 			-- Last modification date
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 7)
 		end
 
 	access_date: INTEGER
 			-- Date of last access
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 8)
 		end
 
 	change_date: INTEGER
 			-- Date of last status change
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 9)
 		end
 
 	device: INTEGER
 			-- Device number on which inode resides
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 2)
 		end
 
 	device_type: INTEGER
 			-- Device type on which inode resides
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 3)
 		end
 
 	links: INTEGER
 			-- Number of links
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 10)
 		end
@@ -103,6 +132,8 @@ feature -- Access
 	owner_name: STRING
 			-- Name of the file owner, if available from /etc/passwd.
 			-- Otherwise, the UID
+		require
+			exists: exists
 		do
 			Result := file_owner (user_id)
 		end
@@ -110,6 +141,8 @@ feature -- Access
 	group_name: STRING
 			-- Name of the file group, if available from /etc/group.
 			-- Otherwise, the GID
+		require
+			exists: exists
 		do
 			Result := file_group (group_id)
 		end
@@ -119,98 +152,136 @@ feature -- Access
 
 feature -- Status report
 
+	exists: BOOLEAN
+			-- Does current file exists?
+
+	is_following_symlinks: BOOLEAN
+			-- Does current follow symbolic links when retrieving properties?
+
 	is_plain: BOOLEAN
 			-- Is file a plain file?
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 13) /= 0
 		end
 
 	is_device: BOOLEAN
 			-- Is file a device?
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 14) /= 0
 		end
 
 	is_directory: BOOLEAN
 			-- Is file a directory?
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 12) /= 0
 		end
 
 	is_symlink: BOOLEAN
 			-- Is file a symbolic link?
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 18) /= 0
 		end
 
 	is_fifo: BOOLEAN
 			-- Is file a named pipe?
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 17) /= 0
 		end
 
 	is_socket: BOOLEAN
 			-- Is file a named socket?
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 19) /= 0
 		end
 
 	is_block: BOOLEAN
 			-- Is file a device block special file?
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 16) /= 0
 		end
 
 	is_character: BOOLEAN
 			-- Is file a character block special file?
+		require
+			exists: exists
 		do
 			Result := file_info ($buffered_file_info, 15) /= 0
 		end
 
 	is_readable: BOOLEAN
 			-- Is file readable by effective UID?
+		require
+			exists: exists
 		do
 			Result := file_eaccess ($buffered_file_info, 0)
 		end
 
 	is_writable: BOOLEAN
 			-- Is file writable by effective UID?
+		require
+			exists: exists
 		do
 			Result := file_eaccess ($buffered_file_info, 1)
 		end
 
 	is_executable: BOOLEAN
 			-- Is file executable by effective UID?
+		require
+			exists: exists
 		do
 			Result := file_eaccess ($buffered_file_info, 2)
 		end
 
 	is_setuid: BOOLEAN
 			-- Is file setuid?
+		require
+			exists: exists
 		do
 			Result := file_eaccess ($buffered_file_info, 3)
 		end
 
 	is_setgid: BOOLEAN
 			-- Is file setgid?
+		require
+			exists: exists
 		do
 			Result := file_eaccess ($buffered_file_info, 4)
 		end
 
 	is_sticky: BOOLEAN
 			-- Is file sticky?
+		require
+			exists: exists
 		do
 			Result := file_eaccess ($buffered_file_info, 5)
 		end
 
 	is_owner: BOOLEAN
 			-- Is file owned by effective UID?
+		require
+			exists: exists
 		do
 			Result := file_eaccess ($buffered_file_info, 6)
 		end
 
 	is_access_owner: BOOLEAN
 			-- Is file owned by real UID?
+		require
+			exists: exists
 		do
 			Result := file_eaccess ($buffered_file_info, 7)
 		end
@@ -269,11 +340,19 @@ feature -- Element change
 			ext_name: ANY
 		do
 			ext_name := f_name.to_c
-			file_stat ($ext_name, $buffered_file_info)
+			exists := eif_file_stat ($ext_name, $buffered_file_info, is_following_symlinks) = 0
 				-- Do not duplicate the file name. That way, if the file is
 				-- renamed, the name here will change accordingly and access()
 				-- based calls will continue to work properly.
 			file_name := f_name
+		end
+
+	set_is_following_symlinks (v: BOOLEAN)
+			-- Should `update' follow symlinks or not?
+		do
+			is_following_symlinks := v
+		ensure
+			is_following_symlinks_set: is_following_symlinks = v
 		end
 
 feature {NONE} -- Implementation
@@ -286,8 +365,20 @@ feature {NONE} -- Implementation
 
 	file_stat (name, stat_buf: POINTER)
 			-- Get information from file `name' into `stat_buf'
+		obsolete
+			"Obsoleted on 2011_04_12: Use `eif_file_stat' C external instead."
 		external
-			"C signature (char *, struct stat *) use %"eif_file.h%""
+			"C inline use %"eif_file.h%""
+		alias
+			"file_stat ((char *) $name, (struct stat *) $stat_buf);"
+		end
+
+	eif_file_stat (name, stat_buf: POINTER; follow_symlinks: BOOLEAN): INTEGER
+			-- Get information from file `name' into `stat_buf'
+		external
+			"C inline use %"eif_file.h%""
+		alias
+			"return eif_file_stat ((char *) $name, (struct stat *) $stat_buf, (int) $follow_symlinks);"
 		end
 
 	file_access (f_name: POINTER; which: INTEGER): BOOLEAN

@@ -339,40 +339,58 @@ feature -- Removal
 		require
 			directory_exists: exists
 		local
-			l: LINEAR [STRING]
-			file_name: FILE_NAME
-			file: RAW_FILE
-			dir: DIRECTORY
+			file_name: detachable FILE_NAME
+			file: detachable RAW_FILE
+			l_info: like file_info
+			dir: detachable DIRECTORY
+			dir_temp: DIRECTORY
+			l_name: detachable STRING
 		do
-			l := linear_representation
 			from
-				l.start
+					-- To delete files we do not need to follow symbolic links.
+				l_info := file_info
+				l_info.set_is_following_symlinks (False)
+					-- Create a new directory that we will use to list all of its content.
+				create dir_temp.make_open_read (name)
+				dir_temp.start
+				dir_temp.readentry
+				l_name := dir_temp.lastentry
 			until
-				l.after
+				l_name = Void
 			loop
-				if
-					not l.item.same_string (".") and
-					not l.item.same_string ("..")
-				then
-					create file_name.make_from_string (name)
-					file_name.set_file_name (l.item)
-					create file.make (file_name)
-					if
-						file.exists and then
-						not file.is_symlink and then
-						file.is_directory
-					then
-							-- Start the recursion
-						create dir.make (file_name)
-						dir.recursive_delete
+					-- Ignore current and parent directories.
+				if not l_name.same_string (current_directory_string) and not l_name.same_string (parent_directory_string) then
+						-- Avoid creating too many objects.
+					if file_name /= Void then
+						file_name.reset (name)
 					else
-						if file.exists and then file.is_writable then
+						create file_name.make_from_string (name)
+					end
+					file_name.set_file_name (l_name)
+					l_info.update (file_name)
+					if l_info.exists then
+						if not l_info.is_symlink and then l_info.is_directory then
+								-- Start the recursion for true directory, we do not follow links to delete their content.
+							if dir /= Void then
+								dir.make (file_name)
+							else
+								create dir.make (file_name)
+							end
+							dir.recursive_delete
+						elseif l_info.is_writable then
+							if file /= Void then
+								file.reset (file_name)
+							else
+								create file.make (file_name)
+							end
 							file.delete
 						end
 					end
 				end
-				l.forth
+				dir_temp.readentry
+				l_name := dir_temp.lastentry
 			end
+			dir_temp.close
 		end
 
 	recursive_delete
@@ -404,71 +422,86 @@ feature -- Removal
 			directory_exists: exists
 			valid_file_number: file_number > 0
 		local
-			l: LINEAR [STRING]
-			file_name: FILE_NAME
-			file: RAW_FILE
-			dir: DIRECTORY
+			file_name: detachable FILE_NAME
+			file: detachable RAW_FILE
+			l_info: like file_info
+			dir: detachable DIRECTORY
+			dir_temp: DIRECTORY
+			l_name: detachable STRING
 			file_count: INTEGER
 			deleted_files: ARRAYED_LIST [STRING]
-			current_directory: STRING
-			parent_directory: STRING
 			requested_cancel: BOOLEAN
 		do
 			file_count := 1
 			create deleted_files.make (file_number)
 
-			l := linear_representation
-			current_directory := "."
-			parent_directory := ".."
 			from
-				l.start
+					-- To delete files we do not need to follow symbolic links.
+				l_info := file_info
+				l_info.set_is_following_symlinks (False)
+					-- Create a new directory that we will use to list all of its content.
+				create dir_temp.make_open_read (name)
+				dir_temp.start
+				dir_temp.readentry
+				l_name := dir_temp.lastentry
 			until
-				l.after or requested_cancel
+				l_name = Void or requested_cancel
 			loop
-				if l.item /~ current_directory and l.item /~ parent_directory then
-					create file_name.make_from_string (name)
-					file_name.set_file_name (l.item)
-					create file.make (file_name)
-					if
-						file.exists and then
-						not file.is_symlink and then
-						file.is_directory
-					then
-							-- Start the recursion
-						create dir.make (file_name)
-						dir.recursive_delete_with_action (action, is_cancel_requested, file_number)
+					-- Ignore current and parent directories.
+				if not l_name.same_string (current_directory_string) and not l_name.same_string (parent_directory_string) then
+						-- Avoid creating too many objects.
+					if file_name /= Void then
+						file_name.reset (name)
 					else
-						if file.exists and then file.is_writable then
+						create file_name.make_from_string (name)
+					end
+					file_name.set_file_name (l_name)
+					l_info.update (file_name)
+					if l_info.exists then
+						if not l_info.is_symlink and then l_info.is_directory then
+								-- Start the recursion for true directory, we do not follow links to delete their content.
+							if dir /= Void then
+								dir.make (file_name)
+							else
+								create dir.make (file_name)
+							end
+							dir.recursive_delete_with_action (action, is_cancel_requested, file_number)
+						elseif l_info.is_writable then
+							if file /= Void then
+								file.reset (file_name)
+							else
+								create file.make (file_name)
+							end
 							file.delete
 						end
-					end
-						-- Add the name of the deleted file to our array
-						-- of deleted files.
-					deleted_files.extend (file_name)
-					file_count := file_count + 1
 
-						-- If `file_number' has been reached, call `action'.
-					if file_count > file_number then
-						if action /= Void then
-							action.call ([deleted_files])
+							-- Add the name of the deleted file to our array
+							-- of deleted files.
+						deleted_files.extend (file_name)
+						file_count := file_count + 1
+
+							-- If `file_number' has been reached, call `action'.
+						if file_count > file_number then
+							if action /= Void then
+								action.call ([deleted_files])
+							end
+							if is_cancel_requested /= Void then
+								requested_cancel := is_cancel_requested.item (Void)
+							end
+							deleted_files.wipe_out
+							file_count := 1
 						end
-						if is_cancel_requested /= Void then
-							requested_cancel := is_cancel_requested.item (Void)
-						end
-						deleted_files.wipe_out
-						file_count := 1
 					end
 				end
-				l.forth
+				dir_temp.readentry
+				l_name := dir_temp.lastentry
 			end
+			dir_temp.close
+
 				-- If there is more than one deleted file and no
 				-- agent has been called, call one now.
-			if file_count > 1 then
-				if action /= Void then
-					action.call ([deleted_files])
-				end
-				deleted_files.wipe_out
-				file_count := 1
+			if file_count > 1 and action /= Void then
+				action.call ([deleted_files])
 			end
 		end
 
@@ -521,6 +554,16 @@ feature {NONE} -- Implementation
 	Close_directory: INTEGER = 1
 
 	Read_directory: INTEGER = 2
+
+	current_directory_string: STRING = "."
+	parent_directory_string: STRING = ".."
+			-- Constants to represent current (".") and parent ("..") directory.
+
+	file_info: UNIX_FILE_INFO
+			-- To avoid creating objects when querying for files.
+		once
+			create Result.make
+		end
 
 	file_mkdir (dir_name: POINTER)
 			-- Make directory `dir_name'.
