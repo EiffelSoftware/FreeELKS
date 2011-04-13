@@ -411,9 +411,16 @@ feature -- Status report
 			-- Is file a symbolic link?
 		require
 			file_exists: exists
+		local
+			l_buffer: like buffered_file_info
+			l_is_following_symbolic_links: BOOLEAN
 		do
+			l_buffer := buffered_file_info
+			l_is_following_symbolic_links := l_buffer.is_following_symlinks
+			l_buffer.set_is_following_symlinks (False)
 			set_buffer
-			Result := buffered_file_info.is_symlink
+			Result := l_buffer.is_symlink
+			l_buffer.set_is_following_symlinks (l_is_following_symbolic_links)
 		end
 
 	is_fifo: BOOLEAN
@@ -1272,21 +1279,16 @@ feature -- Removal
 			-- file descriptor and all information.
 		require
 			valid_file_name: fn /= Void
-		local
-			l: like last_string
 		do
 			name := fn
 			if mode /= Closed_file then
 				close
 			end
 			last_integer := 0
-			l := last_string
-			if l /= Void then
-				l.wipe_out
-			end
-			last_real := {REAL_32} 0.0
-			last_character := '%U'
+			last_real := 0.0
 			last_double := 0.0
+			last_character := '%U'
+			last_string.wipe_out
 		ensure
 			file_renamed: name = fn
 			file_closed: is_closed
