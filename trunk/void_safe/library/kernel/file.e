@@ -1266,7 +1266,7 @@ feature -- Removal
 			-- I/O operations on it are still possible.
 			-- A directory must be empty to be deleted.
 		require
-			exists: exists
+			exists: path_exists
 		local
 			external_name: ANY
 		do
