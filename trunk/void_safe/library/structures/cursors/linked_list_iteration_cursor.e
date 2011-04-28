@@ -1,7 +1,7 @@
 note
 	description: "Concrete of an external iteration cursor for {LINKED_LIST}. Reversed traversal has a `(n (n + 1)) / 2' operations cost."
 	library: "EiffelBase: Library of reusable components for Eiffel."
-	copyright: "Copyright (c) 1984-2009, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2011, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -48,7 +48,7 @@ feature -- Status report
 			if is_reversed then
 				Result := Precursor
 			else
-				Result := active = Void
+				Result := not is_valid or active = Void
 			end
 		end
 
@@ -81,12 +81,14 @@ feature -- Cursor movement
 			end
 		end
 
-feature {NONE} -- Implementation
-
-	active: detachable LINKABLE [G]
-			-- Currrently active linkable node for ascending traversal
+feature {ITERABLE, ITERATION_CURSOR} -- Access
 
 	target: LINKED_LIST [G]
 			-- <Precursor>
+
+feature {NONE} -- Access
+
+	active: detachable LINKABLE [G]
+			-- Currrently active linkable node for ascending traversal
 
 end
