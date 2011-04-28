@@ -1,7 +1,7 @@
 note
 	description: "Concrete of an external iteration cursor for {HASH_TABLE}."
 	library: "EiffelBase: Library of reusable components for Eiffel."
-	copyright: "Copyright (c) 1984-2009, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2011, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -34,8 +34,6 @@ feature -- Access
 	key: K
 			-- Key at current cursor position
 		require
-			is_valid: is_valid
-			is_set: is_set
 			valid_position: not after
 		do
 			Result := target.keys [iteration_position]
@@ -49,7 +47,7 @@ feature -- Status report
 			l_pos: like iteration_position
 		do
 			l_pos := iteration_position
-			Result := l_pos < 0 or else l_pos >= target.keys.count
+			Result := not is_valid or l_pos < 0 or l_pos >= target.keys.count
 		end
 
 feature -- Cursor movement
@@ -60,7 +58,6 @@ feature -- Cursor movement
 			i, nb: like step
 			l_pos: like iteration_position
 		do
-			cursor_index := cursor_index + 1
 			l_pos := iteration_position
 			nb := step
 			if is_reversed then
@@ -85,7 +82,7 @@ feature -- Cursor movement
 			iteration_position := l_pos
 		end
 
-feature {NONE} -- Implementation
+feature {ITERABLE, ITERATION_CURSOR} -- Access
 
 	target: HASH_TABLE [G, K]
 			-- <Precursor>

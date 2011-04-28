@@ -1,7 +1,7 @@
 note
 	description: "Concrete of an external iteration cursor for {TWO_WAY_LIST}."
 	library: "EiffelBase: Library of reusable components for Eiffel."
-	copyright: "Copyright (c) 1984-2009, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2011, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -42,7 +42,7 @@ feature -- Status report
 	after: BOOLEAN
 			-- <Precursor>
 		do
-			Result := active = Void
+			Result := not is_valid or active = Void
 		end
 
 feature -- Cursor movement
@@ -52,8 +52,6 @@ feature -- Cursor movement
 		local
 			l_list: like target
 		do
-			cursor_index := 1
-			is_set := True
 			if is_reversed then
 				target_index := index_set.upper
 			else
@@ -72,7 +70,6 @@ feature -- Cursor movement
 		local
 			i: like step
 		do
-			cursor_index := cursor_index + 1
 			if is_reversed then
 				target_index := target_index - step
 				from
@@ -96,12 +93,14 @@ feature -- Cursor movement
 			end
 		end
 
-feature {NONE} -- Implementation
-
-	active: detachable BI_LINKABLE [G]
-			-- Currrently active linkable node for ascending traversal
+feature {ITERABLE, ITERATION_CURSOR} -- Access
 
 	target: TWO_WAY_LIST [G]
 			-- <Precursor>
+
+feature {NONE} -- Access
+
+	active: detachable BI_LINKABLE [G]
+			-- Currrently active linkable node for ascending traversal
 
 end
