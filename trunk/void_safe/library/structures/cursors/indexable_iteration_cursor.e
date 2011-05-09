@@ -175,14 +175,14 @@ feature -- Status setting
 feature -- Cursor movement
 
 	start
-			-- <Precursor>
+			-- Move to first position.
 		do
 			if is_reversed then
 				target_index := index_set.upper
 			else
 				target_index := index_set.lower
 			end
-		ensure then
+		ensure
 			cursor_index_set_to_one: cursor_index = 1
 		end
 
