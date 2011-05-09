@@ -25,11 +25,6 @@ feature -- Status report
 
 feature -- Cursor movement
 
-	start
-			-- Move to first position.
-		deferred
-		end
-
 	forth
 			-- Move to next position.
 		require
