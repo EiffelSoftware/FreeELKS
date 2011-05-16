@@ -1001,11 +1001,11 @@ feature {NONE} -- Transformation
 	correct_mismatch
 			-- Attempt to correct object mismatch during retrieve using `mismatch_information'.
 		local
-			l_content: detachable SPECIAL [G]
-			l_keys: detachable SPECIAL [K]
-			l_deleted_marks, l_old_deleted_marks: detachable SPECIAL [BOOLEAN]
+			l_old_deleted_marks: detachable SPECIAL [BOOLEAN]
 			i, l_capacity, l_count: INTEGER
 			l_new_table: like Current
+			l_default_item: like ht_deleted_item
+			l_default_key: like ht_deleted_key
 		do
 			if not mismatch_information.has ("hash_table_version_64") then
 					-- In version 5.1 and earlier, `content', `keys' and `deleted_marks'
@@ -1015,33 +1015,33 @@ feature {NONE} -- Transformation
 
 					-- Convert `content' from ARRAY to SPECIAL
 				if attached {ARRAY [G]} mismatch_information.item ("content") as array_content then
-					l_content := array_content.area
+					content := array_content.area
 				end
 
 					-- Convert `keys' from ARRAY to SPECIAL
 				if attached {ARRAY [K]} mismatch_information.item ("keys") as array_keys then
-					l_keys := array_keys.area
+					keys := array_keys.area
 				end
 
 					-- Convert `deleted_marks' from ARRAY to SPECIAL
 				if attached {ARRAY [BOOLEAN]} mismatch_information.item ("deleted_marks") as array_marks then
-					l_deleted_marks := array_marks.area
+					deleted_marks := array_marks.area
 				end
 
 					-- In version 5.5 and later, `deleted_marks' had its size increased by 1 to take
 					-- into account removal of default key, and therefore if we hit a 5.4 or earlier
 					-- version, we need to resize `deleted_marks' to the new expected size.
-				if l_deleted_marks /= Void and l_keys /= Void then
+				if deleted_marks /= Void and keys /= Void then
 					if not mismatch_information.has ("hash_table_version_57") then
 							-- Unfortunately this handling of the mismatch was added in 5.7 and
 							-- therefore we might have stored a valid HASH_TABLE using 5.5 or 5.6.
 							-- Fortunately enough we can simply compare the counts of
 							-- `deleted_marks' and `keys'. If they are the same it is 5.5 or 5.6,
 							-- otherwise it is 5.4 or older.
-						if l_deleted_marks.count /= l_keys.count then
-							l_old_deleted_marks := l_deleted_marks
-							create l_deleted_marks.make_empty (keys.count)
-							l_deleted_marks.copy_data (l_old_deleted_marks, 0, 0, l_old_deleted_marks.count)
+						if deleted_marks.count /= keys.count then
+							l_old_deleted_marks := deleted_marks
+							create deleted_marks.make_empty (keys.count)
+							deleted_marks.copy_data (l_old_deleted_marks, 0, 0, l_old_deleted_marks.count)
 						end
 					end
 				end
@@ -1050,24 +1050,24 @@ feature {NONE} -- Transformation
 					l_count := l_retrieved_count
 				end
 
-				if l_content = Void or l_keys = Void or l_deleted_marks = Void then
+				if content = Void or keys = Void or deleted_marks = Void then
 						-- Could not retrieve old version of HASH_TABLE. We throw an exception.
 					Precursor {MISMATCH_CORRECTOR}
 				else
 						-- Now we build the new HASH_TABLE from the old one.
 					from
-						l_capacity := l_keys.count
+						l_capacity := keys.count
 						l_new_table := empty_duplicate (l_count)
 					until
 						i = l_capacity
 					loop
-						if not attached l_keys.item (i) as l_key_item then
-							l_new_table.put (l_content.item (i), l_keys.item (i))
+						if attached keys.item (i) as l_key_item then
+							l_new_table.put (content.item (i), keys.item (i))
 						end
 						i := i + 1
 					end
 					if attached {BOOLEAN} mismatch_information.item ("has_default") as l_bool and then l_bool then
-						l_new_table.put (l_content.item (l_content.capacity - 1), l_keys.item (l_capacity - 1))
+						l_new_table.put (content.item (content.capacity - 1), keys.item (l_capacity - 1))
 					end
 
 					set_content (l_new_table.content)
@@ -1076,6 +1076,13 @@ feature {NONE} -- Transformation
 					set_indexes_map (l_new_table.indexes_map)
 					capacity := l_new_table.capacity
 					iteration_position := l_new_table.iteration_position
+					deleted_item_position := l_new_table.deleted_item_position
+					item_position := l_new_table.item_position
+						-- We reset the following attributes to their default value
+					ht_lowest_deleted_position := ht_max_position
+					ht_deleted_item := l_default_item
+					ht_deleted_key := l_default_key
+						-- We don't change `object_comparison' from the value it was retrieved from.
 				end
 			end
 		end
