@@ -642,7 +642,7 @@ feature -- Resizing
 			n: like count
 		do
 			n := count
-			if n < capacity then
+			if n < area.capacity then
 				area := area.resized_area (n)
 			end
 		ensure then
