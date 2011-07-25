@@ -108,7 +108,7 @@ feature {NONE} -- Initialization
 			-- It assumes that `a_ptr' was allocated using the C-`malloc' routine and thus
 			-- will be freed by calling the C-`free' routine.
 		require
-			a_ptr_valid: a_ptr = default_pointer implies n = 0
+			a_ptr_valid: a_ptr /= default_pointer
 			n_non_negative: n >= 0
 		do
 			item := a_ptr
