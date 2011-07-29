@@ -206,6 +206,8 @@ feature -- Status setting
 			"C use %"eif_except.h%""
 		alias
 			"esdie"
+		ensure
+			False
 		end
 
 	new_die (code: INTEGER) obsolete "Use ``die''"
@@ -215,6 +217,8 @@ feature -- Status setting
 			"C use %"eif_except.h%""
 		alias
 			"esdie"
+		ensure
+			False
 		end
 
 	message_on_failure
