@@ -264,6 +264,7 @@ feature -- Cursor movement
 				active := previous
 			end
 		end
+
 	move (i: INTEGER)
 			-- Move cursor `i' positions. The cursor
 			-- may end up `off' if the offset is too big.
