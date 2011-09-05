@@ -112,7 +112,7 @@ feature -- Conversion
 
 feature -- Duplication
 
-	duplicate (n: INTEGER): detachable like Current
+	duplicate (n: INTEGER): like Current
 			-- New stack containing the `n' latest items inserted
 			-- in current stack.
 			-- If `n' is greater than `count', identical to current stack.
@@ -123,10 +123,10 @@ feature -- Duplication
 			old_cursor: CURSOR
 			list: LINKED_LIST [G]
 		do
+			create Result.make
 			if not is_empty then
 				old_cursor := cursor
 				from
-					create Result.make
 					list := Result
 					start
 				until
