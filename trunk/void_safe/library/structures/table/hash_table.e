@@ -142,7 +142,9 @@ feature -- Access
 
 	item alias "[]", at alias "@" (key: K): detachable G assign force
 			-- Item associated with `key', if present
-			-- otherwise default value of type `G'
+			-- otherwise default value of type `G'.
+		note
+			option: stable
 		local
 			old_control, old_position: INTEGER
 		do
