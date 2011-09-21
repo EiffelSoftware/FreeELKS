@@ -13,6 +13,7 @@ frozen expanded class POINTER inherit
 			hash_code,
 			plus,
 			to_integer_32,
+			is_default_pointer,
 			out
 		end
 
@@ -27,6 +28,14 @@ feature -- Access
 
 	hash_code: INTEGER
 			-- Hash code value
+		external
+			"built_in"
+		end
+
+feature -- Status report
+
+	is_default_pointer: BOOLEAN
+			-- <Precursor>
 		external
 			"built_in"
 		end
