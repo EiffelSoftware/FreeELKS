@@ -166,12 +166,6 @@ feature -- Access
 			end
 		end
 
-	false_constant: STRING_8 = "false"
-			-- Constant string "false"
-
-	true_constant: STRING_8 = "true"
-			-- Constant string "true"
-
 	shared_with (other: READABLE_STRING_32): BOOLEAN
 			-- Does string share the text of `other'?
 		do
@@ -631,19 +625,6 @@ feature -- Status report
 			-- Does `Current' represent a number sequence?
 		do
 			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_no_limitation)
-		ensure
-			syntax_and_range:
-				-- Result is true if and only if the following two
-				-- conditions are satisfied:
-				--
-				-- In the following BNF grammar, the value of
-				--	Current can be produced by "Integer_literal":
-				--
-				-- Integer_literal = [Space] [Sign] Integer [Space]
-				-- Space 	= " " | " " Space
-				-- Sign		= "+" | "-"
-				-- Integer	= Digit | Digit Integer
-				-- Digit	= "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"
 		end
 
 	is_real_sequence: BOOLEAN
@@ -654,23 +635,6 @@ feature -- Status report
 			l_convertor := ctor_convertor
 			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
 			Result := l_convertor.is_integral_double
-		ensure
-			syntax_and_range:
-				-- 'Result' is True if and only if the following condition is satisfied:
-				--
-				-- In the following BNF grammar, the value of
-				--	'Current' can be produced by "Real_literal":
-				--
-				-- Real_literal	= Mantissa [Exponent_part]
-				-- Exponent_part = "E" Exponent
-				--				 | "e" Exponent
-				-- Exponent		= Integer_literal
-				-- Mantissa		= Decimal_literal
-				-- Decimal_literal = Integer_literal ["." [Integer]] | "." Integer
-				-- Integer_literal = [Sign] Integer
-				-- Sign			= "+" | "-"
-				-- Integer		= Digit | Digit Integer
-				-- Digit		= "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"
 		end
 
 	is_real: BOOLEAN
@@ -681,28 +645,6 @@ feature -- Status report
 			l_convertor := ctor_convertor
 			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_real)
 			Result := l_convertor.is_integral_real
-		ensure
-			syntax_and_range:
-				-- 'Result' is True if and only if the following two
-				-- conditions are satisfied:
-				--
-				-- 1. In the following BNF grammar, the value of
-				--	'Current' can be produced by "Real_literal":
-				--
-				-- Real_literal	= Mantissa [Exponent_part]
-				-- Exponent_part = "E" Exponent
-				--				 | "e" Exponent
-				-- Exponent		= Integer_literal
-				-- Mantissa		= Decimal_literal
-				-- Decimal_literal = Integer_literal ["." [Integer]] | "." Integer
-				-- Integer_literal = [Sign] Integer
-				-- Sign			= "+" | "-"
-				-- Integer		= Digit | Digit Integer
-				-- Digit		= "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"
-				--
-				-- 2. The numerical value represented by 'Current'
-				--	is within the range that can be represented
-				--	by an instance of type REAL.
 		end
 
 	is_double: BOOLEAN
@@ -715,28 +657,6 @@ feature -- Status report
 				l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_double)
 				Result := l_convertor.is_integral_double
 			end
-		ensure
-			syntax_and_range:
-				-- 'Result' is True if and only if the following two
-				-- conditions are satisfied:
-				--
-				-- 1. In the following BNF grammar, the value of
-				--	'Current' can be produced by "Real_literal":
-				--
-				-- Real_literal	= Mantissa [Exponent_part]
-				-- Exponent_part = "E" Exponent
-				--				 | "e" Exponent
-				-- Exponent		= Integer_literal
-				-- Mantissa		= Decimal_literal
-				-- Decimal_literal = Integer_literal ["." [Integer]] | "." Integer
-				-- Integer_literal = [Sign] Integer
-				-- Sign			= "+" | "-"
-				-- Integer		= Digit | Digit Integer
-				-- Digit		= "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"
-				--
-				-- 2. The numerical value represented by 'Current'
-				--	is within the range that can be represented
-				--	by an instance of type DOUBLE.
 		end
 
 	is_boolean: BOOLEAN
@@ -744,27 +664,27 @@ feature -- Status report
 		local
 			nb: INTEGER
 			l_area: like area
+			i: INTEGER
 		do
 			nb := count
 			if nb = 4 then
 					-- Check if this is `true_constant'
 				l_area := area
-				Result := l_area.item (0).lower = 't' and then
-					l_area.item (1).lower = 'r' and then
-					l_area.item (2).lower = 'u' and then
-					l_area.item (3).lower = 'e'
+				i := area_lower
+				Result := l_area.item (i).lower = 't' and then
+					l_area.item (i + 1).lower = 'r' and then
+					l_area.item (i + 2).lower = 'u' and then
+					l_area.item (i + 3).lower = 'e'
 			elseif nb = 5 then
 					-- Check if this is `false_constant'
 				l_area := area
-				Result := l_area.item (0).lower = 'f' and then
-					l_area.item (1).lower = 'a' and then
-					l_area.item (2).lower = 'l' and then
-					l_area.item (3).lower = 's' and then
-					l_area.item (4).lower = 'e'
+				i := area_lower
+				Result := l_area.item (i).lower = 'f' and then
+					l_area.item (i + 1).lower = 'a' and then
+					l_area.item (i + 2).lower = 'l' and then
+					l_area.item (i + 3).lower = 's' and then
+					l_area.item (i + 4).lower = 'e'
 			end
-		ensure
-			is_boolean: Result = (true_constant.same_string (as_lower.as_string_8) or
-				false_constant.same_string (as_lower.as_string_8))
 		end
 
 	is_integer_8: BOOLEAN
@@ -878,30 +798,6 @@ feature -- Element change
 		end
 
 feature -- Conversion
-
-	as_lower: like Current
-			-- New object with all letters in lower case.
-		require
-			is_valid_as_string_8: is_valid_as_string_8
-		deferred
-		ensure
-			as_lower_attached: Result /= Void
-			length: Result.count = count
-			anchor: count > 0 implies Result.item (1) = item (1).as_lower
-			recurse: count > 1 implies Result.substring (2, count) ~ substring (2, count).as_lower
-		end
-
-	as_upper: like Current
-			-- New object with all letters in upper case
-		require
-			is_valid_as_string_8: is_valid_as_string_8
-		deferred
-		ensure
-			as_upper_attached: Result /= Void
-			length: Result.count = count
-			anchor: count > 0 implies Result.item (1) = item (1).as_upper
-			recurse: count > 1 implies Result.substring (2, count) ~ substring (2, count).as_upper
-		end
 
 	to_integer_8: INTEGER_8
 			-- 8-bit integer value

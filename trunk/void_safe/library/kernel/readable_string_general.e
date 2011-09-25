@@ -68,6 +68,12 @@ feature -- Access
 				not substring (start_index, Result - 1).has_code (c)
 		end
 
+	false_constant: STRING_8 = "false"
+			-- Constant string "false"
+
+	true_constant: STRING_8 = "true"
+			-- Constant string "true"
+
 feature -- Status report
 
 	is_immutable: BOOLEAN
@@ -173,6 +179,150 @@ feature -- Status report
 			end
 		end
 
+	is_number_sequence: BOOLEAN
+			-- Does `Current' represent a number sequence?
+		deferred
+		ensure
+			syntax_and_range:
+				-- Result is true if and only if the following two
+				-- conditions are satisfied:
+				--
+				-- In the following BNF grammar, the value of
+				--	Current can be produced by "Integer_literal":
+				--
+				-- Integer_literal = [Space] [Sign] Integer [Space]
+				-- Space 	= " " | " " Space
+				-- Sign		= "+" | "-"
+				-- Integer	= Digit | Digit Integer
+				-- Digit	= "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"
+		end
+
+	is_real_sequence: BOOLEAN
+			-- Does `Current' represent a real sequence?
+		deferred
+		ensure
+			syntax_and_range:
+				-- 'Result' is True if and only if the following condition is satisfied:
+				--
+				-- In the following BNF grammar, the value of
+				--	'Current' can be produced by "Real_literal":
+				--
+				-- Real_literal	= Mantissa [Exponent_part]
+				-- Exponent_part = "E" Exponent
+				--				 | "e" Exponent
+				-- Exponent		= Integer_literal
+				-- Mantissa		= Decimal_literal
+				-- Decimal_literal = Integer_literal ["." [Integer]] | "." Integer
+				-- Integer_literal = [Sign] Integer
+				-- Sign			= "+" | "-"
+				-- Integer		= Digit | Digit Integer
+				-- Digit		= "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"
+				--
+		end
+
+	is_real: BOOLEAN
+			-- Does `Current' represent a REAL?
+		deferred
+		ensure
+			syntax_and_range:
+				-- 'Result' is True if and only if the following two
+				-- conditions are satisfied:
+				--
+				-- 1. In the following BNF grammar, the value of
+				--	'Current' can be produced by "Real_literal":
+				--
+				-- Real_literal	= Mantissa [Exponent_part]
+				-- Exponent_part = "E" Exponent
+				--				 | "e" Exponent
+				-- Exponent		= Integer_literal
+				-- Mantissa		= Decimal_literal
+				-- Decimal_literal = Integer_literal ["." [Integer]] | "." Integer
+				-- Integer_literal = [Sign] Integer
+				-- Sign			= "+" | "-"
+				-- Integer		= Digit | Digit Integer
+				-- Digit		= "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"
+				--
+				-- 2. The numerical value represented by 'Current'
+				--	is within the range that can be represented
+				--	by an instance of type REAL.
+		end
+
+	is_double: BOOLEAN
+			-- Does `Current' represent a DOUBLE?
+		deferred
+		ensure
+			syntax_and_range:
+				-- 'Result' is True if and only if the following two
+				-- conditions are satisfied:
+				--
+				-- 1. In the following BNF grammar, the value of
+				--	'Current' can be produced by "Real_literal":
+				--
+				-- Real_literal	= Mantissa [Exponent_part]
+				-- Exponent_part = "E" Exponent
+				--				 | "e" Exponent
+				-- Exponent		= Integer_literal
+				-- Mantissa		= Decimal_literal
+				-- Decimal_literal = Integer_literal ["." [Integer]] | "." Integer
+				-- Integer_literal = [Sign] Integer
+				-- Sign			= "+" | "-"
+				-- Integer		= Digit | Digit Integer
+				-- Digit		= "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"
+				--
+				-- 2. The numerical value represented by 'Current'
+				--	is within the range that can be represented
+				--	by an instance of type DOUBLE.
+		end
+
+	is_boolean: BOOLEAN
+			-- Does `Current' represent a BOOLEAN?
+		deferred
+		ensure
+			is_boolean: Result = (true_constant.same_string (as_lower.as_string_8) or
+				false_constant.same_string (as_lower.as_string_8))
+		end
+
+	is_integer_8: BOOLEAN
+			-- Does `Current' represent an INTEGER_8?
+		deferred
+		end
+
+	is_integer_16: BOOLEAN
+			-- Does `Current' represent an INTEGER_16?
+		deferred
+		end
+
+	is_integer, is_integer_32: BOOLEAN
+			-- Does `Current' represent an INTEGER_32?
+		deferred
+		end
+
+	is_integer_64: BOOLEAN
+			-- Does `Current' represent an INTEGER_64?
+		deferred
+		end
+
+	is_natural_8: BOOLEAN
+			-- Does `Current' represent a NATURAL_8?
+		deferred
+		end
+
+	is_natural_16: BOOLEAN
+			-- Does `Current' represent a NATURAL_16?
+
+		deferred
+		end
+
+	is_natural, is_natural_32: BOOLEAN
+			-- Does `Current' represent a NATURAL_32?
+		deferred
+		end
+
+	is_natural_64: BOOLEAN
+			-- Does `Current' represent a NATURAL_64?
+		deferred
+		end
+
 feature -- Conversion
 
 	frozen to_cil: SYSTEM_STRING
@@ -253,6 +403,30 @@ feature -- Conversion
 		ensure
 			as_string_32_not_void: Result /= Void
 			identity: (conforms_to (create {STRING_32}.make_empty) and Result = Current) or (not conforms_to (create {STRING_32}.make_empty) and Result /= Current)
+		end
+
+	as_lower: like Current
+			-- New object with all letters in lower case.
+		require
+			is_valid_as_string_8: is_valid_as_string_8
+		deferred
+		ensure
+			as_lower_attached: Result /= Void
+			length: Result.count = count
+			anchor: count > 0 implies Result.code (1).to_character_8 = code (1).to_character_8.as_lower
+			recurse: count > 1 implies Result.substring (2, count) ~ substring (2, count).as_lower
+		end
+
+	as_upper: like Current
+			-- New object with all letters in upper case
+		require
+			is_valid_as_string_8: is_valid_as_string_8
+		deferred
+		ensure
+			as_upper_attached: Result /= Void
+			length: Result.count = count
+			anchor: count > 0 implies Result.code (1).to_character_8 = code (1).to_character_8.as_upper
+			recurse: count > 1 implies Result.substring (2, count) ~ substring (2, count).as_upper
 		end
 
 feature -- Element change
