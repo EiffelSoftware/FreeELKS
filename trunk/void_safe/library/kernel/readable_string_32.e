@@ -123,14 +123,12 @@ feature -- Access
 
 	item alias "[]", at alias "@" (i: INTEGER): CHARACTER_32
 			-- Character at position `i'
-		do
-			Result := area.item (i - 1)
+		deferred
 		end
 
 	code (i: INTEGER): NATURAL_32
 			-- Numeric code of character at position `i'
-		do
-			Result := area.item (i - 1).code.to_natural_32
+		deferred
 		end
 
 	item_code (i: INTEGER): INTEGER
@@ -138,8 +136,7 @@ feature -- Access
 		require
 			index_small_enough: i <= count
 			index_large_enough: i > 0
-		do
-			Result := area.item (i - 1).code
+		deferred
 		end
 
 	hash_code: INTEGER

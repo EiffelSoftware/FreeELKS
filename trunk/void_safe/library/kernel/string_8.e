@@ -17,7 +17,7 @@ inherit
 		export
 			{ANY} make, make_empty, make_filled, make_from_c, make_from_string, fill_character
 		redefine
-			item, at, area
+			area
 		end
 
 	STRING_GENERAL
@@ -169,6 +169,18 @@ feature -- Access
 			-- Character at position `i'
 		do
 			Result := area.item (i - 1)
+		end
+
+	code (i: INTEGER): NATURAL_32
+			-- Numeric code of character at position `i'
+		do
+			Result := area.item (i - 1).code.to_natural_32
+		end
+
+	item_code (i: INTEGER): INTEGER
+			-- Numeric code of character at position `i'
+		do
+			Result := area.item (i - 1).code
 		end
 
 	area: SPECIAL [CHARACTER_8]

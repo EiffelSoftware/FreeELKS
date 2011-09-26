@@ -141,6 +141,26 @@ feature {IMMUTABLE_STRING_32} -- Duplication
 			-- same_characters: For every `i' in 1..`count', `item' (`i') = `other'.`item' (`i')
 		end
 
+feature -- Access
+
+	item alias "[]", at alias "@" (i: INTEGER): CHARACTER_32
+			-- Character at position `i'
+		do
+			Result := area.item (i + area_lower - 1)
+		end
+
+	code (i: INTEGER): NATURAL_32
+			-- Numeric code of character at position `i'
+		do
+			Result := area.item (i + area_lower - 1).code.to_natural_32
+		end
+
+	item_code (i: INTEGER): INTEGER
+			-- Numeric code of character at position `i'
+		do
+			Result := area.item (i + area_lower - 1).code
+		end
+
 feature -- Element change
 
 	plus alias "+" (s: READABLE_STRING_32): like Current
