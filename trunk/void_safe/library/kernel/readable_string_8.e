@@ -150,8 +150,8 @@ feature -- Access
 					-- The magic number `8388593' below is the greatest prime lower than
 					-- 2^23 so that this magic number shifted to the left does not exceed 2^31.
 				from
-					i := 0
-					nb := count
+					i := area_lower
+					nb := count + i
 					l_area := area
 				until
 					i = nb
@@ -177,12 +177,14 @@ feature -- Access
 			start_small_enough: start_index <= count + 1
 		local
 			a: like area
-			i, nb: INTEGER
+			i, nb, l_lower_area: INTEGER
 		do
 			nb := count
 			if start_index <= nb then
 				from
-					i := start_index - 1
+					l_lower_area := area_lower
+					i := start_index - 1 + l_lower_area
+					nb := nb + l_lower_area
 					a := area
 				until
 					i = nb or else a.item (i) = c
@@ -190,8 +192,9 @@ feature -- Access
 					i := i + 1
 				end
 				if i < nb then
-						-- We add +1 due to the area starting at 0 and not at 1.
-					Result := i + 1
+						-- We add +1 due to the area starting at 0 and not at 1
+						-- and substract `area_lower'
+					Result := i + 1 - l_lower_area
 				end
 			end
 		ensure
@@ -210,18 +213,19 @@ feature -- Access
 			start_index_large_enough: start_index_from_end >= 1
 		local
 			a: like area
-			i: INTEGER
+			i, l_lower_area: INTEGER
 		do
 			from
-				i := start_index_from_end - 1
+				l_lower_area := area_lower
+				i := start_index_from_end - 1 + l_lower_area
 				a := area
 			until
-				i < 0 or else a.item (i) = c
+				i < l_lower_area or else a.item (i) = c
 			loop
 				i := i - 1
 			end
 				-- We add +1 due to the area starting at 0 and not at 1.
-			Result := i + 1
+			Result := i + 1 - l_lower_area
 		ensure
 			last_index_of_non_negative: Result >= 0
 			correct_place: Result > 0 implies item (Result) = c
@@ -327,7 +331,8 @@ feature -- Measurement
 			a: SPECIAL [CHARACTER_8]
 		do
 			from
-				nb := count
+				i := area_lower
+				nb := count + i
 				a := area
 			until
 				i = nb
@@ -400,7 +405,7 @@ feature -- Comparison
 						Result := True
 						i := area_lower
 						j := other.area_lower
-						nb := area_lower + nb
+						nb := nb + i
 					until
 						i = nb
 					loop
@@ -478,7 +483,9 @@ feature -- Status report
 			nb := count
 			if nb > 0 then
 				from
+					i := area_lower	
 					l_area := area
+					nb := nb + i
 				until
 					i = nb or else (l_area.item (i) = c)
 				loop
