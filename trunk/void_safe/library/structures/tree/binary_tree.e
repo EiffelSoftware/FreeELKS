@@ -69,28 +69,20 @@ feature -- Access
 			-- Value of left child
 		require
 			has_left: left_child /= Void
-		local
-			l: like left_child
 		do
-			l := left_child
-			check
-				l_attached: l /= Void
+			check attached left_child as l then
+				Result := l.item
 			end
-			Result := l.item
 		end
 
 	right_item: like item
 			-- Value of right child
 		require
 			has_right: right_child /= Void
-		local
-			r: like right_child
 		do
-			r := right_child
-			check
-				r_attached: r /= Void
+			check attached right_child as r then
+				Result := r.item
 			end
-			Result := r.item
 		end
 
 	first_child: like parent

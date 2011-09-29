@@ -39,38 +39,26 @@ feature -- Access
 
 	item: G
 			-- Current item
-		local
-			a: like active
 		do
-			a := active
-			check
-				a_attached: a /= Void
+			check attached active as a then
+				Result := a.item
 			end
-			Result := a.item
 		end
 
 	first: like item
 			-- Item at first position
-		local
-			f: like first_element
 		do
-			f := first_element
-			check
-				f_attached: f /= Void
+			check attached first_element as f then
+				Result := f.item
 			end
-			Result := f.item
 		end
 
 	last: like item
 			-- Item at last position
-		local
-			l: like last_element
 		do
-			l := last_element
-			check
-				l_attached: l /= Void
+			check attached last_element as l then
+				Result := l.item
 			end
-			Result := l.item
 		end
 
 	index: INTEGER

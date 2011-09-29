@@ -40,14 +40,10 @@ feature -- Access
 			-- Item in current child node
 		require
 			readable: child_readable
-		local
-			c: like child
 		do
-			c := child
-			check
-				c_attached: c /= Void
+			check attached child as c then
+				Result := c.item
 			end
-			Result := c.item
 		end
 
 	child_cursor: CURSOR

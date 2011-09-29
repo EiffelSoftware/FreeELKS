@@ -165,9 +165,6 @@ feature -- Cursor movement
 
 	back
 			-- Move cursor one position backward.
-		local
-			a: like active_parent
-			c: detachable like active
 		do
 			if below then
 				after := False
@@ -176,14 +173,9 @@ feature -- Cursor movement
 				after := False
 			elseif isfirst then
 				before := True
-			else
-				a := active_parent
-				if a /= Void then
-					a.child_back
-					c := a.child
-					check
-						c_attached: c /= Void
-					end
+			elseif attached active_parent as a then
+				a.child_back
+				check attached a.child as c then
 					active := c
 				end
 			end
@@ -191,9 +183,6 @@ feature -- Cursor movement
 
 	forth
 			-- Move cursor one position forward.
-		local
-			a: like active_parent
-			c: detachable like active
 		do
 			if below then
 				before := False
@@ -202,14 +191,9 @@ feature -- Cursor movement
 				before := False
 			elseif islast then
 				after := True
-			else
-				a := active_parent
-				if a /= Void then
-					a.child_forth
-					c := a.child
-					check
-						c_attached: c /= Void
-					end
+			elseif attached active_parent as a then
+				a.child_forth
+				check attached a.child as c then
 					active := c
 				end
 			end
@@ -218,18 +202,14 @@ feature -- Cursor movement
 	up
 			-- Move cursor one level upward to parent,
 			-- or `above' if `is_root' holds.
-		local
-			a: detachable like active
 		do
 			if below then
 				below := False
 			else
-				a := active_parent
-				check
-					a_attached: a /= Void
+				check attached active_parent as a then
+					active := a
+					active_parent := a.parent
 				end
-				active := a
-				active_parent := a.parent
 				corresponding_child
 			end
 			after := False
@@ -243,7 +223,6 @@ feature -- Cursor movement
 			-- or `before' if `i' = 0.
 		local
 			a: like active
-			c: detachable like active
 		do
 			if i = 0 then
 				if arity = 0 then
@@ -252,22 +231,18 @@ feature -- Cursor movement
 					a := active
 					active_parent := a
 					a.child_go_i_th (1)
-					c := a.child
-					check
-						c_attached: c /= Void
+					check attached a.child as c then
+						active := c
 					end
-					active := c
 				end
 				before := True
 			elseif above or else i <= arity then
 				a := active
 				active_parent := a
 				a.child_go_i_th (i)
-				c := a.child
-				check
-					c_attached: c /= Void
+				check attached a.child as c then
+					active := c
 				end
-				active := c
 			else
 				if arity = 0 then
 					below := True
@@ -275,11 +250,9 @@ feature -- Cursor movement
 					a := active
 					active_parent := a
 					a.child_go_i_th (arity)
-					c := a.child
-					check
-						c_attached: c /= Void
+					check attached a.child as c then
+						active := c
 					end
-					active := c
 				end
 				after := True
 			end
@@ -337,18 +310,14 @@ feature -- Removal
 			-- Remove node at cursor position
 			-- (and consequently the corresponding
 			-- subtree). Cursor moved up one level.
-		local
-			a: detachable like active
 		do
 			corresponding_child
-			a := active_parent
-			check
-				a_attached: a /= Void
+			check attached active_parent as a then
+				active := a
+				active_parent := a.parent
+				a.remove_child
+				a.child_back
 			end
-			active := a
-			active_parent := a.parent
-			a.remove_child
-			a.child_back
 		ensure then
 			not_off_unless_empty: is_empty or else not off
 		end
@@ -403,15 +372,11 @@ feature {NONE} -- Implementation
 			-- to position `p', without checking
 			-- whether `p' is a valid cursor position
 			-- or not.
-		local
-			a: detachable like active
 		do
 			active_parent := p.active_parent
-			a := p.active
-			check
-				a_attached: a /= Void
+			check attached p.active as a then
+				active := a
 			end
-			active := a
 			corresponding_child
 			after := p.after
 			before := p.before
