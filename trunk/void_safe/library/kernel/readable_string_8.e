@@ -483,7 +483,7 @@ feature -- Status report
 			nb := count
 			if nb > 0 then
 				from
-					i := area_lower	
+					i := area_lower
 					l_area := area
 					nb := nb + i
 				until
