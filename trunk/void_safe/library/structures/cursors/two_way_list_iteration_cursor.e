@@ -27,14 +27,14 @@ feature -- Access
 
 	item: G
 			-- <Precursor>
-		local
-			l_active: like active
 		do
-			l_active := active
 				-- Required because `start' sets `active' and `active' can become detached
 				-- when falling off the end of the list.
-			check l_active_attached: attached l_active end
-			Result := l_active.item
+			check
+				active_attached: attached active as a
+			then
+				Result := a.item
+			end
 		end
 
 feature -- Status report

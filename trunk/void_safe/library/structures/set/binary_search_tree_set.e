@@ -48,38 +48,26 @@ feature -- Measurement
 
 	min: like item
 			-- Minimum item in tree
-		local
-			t: like tree
 		do
-			t := tree
-			check
-				t_attached: t /= Void
+			check attached tree as t then
+				Result := t.min
 			end
-			Result := t.min
 		end
 
 	max: like item
 			-- Maximum item in tree
-		local
-			t: like tree
 		do
-			t := tree
-			check
-				t_attached: t /= Void
+			check attached tree as t then
+				Result := t.max
 			end
-			Result := t.max
 		end
 
 	item: G
 			-- Current item
-		local
-			a: like active_node
 		do
-			a := active_node
-			check
-				a_attached: a /= Void
+			check attached active_node as a then
+				Result := a.item
 			end
-			Result := a.item
 		end
 
 feature -- Status report

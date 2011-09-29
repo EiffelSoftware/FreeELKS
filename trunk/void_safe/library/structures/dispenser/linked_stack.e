@@ -48,17 +48,13 @@ feature -- Access
 
 	item: G
 			-- Item at the first position
-		local
-			f: like first_element
 		do
 			check
 				not_empty: not is_empty
 			end
-			f := first_element
-			check
-				f_attached: f /= Void
+			check attached first_element as f then
+				Result := f.item
 			end
-			Result := f.item
 		end
 
 feature -- Element change

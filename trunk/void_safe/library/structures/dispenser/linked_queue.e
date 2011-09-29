@@ -68,14 +68,10 @@ feature -- Access
 
 	item: G
 			-- Oldest item
-		local
-			a: like active
 		do
-			a := active
-			check
-				a_attached: a /= Void
+			check attached active as a then
+				Result := a.item
 			end
-			Result := a.item
 		ensure then
 			last_element_if_not_empty:
 				not is_empty implies (active = last_element)
