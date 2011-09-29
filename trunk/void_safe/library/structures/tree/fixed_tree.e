@@ -54,13 +54,11 @@ feature -- Initialization
 		end
 
 	make_filled (n: INTEGER; v: G)
-			-- Create node with `n' void children and item `v'.
+			-- Create node with `n' empty children and item `v'.
 		require
 			valid_number_of_children: n >= 0
-		local
-			l_default: detachable G
+			has_default: ({G}).has_default
 		do
-			check l_default_attached: l_default /= Void end
 			arity := n
 			create fixed_list.make_filled (n)
 			replace (v)
@@ -71,7 +69,7 @@ feature -- Initialization
 			until
 				fixed_list.after
 			loop
-				replace_child (create {like Current}.make (0, l_default))
+				replace_child (create {like Current}.make (0, ({G}).default))
 				fixed_list.forth
 			end
 		ensure
@@ -86,36 +84,24 @@ feature -- Access
 
 	child_item: like item
 			-- Item of active child
-		local
-			c: like child
 		do
-			c := child
-			check
-				c_attached: c /= Void
+			check attached child as c then
+				Result := c.item
 			end
-			Result := c.item
 		end
 
 	left_sibling: like parent
 			-- Left neighbor, if any
-		local
-			p: like parent
 		do
-			if position_in_parent > 1 then
-				p := parent
-				if p /= Void then
-					Result := p.array_item (position_in_parent - 1)
-				end
+			if position_in_parent > 1 and then attached parent as p then
+				Result := p.array_item (position_in_parent - 1)
 			end
 		end
 
 	right_sibling: like parent
 			-- Right neighbor, if any
-		local
-			p: like parent
 		do
-			p := parent
-			if p /= Void and then position_in_parent < p.arity then
+			if attached parent as p and then position_in_parent < p.arity then
 				Result := p.array_item (position_in_parent + 1)
 			end
 		end
