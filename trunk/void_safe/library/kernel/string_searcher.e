@@ -138,6 +138,38 @@ feature -- Search
 			end
 		end
 
+	substring_index_list_with_deltas (a_string, a_pattern: READABLE_STRING_GENERAL; start_pos, end_pos: INTEGER): detachable ARRAYED_LIST [INTEGER]
+			-- Index positions of all occurrences of `a_pattern' at or after `start_pos' until `end_pos' in `a_string'.
+			-- Result is Void if there are no matches.
+		require
+			a_string_not_void: a_string /= Void
+			a_pattern_not_void: a_pattern /= Void
+			a_pattern_valid: a_pattern.is_valid_as_string_8
+			a_pattern_not_empty: not a_pattern.is_empty
+			start_large_enough: start_pos >= 1
+			end_pos_large_enough: start_pos <= end_pos + 1
+			end_pos_small_enough: end_pos <= a_string.count
+		local
+			l_pattern_count, l_index: INTEGER
+		do
+			l_index := substring_index_with_deltas (a_string, a_pattern, start_pos, end_pos)
+			if l_index > 0 then
+				from
+						-- Assuming a uniform distribution of the found pattern based on the first
+						-- occurrences, we assume there will be a quarter less occurrences.
+					l_pattern_count := a_pattern.count
+					create Result.make (((end_pos - start_pos).max (3) // (l_index + l_pattern_count)) // 4)
+				until
+					l_index = 0
+				loop
+					Result.extend (l_index)
+					l_index := substring_index_with_deltas (a_string, a_pattern, l_index + l_pattern_count, end_pos)
+				end
+			end
+		ensure
+			matches: Result /= Void implies not Result.is_empty
+		end
+
 	fuzzy_index (a_string, a_pattern: READABLE_STRING_GENERAL; start_pos, end_pos, fuzzy: INTEGER): INTEGER
 			-- Position of first occurrence of `a_pattern' at or after `start_pos' in
 			-- `a_string' with 0..`fuzzy' mismatches between `a_string' and `a_pattern'.
