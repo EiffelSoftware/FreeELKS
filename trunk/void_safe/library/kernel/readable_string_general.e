@@ -466,8 +466,7 @@ feature {NONE} -- Implementation
 
 	string_searcher: STRING_SEARCHER
 			-- Facilities to search string in another string.
-		once
-			create Result.make
+		deferred
 		ensure
 			string_searcher_not_void: Result /= Void
 		end

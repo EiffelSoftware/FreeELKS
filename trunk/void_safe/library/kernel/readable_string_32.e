@@ -238,7 +238,6 @@ feature -- Access
 			-- 0 if none.
 		require
 			other_nonvoid: other /= Void
-			other_valid_string_8: other.is_valid_as_string_8
 			other_notempty: not other.is_empty
 			start_pos_large_enough: start_pos >= 1
 			start_pos_small_enough: start_pos <= count
@@ -283,7 +282,6 @@ feature -- Access
 			-- 0 if none
 		require
 			other_not_void: other /= Void
-			other_valid_string_8: other.is_valid_as_string_8
 			valid_start_index: start_index >= 1 and start_index <= count + 1
 		do
 			Result := string_searcher.substring_index (Current, other, start_index, count)
@@ -304,7 +302,6 @@ feature -- Access
 			-- 0 if there are no fuzzy matches
 		require
 			other_exists: other /= Void
-			other_valid_string_8: other.is_valid_as_string_8
 			other_not_empty: not other.is_empty
 			start_large_enough: start >= 1
 			start_small_enough: start <= count
@@ -1015,6 +1012,12 @@ feature -- Output
 
 feature {NONE} -- Implementation
 
+	string_searcher: STRING_32_SEARCHER
+			-- String searcher specialized for READABLE_STRING_32 instances
+		once
+			create Result.make
+		end
+
 	new_string (n: INTEGER): like Current
 			-- New instance of current with space for at least `n' characters.
 		require
@@ -1146,7 +1149,7 @@ feature {NONE} -- Implementation
 			end
 		end
 
-feature {READABLE_STRING_8, READABLE_STRING_32} -- Implementation
+feature {READABLE_STRING_8, READABLE_STRING_32, STRING_8_SEARCHER, STRING_32_SEARCHER} -- Implementation
 
 	area: SPECIAL [CHARACTER_32]
 			-- Storage for characters

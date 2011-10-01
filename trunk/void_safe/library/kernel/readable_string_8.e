@@ -994,6 +994,12 @@ feature -- Output
 
 feature {NONE} -- Implementation
 
+	string_searcher: STRING_8_SEARCHER
+			-- String searcher specialized for READABLE_STRING_8 instances
+		once
+			create Result.make
+		end
+
 	new_string (n: INTEGER): like Current
 			-- New instance of current with space for at least `n' characters.
 		require
@@ -1113,7 +1119,7 @@ feature {NONE} -- Implementation
 			end
 		end
 
-feature {READABLE_STRING_8, READABLE_STRING_32} -- Implementation
+feature {READABLE_STRING_8, READABLE_STRING_32, STRING_8_SEARCHER, STRING_32_SEARCHER} -- Implementation
 
 	area: SPECIAL [CHARACTER_8]
 			-- Storage for characters
