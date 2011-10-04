@@ -26,6 +26,7 @@ inherit
 			append as append_string_general,
 			prepend as prepend_string_general,
 			same_string as same_string_general,
+			starts_with as starts_with_general,
 			plus as plus_string_general
 		undefine
 			copy, is_equal, out
@@ -329,43 +330,43 @@ feature -- Element change
 									l_first_pos := l_string_searcher.substring_index_with_deltas (Current, original, l_first_pos + l_new_count, l_count)
 								else
 									l_first_pos := 0
-								end
 							end
-						elseif l_orig_count > l_new_count then
-								-- New string is smaller than previous string, we can optimize
-								-- substitution by only moving block between two occurrences of `orginal'.
-							from
-								l_next_pos := l_string_searcher.substring_index_with_deltas (Current, original, l_first_pos + l_orig_count, l_count)
-								l_area := area
-								l_new_area := new.area
-								l_new_lower := new.area_lower
-							until
-								l_next_pos = 0
-							loop
-									-- Copy new string into Current
-								l_area.copy_data (l_new_area, l_new_lower, l_first_pos - 1 - l_offset, l_new_count)
-									-- Shift characters between `l_first_pos' and `l_next_pos'
-								l_area.overlapping_move (l_first_pos + l_orig_count - 1,
-									l_first_pos + l_new_count - 1 - l_offset, l_next_pos - l_first_pos - l_orig_count)
-								l_first_pos := l_next_pos
-								l_offset := l_offset + (l_orig_count - l_new_count)
-								if l_first_pos + l_new_count <= l_count then
-									l_next_pos := l_string_searcher.substring_index_with_deltas (Current, original, l_first_pos + l_orig_count, l_count)
-								else
-									l_next_pos := 0
-								end
-							end
-								-- Perform final substitution:
+						end
+					elseif l_orig_count > l_new_count then
+							-- New string is smaller than previous string, we can optimize
+							-- substitution by only moving block between two occurrences of `orginal'.
+						from
+							l_next_pos := l_string_searcher.substring_index_with_deltas (Current, original, l_first_pos + l_orig_count, l_count)
+							l_area := area
+							l_new_area := new.area
+							l_new_lower := new.area_lower
+						until
+							l_next_pos = 0
+						loop
 								-- Copy new string into Current
 							l_area.copy_data (l_new_area, l_new_lower, l_first_pos - 1 - l_offset, l_new_count)
-								-- Shift characters between `l_first_pos' and the end of the string
+								-- Shift characters between `l_first_pos' and `l_next_pos'
 							l_area.overlapping_move (l_first_pos + l_orig_count - 1,
-								l_first_pos + l_new_count - 1 - l_offset, l_count + 1 - l_first_pos - l_orig_count)
-									-- Perform last substitution
+								l_first_pos + l_new_count - 1 - l_offset, l_next_pos - l_first_pos - l_orig_count)
+							l_first_pos := l_next_pos
 							l_offset := l_offset + (l_orig_count - l_new_count)
+							if l_first_pos + l_new_count <= l_count then
+								l_next_pos := l_string_searcher.substring_index_with_deltas (Current, original, l_first_pos + l_orig_count, l_count)
+							else
+								l_next_pos := 0
+							end
+						end
+							-- Perform final substitution:
+							-- Copy new string into Current
+						l_area.copy_data (l_new_area, l_new_lower, l_first_pos - 1 - l_offset, l_new_count)
+							-- Shift characters between `l_first_pos' and the end of the string
+						l_area.overlapping_move (l_first_pos + l_orig_count - 1,
+							l_first_pos + l_new_count - 1 - l_offset, l_count + 1 - l_first_pos - l_orig_count)
+								-- Perform last substitution
+						l_offset := l_offset + (l_orig_count - l_new_count)
 
-								-- Update `count'
-							set_count (l_count - l_offset)
+							-- Update `count'
+						set_count (l_count - l_offset)
 						end
 							-- String was modified we need to recompute the `hash_code'.
 						internal_hash_code := 0

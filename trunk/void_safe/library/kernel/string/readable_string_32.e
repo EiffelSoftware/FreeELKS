@@ -16,6 +16,7 @@ inherit
 	READABLE_STRING_GENERAL
 		rename
 			same_string as same_string_general,
+			starts_with as starts_with_general,
 			plus as plus_string_general
 		redefine
 			copy, is_equal, out

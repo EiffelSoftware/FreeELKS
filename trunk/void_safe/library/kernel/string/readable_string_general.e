@@ -179,6 +179,36 @@ feature -- Status report
 			end
 		end
 
+	starts_with (s: READABLE_STRING_GENERAL): BOOLEAN
+			-- Does string begin with `s'?
+		require
+			argument_not_void: s /= Void
+		local
+			i, nb: INTEGER
+		do
+			if Current = s then
+				Result := True
+			else
+				nb := s.count
+				if nb <= count then
+					from
+						i := 1
+						Result := True
+					until
+						i > nb
+					loop
+						if code (i) /= s.code (i) then
+							Result := False
+							i := nb -- Jump out of loop
+						end
+						i := i + 1
+					end
+				end
+			end
+		ensure
+			definition: Result = s.same_string (substring (1, s.count))
+		end
+
 	is_number_sequence: BOOLEAN
 			-- Does `Current' represent a number sequence?
 		deferred
