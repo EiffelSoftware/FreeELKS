@@ -149,6 +149,25 @@ feature -- Status report
 				(Result = substring (2, count).has_code (c))
 		end
 
+	has_substring (other: READABLE_STRING_GENERAL): BOOLEAN
+			-- Does `Current' contain `other'?
+		require
+			other_not_void: other /= Void
+		do
+			if other = Current then
+				Result := True
+			elseif other.count <= count then
+				Result := substring_index (other, 1) > 0
+			end
+		ensure
+			false_if_too_small: count < other.count implies not Result
+			true_if_initial: (count >= other.count and then
+				other.same_string (substring (1, other.count))) implies Result
+			recurse: (count >= other.count and then
+				not other.same_string (substring (1, other.count))) implies
+				(Result = substring (2, count).has_substring (other))
+		end
+
 	same_string (a_other: READABLE_STRING_GENERAL): BOOLEAN
 			-- Does `a_other' represent the same string as `Current'?
 		require
@@ -207,6 +226,55 @@ feature -- Status report
 			end
 		ensure
 			definition: Result = s.same_string (substring (1, s.count))
+		end
+
+	substring_index_in_bounds (other: READABLE_STRING_GENERAL; start_pos, end_pos: INTEGER): INTEGER
+			-- Position of first occurrence of `other' at or after `start_pos'
+			-- and to or before `end_pos';
+			-- 0 if none.
+		require
+			other_nonvoid: other /= Void
+			other_notempty: not other.is_empty
+			start_pos_large_enough: start_pos >= 1
+			start_pos_small_enough: start_pos <= count
+			end_pos_large_enough: end_pos >= start_pos
+			end_pos_small_enough: end_pos <= count
+		deferred
+		ensure
+			correct_place: Result > 0 implies other.same_string (substring (Result, Result + other.count - 1))
+			-- forall x : start_pos..Result
+			--	not substring (x, x+other.count -1).is_equal (other)
+		end
+
+	substring_index (other: READABLE_STRING_GENERAL; start_index: INTEGER): INTEGER
+			-- Index of first occurrence of other at or after start_index;
+			-- 0 if none
+		require
+			other_not_void: other /= Void
+			valid_start_index: start_index >= 1 and start_index <= count + 1
+		deferred
+		ensure
+			valid_result: Result = 0 or else
+				(start_index <= Result and Result <= count - other.count + 1)
+			zero_if_absent: (Result = 0) =
+				not substring (start_index, count).has_substring (other)
+			at_this_index: Result >= start_index implies
+				other.same_string (substring (Result, Result + other.count - 1))
+			none_before: Result > start_index implies
+				not substring (start_index, Result + other.count - 2).has_substring (other)
+		end
+
+	fuzzy_index (other: READABLE_STRING_GENERAL; start: INTEGER; fuzz: INTEGER): INTEGER
+			-- Position of first occurrence of `other' at or after `start'
+			-- with 0..`fuzz' mismatches between the string and `other'.
+			-- 0 if there are no fuzzy matches
+		require
+			other_exists: other /= Void
+			other_not_empty: not other.is_empty
+			start_large_enough: start >= 1
+			start_small_enough: start <= count
+			acceptable_fuzzy: fuzz <= other.count
+		deferred
 		end
 
 	is_number_sequence: BOOLEAN

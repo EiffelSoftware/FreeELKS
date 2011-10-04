@@ -30,7 +30,6 @@ feature -- Initialization
 			-- Optimized for the top `max_code_point_value' characters only.
 		require
 			a_pattern_not_void: a_pattern /= Void
-			a_pattern_valid: a_pattern.is_valid_as_string_8
 		do
 			internal_initialize_deltas (a_pattern, a_pattern.count, deltas)
 		end
@@ -62,7 +61,6 @@ feature -- Search
 		require
 			a_string_not_void: a_string /= Void
 			a_pattern_not_void: a_pattern /= Void
-			a_pattern_valid: a_pattern.is_valid_as_string_8
 			start_large_enough: start_pos >= 1
 			end_pos_large_enough: start_pos <= end_pos + 1
 			end_pos_small_enough: end_pos <= a_string.count
@@ -87,7 +85,6 @@ feature -- Search
 		require
 			a_string_not_void: a_string /= Void
 			a_pattern_not_void: a_pattern /= Void
-			a_pattern_valid: a_pattern.is_valid_as_string_8
 			a_pattern_not_empty: not a_pattern.is_empty
 			start_large_enough: start_pos >= 1
 			end_pos_large_enough: start_pos <= end_pos + 1
@@ -101,7 +98,6 @@ feature -- Search
 		require
 			a_string_not_void: a_string /= Void
 			a_pattern_not_void: a_pattern /= Void
-			a_pattern_valid: a_pattern.is_valid_as_string_8
 			a_pattern_not_empty: not a_pattern.is_empty
 			start_large_enough: start_pos >= 1
 			end_pos_large_enough: start_pos <= end_pos + 1
@@ -134,7 +130,6 @@ feature -- Search
 		require
 			a_string_not_void: a_string /= Void
 			a_pattern_not_void: a_pattern /= Void
-			a_pattern_valid: a_pattern.is_valid_as_string_8
 			a_pattern_not_empty: not a_pattern.is_empty
 			start_large_enough: start_pos >= 1
 			end_pos_large_enough: start_pos <= end_pos + 1
@@ -194,7 +189,6 @@ feature {NONE} -- Implementation
 			-- are computed and stored in `deltas_array'.
 		require
 			a_pattern_not_void: a_pattern /= Void
-			a_pattern_valid: a_pattern.is_valid_as_string_8
 			fuzzy_positive: fuzzy > 0
 		local
 			l_deltas: like deltas
