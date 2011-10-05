@@ -24,6 +24,7 @@ inherit
 		rename
 			same_string as same_string_general,
 			starts_with as starts_with_general,
+			ends_with as ends_with_general,
 			plus as plus_string_general
 		undefine
 			is_equal, out, copy

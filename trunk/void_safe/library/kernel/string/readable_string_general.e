@@ -208,24 +208,54 @@ feature -- Status report
 			if Current = s then
 				Result := True
 			else
-				nb := s.count
-				if nb <= count then
+				i := s.count
+				if i <= count then
 					from
-						i := 1
 						Result := True
 					until
-						i > nb
+						i = 0
 					loop
 						if code (i) /= s.code (i) then
 							Result := False
-							i := nb -- Jump out of loop
+							i := 1 -- Jump out of loop
 						end
-						i := i + 1
+						i := i - 1
 					end
 				end
 			end
 		ensure
 			definition: Result = s.same_string (substring (1, s.count))
+		end
+
+	ends_with (s: READABLE_STRING_GENERAL): BOOLEAN
+			-- Does string finish with `s'?
+		require
+			argument_not_void: s /= Void
+		local
+			i, j: INTEGER
+		do
+			if Current = s then
+				Result := True
+			else
+				i := s.count
+				j := count
+				if i <= j then
+					from
+						Result := True
+					until
+						i = 0
+					loop
+						if code(j) /= s.code (i) then
+							Result := False
+							i := 1 -- Jump out of loop
+						end
+						i := i - 1
+						j := j - 1
+					end
+				end
+			end
+		ensure
+			definition: Result = s.same_string (substring (count - s.count + 1, count))
 		end
 
 	substring_index_in_bounds (other: READABLE_STRING_GENERAL; start_pos, end_pos: INTEGER): INTEGER
