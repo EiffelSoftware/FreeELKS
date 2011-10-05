@@ -1,7 +1,7 @@
 note
 	description: "Common ancestors to all STRING classes. Read-only interface."
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2011, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -203,7 +203,7 @@ feature -- Status report
 		require
 			argument_not_void: s /= Void
 		local
-			i, nb: INTEGER
+			i: INTEGER
 		do
 			if Current = s then
 				Result := True
