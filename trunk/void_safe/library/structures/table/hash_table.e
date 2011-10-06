@@ -146,14 +146,62 @@ feature -- Access
 		note
 			option: stable
 		local
-			old_control, old_position: INTEGER
+			l_default_key: detachable K
+			hash_value, increment, l_pos, l_item_pos, l_capacity: INTEGER
+			l_first_deleted_position: INTEGER
+			stop: INTEGER
+			l_keys: like keys
+			l_indexes: like indexes_map
+			l_deleted_marks: like deleted_marks
+			l_key: K
 		do
-			old_control := control; old_position := item_position
-			internal_search (key)
-			if found then
-				Result := content.item (position)
+			l_first_deleted_position := ht_impossible_position
+			if key = l_default_key or key = Void then
+				if has_default then
+					Result := content.item (indexes_map.item (capacity))
+				end
+			else
+				from
+					l_keys := keys
+					l_indexes := indexes_map
+					l_deleted_marks := deleted_marks
+					l_capacity := capacity
+					stop := l_capacity
+					hash_value := key.hash_code
+					increment := 1 + hash_value \\ (l_capacity - 1)
+					l_item_pos := (hash_value \\ l_capacity) - increment
+				until
+					stop = 0
+				loop
+						-- Go to next increment.
+					l_item_pos := (l_item_pos + increment) \\ l_capacity
+					l_pos := l_indexes [l_item_pos]
+					if l_pos >= 0 then
+						l_key := l_keys.item (l_pos)
+						debug ("detect_hash_table_catcall")
+							check
+								catcall_detected: l_key /= Void and then l_key.same_type (key)
+							end
+						end
+						if same_keys (l_key, key) then
+								-- We found our item
+							stop := 1
+							Result := content.item (l_pos)
+						end
+					elseif l_pos = ht_impossible_position then
+						stop := 1
+					elseif l_first_deleted_position = ht_impossible_position then
+						l_pos := -l_pos + ht_deleted_position
+						check l_pos_valid: l_pos < l_deleted_marks.count end
+						if not l_deleted_marks [l_pos] then
+							stop := 1
+						else
+							l_first_deleted_position := l_item_pos
+						end
+					end
+					stop := stop - 1
+				end
 			end
-			control := old_control; item_position := old_position
 		ensure then
 			default_value_if_not_present:
 				(not (has (key))) implies (Result = computed_default_value)
@@ -162,12 +210,62 @@ feature -- Access
 	has (key: K): BOOLEAN
 			-- Is there an item in the table with key `key'?
 		local
-			old_control, old_position: INTEGER
+			l_default_key: detachable K
+			hash_value, increment, l_pos, l_item_pos, l_capacity: INTEGER
+			l_first_deleted_position: INTEGER
+			stop: INTEGER
+			l_keys: like keys
+			l_indexes: like indexes_map
+			l_deleted_marks: like deleted_marks
+			l_key: K
 		do
-			old_control := control; old_position := item_position
-			internal_search (key)
-			Result := found
-			control := old_control; item_position := old_position
+			l_first_deleted_position := ht_impossible_position
+			if key = l_default_key or key = Void then
+				if has_default then
+					Result := True
+				end
+			else
+				from
+					l_keys := keys
+					l_indexes := indexes_map
+					l_deleted_marks := deleted_marks
+					l_capacity := capacity
+					stop := l_capacity
+					hash_value := key.hash_code
+					increment := 1 + hash_value \\ (l_capacity - 1)
+					l_item_pos := (hash_value \\ l_capacity) - increment
+				until
+					stop = 0
+				loop
+						-- Go to next increment.
+					l_item_pos := (l_item_pos + increment) \\ l_capacity
+					l_pos := l_indexes [l_item_pos]
+					if l_pos >= 0 then
+						l_key := l_keys.item (l_pos)
+						debug ("detect_hash_table_catcall")
+							check
+								catcall_detected: l_key /= Void and then l_key.same_type (key)
+							end
+						end
+						if same_keys (l_key, key) then
+								-- We found our item
+							stop := 1
+							Result := True
+						end
+					elseif l_pos = ht_impossible_position then
+						stop := 1
+					elseif l_first_deleted_position = ht_impossible_position then
+						l_pos := -l_pos + ht_deleted_position
+						check l_pos_valid: l_pos < l_deleted_marks.count end
+						if not l_deleted_marks [l_pos] then
+							stop := 1
+						else
+							l_first_deleted_position := l_item_pos
+						end
+					end
+					stop := stop - 1
+				end
+			end
 		ensure then
 			default_case: (key = computed_default_key) implies (Result = has_default)
 		end
