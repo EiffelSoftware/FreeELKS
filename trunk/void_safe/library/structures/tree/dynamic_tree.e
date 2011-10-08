@@ -86,7 +86,7 @@ feature -- Element change
 		deferred
 		end
 
-	merge_tree_before (other: like first_child)
+	merge_tree_before (other: attached like first_child)
 			-- Merge children of `other' into current structure
 			-- after cursor position. Do not move cursor.
 			-- Make `other' a leaf.
@@ -98,7 +98,7 @@ feature -- Element change
 			other_is_leaf: other.is_leaf
 		end
 
-	merge_tree_after (other: like first_child)
+	merge_tree_after (other: attached like first_child)
 			-- Merge children of `other' into current structure
 			-- after cursor position. Do not move cursor.
 			-- Make `other' a leaf.
