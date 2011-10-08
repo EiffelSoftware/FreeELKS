@@ -246,7 +246,7 @@ feature -- Status report
 			end
 		end
 
-	is_sibling (other: like parent): BOOLEAN
+	is_sibling (other: attached like parent): BOOLEAN
 			-- Are current node and `other' siblings?
 		require
 			other_exists: other /= Void
