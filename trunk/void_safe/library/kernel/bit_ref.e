@@ -1,12 +1,16 @@
 note
 	description: "Bit sequences of length `count', with binary operations"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2004, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2011, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
-class BIT_REF inherit
+class BIT_REF
+
+obsolete "BIT type is not part of the standard. Use NATURAL_8, NATURAL_16, NATURAL_32 or NATURAL_64 and corresponding bit operations instead."
+
+inherit
 
 	ANY
 		redefine
