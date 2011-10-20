@@ -129,7 +129,7 @@ feature -- Status report
 				from
 					c := cursor
 					start
-						check not off end
+					check not off end
 					prev := item
 					forth
 				until
