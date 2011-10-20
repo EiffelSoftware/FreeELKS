@@ -281,135 +281,135 @@ feature {NONE} -- Implementation
 			-- Array which stores the various type for the ASCII characters
 		once
 			create Result.make_empty (256)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag | is_white_space_flag)
-			Result.extend (is_control_flag | is_white_space_flag)
-			Result.extend (is_control_flag | is_white_space_flag)
-			Result.extend (is_control_flag | is_white_space_flag)
-			Result.extend (is_control_flag | is_white_space_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_control_flag)
-			Result.extend (is_white_space_flag | is_space_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_digit_flag)
-			Result.extend (is_digit_flag)
-			Result.extend (is_digit_flag)
-			Result.extend (is_digit_flag)
-			Result.extend (is_digit_flag)
-			Result.extend (is_digit_flag)
-			Result.extend (is_digit_flag)
-			Result.extend (is_digit_flag)
-			Result.extend (is_digit_flag)
-			Result.extend (is_digit_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_upper_flag | is_hexa_digit_flag)
-			Result.extend (is_upper_flag | is_hexa_digit_flag)
-			Result.extend (is_upper_flag | is_hexa_digit_flag)
-			Result.extend (is_upper_flag | is_hexa_digit_flag)
-			Result.extend (is_upper_flag | is_hexa_digit_flag)
-			Result.extend (is_upper_flag | is_hexa_digit_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_upper_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_lower_flag | is_hexa_digit_flag)
-			Result.extend (is_lower_flag | is_hexa_digit_flag)
-			Result.extend (is_lower_flag | is_hexa_digit_flag)
-			Result.extend (is_lower_flag | is_hexa_digit_flag)
-			Result.extend (is_lower_flag | is_hexa_digit_flag)
-			Result.extend (is_lower_flag | is_hexa_digit_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_lower_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_punctuation_flag)
-			Result.extend (is_control_flag)
-			Result.fill_with (0, 128, 255)
+			Result.extend (is_control_flag)							-- 0	null
+			Result.extend (is_control_flag)                         -- 1	start of heading
+			Result.extend (is_control_flag)                         -- 2	start of text
+			Result.extend (is_control_flag)                         -- 3	end of text
+			Result.extend (is_control_flag)                         -- 4	end of transmission
+			Result.extend (is_control_flag)                         -- 5	enquiry
+			Result.extend (is_control_flag)                         -- 6	acknowledge
+			Result.extend (is_control_flag)                         -- 7	bell
+			Result.extend (is_control_flag)                         -- 8	backspace
+			Result.extend (is_control_flag | is_white_space_flag)   -- 9	horizontal tab
+			Result.extend (is_control_flag | is_white_space_flag)   -- 10	NL line feed, new line
+			Result.extend (is_control_flag | is_white_space_flag)   -- 11	vertical tab
+			Result.extend (is_control_flag | is_white_space_flag)   -- 12	NP form feed, new page
+			Result.extend (is_control_flag | is_white_space_flag)   -- 13	carriage return=CR
+			Result.extend (is_control_flag)                         -- 14	shift out
+			Result.extend (is_control_flag)                         -- 15	shift in
+			Result.extend (is_control_flag)                         -- 16
+			Result.extend (is_control_flag)                         -- 17
+			Result.extend (is_control_flag)                         -- 18
+			Result.extend (is_control_flag)                         -- 19
+			Result.extend (is_control_flag)                         -- 20
+			Result.extend (is_control_flag)                         -- 21
+			Result.extend (is_control_flag)                         -- 22
+			Result.extend (is_control_flag)                         -- 23
+			Result.extend (is_control_flag)                         -- 24
+			Result.extend (is_control_flag)                         -- 25
+			Result.extend (is_control_flag)                         -- 26
+			Result.extend (is_control_flag)                         -- 27	Escape
+			Result.extend (is_control_flag)                         -- 28	file separator
+			Result.extend (is_control_flag)                         -- 29	group separator
+			Result.extend (is_control_flag)                         -- 30	record separator
+			Result.extend (is_control_flag)                         -- 31	unit separator
+			Result.extend (is_white_space_flag | is_space_flag)     -- 32	Space
+			Result.extend (is_punctuation_flag)                     -- 33	!
+			Result.extend (is_punctuation_flag)                     -- 34	"
+			Result.extend (is_punctuation_flag)                     -- 35	#
+			Result.extend (is_punctuation_flag)                     -- 36	$
+			Result.extend (is_punctuation_flag)                     -- 37	%
+			Result.extend (is_punctuation_flag)                     -- 38	&
+			Result.extend (is_punctuation_flag)                     -- 39	'
+			Result.extend (is_punctuation_flag)                     -- 40	(
+			Result.extend (is_punctuation_flag)                     -- 41	)
+			Result.extend (is_punctuation_flag)                     -- 42	*
+			Result.extend (is_punctuation_flag)                     -- 43	+
+			Result.extend (is_punctuation_flag)                     -- 44	,
+			Result.extend (is_punctuation_flag)                     -- 45	-
+			Result.extend (is_punctuation_flag)                     -- 46	.
+			Result.extend (is_punctuation_flag)                     -- 47	/
+			Result.extend (is_digit_flag)                           -- 48	0
+			Result.extend (is_digit_flag)                           -- 49	1
+			Result.extend (is_digit_flag)                           -- 50	2
+			Result.extend (is_digit_flag)                           -- 51	3
+			Result.extend (is_digit_flag)                           -- 52	4
+			Result.extend (is_digit_flag)                           -- 53	5
+			Result.extend (is_digit_flag)                           -- 54	6
+			Result.extend (is_digit_flag)                           -- 55	7
+			Result.extend (is_digit_flag)                           -- 56	8
+			Result.extend (is_digit_flag)                           -- 57	9
+			Result.extend (is_punctuation_flag)                     -- 58	:
+			Result.extend (is_punctuation_flag)                     -- 59	;
+			Result.extend (is_punctuation_flag)                     -- 60	<
+			Result.extend (is_punctuation_flag)                     -- 61	=
+			Result.extend (is_punctuation_flag)                     -- 62	>
+			Result.extend (is_punctuation_flag)                     -- 63	?
+			Result.extend (is_punctuation_flag)                     -- 64	@
+			Result.extend (is_upper_flag | is_hexa_digit_flag)      -- 65	A
+			Result.extend (is_upper_flag | is_hexa_digit_flag)      -- 66	B
+			Result.extend (is_upper_flag | is_hexa_digit_flag)      -- 67	C
+			Result.extend (is_upper_flag | is_hexa_digit_flag)      -- 68	D
+			Result.extend (is_upper_flag | is_hexa_digit_flag)      -- 69	E
+			Result.extend (is_upper_flag | is_hexa_digit_flag)      -- 70	F
+			Result.extend (is_upper_flag)                           -- 71	G
+			Result.extend (is_upper_flag)                           -- 72	H
+			Result.extend (is_upper_flag)                           -- 73	I
+			Result.extend (is_upper_flag)                           -- 74	J
+			Result.extend (is_upper_flag)                           -- 75	K
+			Result.extend (is_upper_flag)                           -- 76	L
+			Result.extend (is_upper_flag)                           -- 77	M
+			Result.extend (is_upper_flag)                           -- 78	N
+			Result.extend (is_upper_flag)                           -- 79	O
+			Result.extend (is_upper_flag)                           -- 80	P
+			Result.extend (is_upper_flag)                           -- 81	Q
+			Result.extend (is_upper_flag)                           -- 82	R
+			Result.extend (is_upper_flag)                           -- 83	S
+			Result.extend (is_upper_flag)                           -- 84	T
+			Result.extend (is_upper_flag)                           -- 85	U
+			Result.extend (is_upper_flag)                           -- 86	V
+			Result.extend (is_upper_flag)                           -- 87	W
+			Result.extend (is_upper_flag)                           -- 88	X
+			Result.extend (is_upper_flag)                           -- 89	Y
+			Result.extend (is_upper_flag)                           -- 90	Z
+			Result.extend (is_punctuation_flag)                     -- 91	[
+			Result.extend (is_punctuation_flag)                     -- 92	\
+			Result.extend (is_punctuation_flag)                     -- 93	]
+			Result.extend (is_punctuation_flag)                     -- 94	^
+			Result.extend (is_punctuation_flag)                     -- 95	_
+			Result.extend (is_punctuation_flag)                     -- 96	`
+			Result.extend (is_lower_flag | is_hexa_digit_flag)      -- 97	a
+			Result.extend (is_lower_flag | is_hexa_digit_flag)      -- 98	b
+			Result.extend (is_lower_flag | is_hexa_digit_flag)      -- 99	c
+			Result.extend (is_lower_flag | is_hexa_digit_flag)      -- 100	d
+			Result.extend (is_lower_flag | is_hexa_digit_flag)      -- 101	e
+			Result.extend (is_lower_flag | is_hexa_digit_flag)      -- 102	f
+			Result.extend (is_lower_flag)                           -- 103	g
+			Result.extend (is_lower_flag)                           -- 104	h
+			Result.extend (is_lower_flag)                           -- 105	i
+			Result.extend (is_lower_flag)                           -- 106	j
+			Result.extend (is_lower_flag)                           -- 107	k
+			Result.extend (is_lower_flag)                           -- 108	l
+			Result.extend (is_lower_flag)                           -- 109	m
+			Result.extend (is_lower_flag)                           -- 110	n
+			Result.extend (is_lower_flag)                           -- 111	o
+			Result.extend (is_lower_flag)                           -- 112	p
+			Result.extend (is_lower_flag)                           -- 113	q
+			Result.extend (is_lower_flag)                           -- 114	r
+			Result.extend (is_lower_flag)                           -- 115	s
+			Result.extend (is_lower_flag)                           -- 116	t
+			Result.extend (is_lower_flag)                           -- 117	u
+			Result.extend (is_lower_flag)                           -- 118	v
+			Result.extend (is_lower_flag)                           -- 119	w
+			Result.extend (is_lower_flag)                           -- 120	x
+			Result.extend (is_lower_flag)                           -- 121	y
+			Result.extend (is_lower_flag)                           -- 122	z
+			Result.extend (is_punctuation_flag)                     -- 123	{
+			Result.extend (is_punctuation_flag)                     -- 124	|
+			Result.extend (is_punctuation_flag)                     -- 125	}
+			Result.extend (is_punctuation_flag)                     -- 126	~
+			Result.extend (is_control_flag)                         -- 127	DEL
+			Result.fill_with (0, 128, 255)							-- extended ASCII
 		ensure
 			internal_character_types_not_void: Result /= Void
 		end
