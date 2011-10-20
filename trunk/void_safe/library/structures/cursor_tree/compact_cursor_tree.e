@@ -183,9 +183,9 @@ feature -- Cursor movement
 			index, next: INTEGER
 		do
 			if below then
-					check
-						after
-					end
+				check
+					after
+				end
 					-- This is because:
 					-- below implies (before or after),
 					-- and before is false.
@@ -224,9 +224,9 @@ feature -- Cursor movement
 			-- Move cursor one position forward.
 		do
 			if below then
-					check
-						before
-					end
+				check
+					before
+				end
 					-- This is because:
 					-- below implies (before or after),
 					-- and after is false.
@@ -325,7 +325,7 @@ feature -- Cursor movement
 				above := temp.above
 			else
 				check
-					False
+					correct_cursor_type: False
 				end
 			end
 		end
@@ -471,7 +471,7 @@ feature -- Element change
 					next := next_sibling_table.item (index)
 				end
 				check
-					next < 0 -- parent exist
+					parent_exists: next < 0
 				end
 				next_sibling_table.put (next, new)
 				next_sibling_table.put (new, index)

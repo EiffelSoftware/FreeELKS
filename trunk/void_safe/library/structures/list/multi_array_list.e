@@ -371,7 +371,7 @@ feature -- Element change
 			l: detachable like first_element
 		do
 			current_array := active_array
-				check is_empty implies after end
+			check is_empty implies after end
 			if after then
 				extend (v)
 			else
@@ -428,7 +428,6 @@ feature -- Removal
 		do
 			count := 0
 			index := 0
-			check first_element /= Void end
 			first_element.item.wipe_out
 			first_element.forget_right
 			active := first_element
