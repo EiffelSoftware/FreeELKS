@@ -871,7 +871,7 @@ feature -- Conversion
 			from
 				i := 1
 				cnt := count
-				create Result.make (1, cnt)
+				create Result.make_filled (Void, 1, cnt)
 			until
 				i > cnt
 			loop
@@ -896,7 +896,7 @@ feature -- Conversion
 			from
 				i := 1
 				cnt := count
-				create Result.make (1, cnt)
+				create Result.make_filled (False, 1, cnt)
 			until
 				i > cnt
 			loop
@@ -921,7 +921,7 @@ feature -- Conversion
 			from
 				i := 1
 				cnt := count
-				create Result.make (1, cnt)
+				create Result.make_filled (' ', 1, cnt)
 			until
 				i > cnt
 			loop
@@ -946,7 +946,7 @@ feature -- Conversion
 			from
 				i := 1
 				cnt := count
-				create Result.make (1, cnt)
+				create Result.make_filled ({REAL_64} 0.0, 1, cnt)
 			until
 				i > cnt
 			loop
@@ -971,7 +971,7 @@ feature -- Conversion
 			from
 				i := 1
 				cnt := count
-				create Result.make (1, cnt)
+				create Result.make_filled ({INTEGER} 0, 1, cnt)
 			until
 				i > cnt
 			loop
@@ -996,7 +996,7 @@ feature -- Conversion
 			from
 				i := 1
 				cnt := count
-				create Result.make (1, cnt)
+				create Result.make_filled (Default_pointer, 1, cnt)
 			until
 				i > cnt
 			loop
@@ -1021,7 +1021,7 @@ feature -- Conversion
 			from
 				i := 1
 				cnt := count
-				create Result.make (1, cnt)
+				create Result.make_filled ({REAL_32} 0.0, 1, cnt)
 			until
 				i > cnt
 			loop
@@ -1046,7 +1046,7 @@ feature -- Conversion
 			from
 				i := 1
 				cnt := count
-				create Result.make (1, cnt)
+				create Result.make_filled (Void, 1, cnt)
 			until
 				i > cnt
 			loop
