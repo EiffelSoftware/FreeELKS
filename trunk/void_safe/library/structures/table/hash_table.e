@@ -32,6 +32,11 @@ class HASH_TABLE [G, K -> detachable HASHABLE] inherit
 			copy, is_equal, wipe_out, has_item
 		end
 
+	TABLE_ITERABLE [G, K]
+		redefine
+			copy, is_equal
+		end
+
 	READABLE_INDEXABLE [G]
 		rename
 			item as iteration_item,

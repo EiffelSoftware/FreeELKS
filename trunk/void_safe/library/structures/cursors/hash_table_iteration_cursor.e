@@ -20,6 +20,8 @@ inherit
 			target
 		end
 
+	TABLE_ITERATION_CURSOR [G, K]
+
 create
 	make
 
@@ -33,8 +35,6 @@ feature -- Access
 
 	key: K
 			-- Key at current cursor position
-		require
-			valid_position: not after
 		do
 			Result := target.keys [iteration_position]
 		end
