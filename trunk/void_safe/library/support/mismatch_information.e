@@ -70,7 +70,7 @@ feature -- Status report
 	is_version_mismatched: BOOLEAN
 			-- Is the `stored_version' different from the current system version?
 		do
-			Result := stored_version /= current_version
+			Result := stored_version /~ current_version
 		end
 
 feature -- Settings
