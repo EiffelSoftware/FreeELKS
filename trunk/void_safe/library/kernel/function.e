@@ -22,6 +22,9 @@ inherit
 			is_equal, copy
 		end
 
+create {NONE}
+	set_rout_disp
+
 feature -- Access
 
 	last_result: detachable RESULT_TYPE
