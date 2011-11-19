@@ -19,6 +19,9 @@ class
 inherit
 	ROUTINE [BASE_TYPE, OPEN_ARGS]
 
+create {NONE}
+	set_rout_disp
+
 feature -- Calls
 
 	apply

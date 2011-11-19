@@ -15,4 +15,7 @@ class
 inherit
 	FUNCTION [BASE_TYPE, OPEN_ARGS, BOOLEAN]
 
+create {NONE}
+	set_rout_disp
+
 end
