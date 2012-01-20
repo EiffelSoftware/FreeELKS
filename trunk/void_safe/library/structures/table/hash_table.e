@@ -515,16 +515,19 @@ feature -- Status report
 	after, off: BOOLEAN
 			-- Is cursor past last item?
 		do
-			Result := iteration_position >= keys.count
+			Result := is_off_position (iteration_position)
 		end
 
 	valid_cursor (c: CURSOR): BOOLEAN
 			-- Can cursor be moved to position `c'?
 		require
 			c_not_void: c /= Void
+		local
+			i: INTEGER
 		do
 			if attached {HASH_TABLE_CURSOR} c as ht_cursor then
-				Result := valid_iteration_index (ht_cursor.position)
+				i := ht_cursor.position
+				Result := is_off_position (i) or else truly_occupied (i)
 			end
 		end
 
@@ -566,7 +569,7 @@ feature -- Status report
 	valid_iteration_index (i: INTEGER): BOOLEAN
 			-- <Precursor>
 		do
-			Result := (is_off_position (i)) or else ((i >= 0) and (i <= keys.count) and then truly_occupied (i))
+			Result := truly_occupied (i)
 		end
 
 feature -- Cursor movement
@@ -574,8 +577,8 @@ feature -- Cursor movement
 	start
 			-- Bring cursor to first position.
 		do
-			iteration_position := -1
-			forth
+				-- Get lower bound of iteration if any.
+			iteration_position := next_iteration_position (-1)
 		end
 
 	forth
@@ -1307,9 +1310,9 @@ feature {NONE} -- Implementation
 		end
 
 	is_off_position (pos: INTEGER): BOOLEAN
-			-- Is `pos' a cursor position past last item?
+			-- Is `pos' a cursor position outside the authorized range?
 		do
-			Result := pos >= keys.count
+			Result := pos < 0 or pos >= keys.count
 		end
 
 	set_content (c: like content)
@@ -1702,7 +1705,7 @@ note
 			end
 		]"
 	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2011, Eiffel Software and others"
+	copyright:	"Copyright (c) 1984-2012, Eiffel Software and others"
 	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
