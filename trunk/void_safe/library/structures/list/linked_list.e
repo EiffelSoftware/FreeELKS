@@ -152,7 +152,7 @@ feature -- Status report
 			if attached {like cursor} p as ll_c then
 				from
 					temp := first_element
-					sought ?= ll_c.active
+					sought := ll_c.active
 					Result := ll_c.after or else ll_c.before
 				until
 					Result or else temp = Void
@@ -324,7 +324,7 @@ feature -- Cursor movement
 				elseif after then
 					active := last_element
 				else
-					active ?= ll_c.active
+					active := ll_c.active
 				end
 			else
 				check
