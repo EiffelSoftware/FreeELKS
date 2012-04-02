@@ -364,10 +364,13 @@ feature -- Element change
 	force (v: like item; i: INTEGER)
 			-- Assign item `v' to `i'-th entry.
 			-- Resize the array if `i' falls out of currently defined bounds; preserve existing items.
-			-- In void-safe mode, if ({G}).has_default does not hold, then you can only insert at either
+			-- In void-safe mode, if ({G}).has_default does not hold, then you can only insert between
 			-- `lower - 1' or `upper + 1' position in the ARRAY.
 		require
-			has_default: ({G}).has_default or else i = lower - 1 or else i = upper + 1
+			has_default_if_too_low:
+				(i < lower - 1 and lower /= {like lower}.min_value) implies ({G}).has_default
+			has_default_if_too_high:
+				(i > upper + 1 and upper /= {like upper}.max_value) implies ({G}).has_default
 		local
 			old_size, new_size: INTEGER
 			new_lower, new_upper: INTEGER
