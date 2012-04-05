@@ -374,7 +374,7 @@ feature -- Element change
 		local
 			old_size, new_size: INTEGER
 			new_lower, new_upper: INTEGER
-			offset: INTEGER
+			l_count, l_offset: INTEGER
 			l_increased_by_one: BOOLEAN
 		do
 			new_lower := lower.min (i)
@@ -397,10 +397,20 @@ feature -- Element change
 				if new_lower < lower then
 						-- We have inserted below the previous `lower'. We need to shift entries to the right
 						-- before we can insert `v'.
-					offset := lower - new_lower
-					area.move_data (0, offset, capacity)
+					l_offset := lower - new_lower
+					l_count := capacity
+					if not l_increased_by_one and l_offset > l_count then
+							-- With the `new_lower' given, the data has to move
+							-- beyond the `area''s count which requires us to fill
+							-- the gap between the old data's location and the new one
+							-- with the default value.
+						area.fill_with (({G}).default, l_count, l_offset - 1)
+					end
+					area.move_data (0, l_offset, l_count)
 					if not l_increased_by_one then
-						area.fill_with (({G}).default, 1, offset - 2)
+							-- We start at `1' and not `0' because next instruction
+							-- will update the item at position `0'.
+						area.fill_with (({G}).default, 1, l_offset - 1)
 					end
 						-- Insert `v' at the new lower position.
 					area.put (v, 0)
@@ -865,7 +875,7 @@ invariant
 --				(index_set.upper = lower + count - 1))
 
 note
-	copyright: "Copyright (c) 1984-2010, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
