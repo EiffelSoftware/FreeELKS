@@ -4,8 +4,6 @@ note
 		in a contiguous range.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2010, Eiffel Software and others"
-	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -512,21 +510,17 @@ feature -- Element change
 		local
 			nb, nb_space: INTEGER
 			l_area: like area
-			l_done: BOOLEAN
-			c: CHARACTER_32
 		do
 				-- Compute number of spaces at the left of current string.
 			from
 				nb := count - 1
 				l_area := area
 			until
-				nb_space > nb or l_done
+				nb_space > nb or else
+				(attached l_area.item (nb_space) as c and then not (c.is_character_8 and then c.is_space))
 			loop
-				c := l_area.item (nb_space)
-				l_done := not (c.is_character_8 and then c.is_space)
 				nb_space := nb_space + 1
 			end
-			nb_space := nb_space - 1
 
 			if nb_space > 0 then
 					-- Set new count value.
@@ -1765,4 +1759,14 @@ invariant
 	extendible: extendible
 	compare_character: not object_comparison
 
+note
+	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
+	source: "[
+			Eiffel Software
+			5949 Hollister Ave., Goleta, CA 93117 USA
+			Telephone 805-685-1006, Fax 805-685-6869
+			Website http://www.eiffel.com
+			Customer support http://support.eiffel.com
+		]"
 end
