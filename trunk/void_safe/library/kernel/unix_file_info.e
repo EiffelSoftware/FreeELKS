@@ -12,6 +12,8 @@ class UNIX_FILE_INFO inherit
 		rename
 			area as buffered_file_info,
 			make_empty_area as make_buffered_file_info
+		redefine
+			copy, is_equal
 		end
 
 create
@@ -331,6 +333,33 @@ feature -- Status report
 			end
 		end
 
+feature -- Comparison
+
+	is_equal (other: like Current): BOOLEAN
+			-- <Precursor>
+		do
+			if other = Current then
+				Result := True
+			elseif attached file_name as l_file_name and attached other.file_name as l_other_file_name then
+
+				Result := l_file_name.same_string_general (l_other_file_name) and is_following_symlinks = other.is_following_symlinks
+			end
+		end
+
+feature -- Duplication
+
+	copy (other: like Current)
+			-- <Precursor>
+		do
+			if other /= Current then
+				standard_copy (other)
+				set_area (other.buffered_file_info.twin)
+			end
+		ensure then
+			not_shared_if_different: other /= Current implies buffered_file_info /= other.buffered_file_info
+			equal_buffered_file_infos: buffered_file_info ~ other.buffered_file_info
+		end
+
 feature -- Element change
 
 	update (f_name: STRING)
@@ -411,4 +440,14 @@ feature {NONE} -- Implementation
 			"C signature (int): EIF_REFERENCE use %"eif_file.h%""
 		end
 
+note
+	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	license: "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
+	source: "[
+			Eiffel Software
+			5949 Hollister Ave., Goleta, CA 93117 USA
+			Telephone 805-685-1006, Fax 805-685-6869
+			Website http://www.eiffel.com
+			Customer support http://support.eiffel.com
+		]"
 end
