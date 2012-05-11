@@ -37,24 +37,10 @@ feature {NONE} -- Initialization
 
 	make (n: INTEGER)
 			-- Allocate space for at least `n' characters.
-		require
-			non_negative_size: n >= 0
 		do
 			count := 0
 			internal_hash_code := 0
 			create area.make_filled ('%/000/', n + 1)
-		ensure
-			empty_string: count = 0
-			area_allocated: capacity >= n
-		end
-
-	make_empty
-			-- Create empty string.
-		do
-			make (0)
-		ensure
-			empty: count = 0
-			area_allocated: capacity >= 0
 		end
 
 	make_filled (c: CHARACTER_8; n: INTEGER)
@@ -119,6 +105,25 @@ feature {NONE} -- Initialization
 		require
 			is_dotnet: {PLATFORM}.is_dotnet
 		deferred
+		end
+
+	make_from_separate (other: separate READABLE_STRING_8)
+			-- Initialize current string from `other'.
+		local
+			i, nb: INTEGER
+			l_area: like area
+		do
+			nb := other.count
+			make (nb)
+			from
+				l_area := area
+				i := 0
+			until
+				i = nb
+			loop
+				l_area.put (other.area.item (i), i)
+				i := i + 1
+			end
 		end
 
 feature -- Access

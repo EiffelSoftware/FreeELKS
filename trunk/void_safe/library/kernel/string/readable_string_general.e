@@ -29,6 +29,26 @@ inherit
 			is_equal
 		end
 
+feature {NONE} -- Initialization
+
+	make (n: INTEGER)
+		require
+			non_negative_size: n >= 0
+		deferred
+		ensure
+			empty_string: count = 0
+			area_allocated: capacity >= n
+		end
+
+	make_empty
+			-- Create empty string.
+		do
+			make (0)
+		ensure
+			empty: count = 0
+			area_allocated: capacity >= 0
+		end
+
 feature -- Access
 
 	code (i: INTEGER): NATURAL_32

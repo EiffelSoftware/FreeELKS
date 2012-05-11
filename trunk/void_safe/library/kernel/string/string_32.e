@@ -70,7 +70,8 @@ create
 	make_from_string,
 	make_from_c,
 	make_from_c_pointer,
-	make_from_cil
+	make_from_cil,
+	make_from_separate
 
 convert
 	to_cil: {SYSTEM_STRING},
