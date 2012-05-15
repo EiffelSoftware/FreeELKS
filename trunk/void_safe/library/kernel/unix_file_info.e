@@ -387,7 +387,7 @@ feature -- Element change
 feature {NONE} -- Implementation
 
 	stat_size: INTEGER
-			-- Get size of 'struct stat' (in bytes)
+			-- Get size of 'rt_stat_buf' (in bytes)
 		external
 			"C use %"eif_file.h%""
 		end
@@ -399,7 +399,7 @@ feature {NONE} -- Implementation
 		external
 			"C inline use %"eif_file.h%""
 		alias
-			"file_stat ((char *) $name, (struct stat *) $stat_buf);"
+			"file_stat ((char *) $name, (rt_stat_buf *) $stat_buf);"
 		end
 
 	eif_file_stat (name, stat_buf: POINTER; follow_symlinks: BOOLEAN): INTEGER
@@ -407,7 +407,7 @@ feature {NONE} -- Implementation
 		external
 			"C inline use %"eif_file.h%""
 		alias
-			"return eif_file_stat ((char *) $name, (struct stat *) $stat_buf, (int) $follow_symlinks);"
+			"return eif_file_stat ((char *) $name, (rt_stat_buf *) $stat_buf, (int) $follow_symlinks);"
 		end
 
 	file_access (f_name: POINTER; which: INTEGER): BOOLEAN
@@ -419,13 +419,13 @@ feature {NONE} -- Implementation
 	file_eaccess (stat_buf: POINTER; which: INTEGER): BOOLEAN
 			-- Perform access tests using effective ID.
 		external
-			"C signature (struct stat *, int): EIF_BOOLEAN use %"eif_file.h%""
+			"C signature (rt_stat_buf *, int): EIF_BOOLEAN use %"eif_file.h%""
 		end
 
 	file_info (stat_buf: POINTER; which: INTEGER): INTEGER
 			-- Extract information `which' from information buffer
 		external
-			"C signature (struct stat *, int): EIF_INTEGER use %"eif_file.h%""
+			"C signature (rt_stat_buf *, int): EIF_INTEGER use %"eif_file.h%""
 		end
 
 	file_owner (uid: INTEGER): STRING
