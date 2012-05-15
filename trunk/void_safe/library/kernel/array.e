@@ -113,6 +113,10 @@ feature -- Initialization
 			set_area (a.area)
 			lower := a.lower
 			upper := a.upper
+		ensure
+			shared: area = a.area
+			lower_set: lower = a.lower
+			upper_set: upper = a.upper
 		end
 
 	make_from_special (a: SPECIAL [G])
