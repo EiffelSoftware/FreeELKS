@@ -150,15 +150,17 @@ feature -- Status report
 	is_valid_character_8_code: BOOLEAN
 			-- Does current object represent a CHARACTER_8?
 		do
-			Result := item >= {CHARACTER_8}.Min_value.to_natural_8 and
-				item <= {CHARACTER_8}.Max_value.to_natural_8
+			Result := True
+		ensure
+			in_bounds: Result = (item >= {CHARACTER_8}.Min_value and item <= {CHARACTER_8}.Max_value)
 		end
 
 	is_valid_character_32_code: BOOLEAN
-			-- Does current object represent a character?
+			-- Does current object represent a CHARACTER_32?
 		do
-			Result := item >= {CHARACTER_32}.Min_value and
-				item <= {CHARACTER_32}.Max_value
+			Result := True
+		ensure
+			in_bounds: Result = (item >= {CHARACTER_32}.Min_value and item <= {CHARACTER_32}.Max_value)
 		end
 
 feature -- Basic operations
