@@ -1,12 +1,12 @@
 note
 	description: "String to real/double convertor"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2012, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
-class
+frozen class
 	STRING_TO_REAL_CONVERTOR
 
 inherit
@@ -163,18 +163,55 @@ feature -- Parse
 	parse_string_with_type (s: READABLE_STRING_GENERAL; type: INTEGER)
 			-- Parse string `s' as real number of type `type'.
 		local
-			i: INTEGER
-			l_c: INTEGER
+			i, nb: INTEGER
+			l_area8: SPECIAL [CHARACTER_8]
+			l_area32: SPECIAL [CHARACTER_32]
+			l_c: CHARACTER_32
+			l_code: NATURAL_32
 		do
 			reset (type)
-			from
-				i := 1
-				l_c := s.count
-			until
-				i > l_c or last_state = 9
-			loop
-				parse_character (s.code (i).to_character_8)
-				i := i + 1
+			i := 0
+			nb := s.count
+			if attached {READABLE_STRING_8} s as l_str8 then
+				from
+					l_area8 := l_str8.area
+				until
+					i = nb or last_state = 9
+				loop
+					parse_character (l_area8.item (i))
+					i := i + 1
+				end
+			elseif attached {READABLE_STRING_32} s as l_str32 then
+				from
+					l_area32 := l_str32.area
+				until
+					i = nb or last_state = 9
+				loop
+					l_c := l_area32.item (i)
+					if l_c.is_character_8 then
+						parse_character (l_c.to_character_8)
+					else
+							-- Not a valid character.						
+						last_state := 9
+					end
+					i := i + 1
+				end
+			else
+				from
+					i := 1
+					nb := s.count
+				until
+					i > nb or last_state = 9
+				loop
+					l_code := s.code (i)
+					if l_code.is_valid_character_8_code then
+						parse_character (l_code.to_character_8)
+					else
+							-- Not a valid character.
+						last_state := 9
+					end
+					i := i + 1
+				end
 			end
 		end
 

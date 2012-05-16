@@ -1,7 +1,7 @@
 note
 	description: "Common ancestors to all STRING classes. Read-only interface."
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2011, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2012, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -118,7 +118,10 @@ feature -- Status report
 
 	valid_index (i: INTEGER): BOOLEAN
 			-- Is `i' within the bounds of the string?
-		deferred
+		do
+			Result := (i > 0) and (i <= count)
+		ensure
+			definition: Result = (1 <= i and i <= count)
 		end
 
 	valid_code (v: like code): BOOLEAN
@@ -329,7 +332,8 @@ feature -- Status report
 
 	is_number_sequence: BOOLEAN
 			-- Does `Current' represent a number sequence?
-		deferred
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_no_limitation)
 		ensure
 			syntax_and_range:
 				-- Result is true if and only if the following two
@@ -347,7 +351,12 @@ feature -- Status report
 
 	is_real_sequence: BOOLEAN
 			-- Does `Current' represent a real sequence?
-		deferred
+		local
+			l_convertor: like ctor_convertor
+		do
+			l_convertor := ctor_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.is_integral_double
 		ensure
 			syntax_and_range:
 				-- 'Result' is True if and only if the following condition is satisfied:
@@ -368,9 +377,14 @@ feature -- Status report
 				--
 		end
 
-	is_real: BOOLEAN
-			-- Does `Current' represent a REAL?
-		deferred
+	is_real, is_real_32: BOOLEAN
+			-- Does `Current' represent a REAL_32?
+		local
+			l_convertor: like ctor_convertor
+		do
+			l_convertor := ctor_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_real)
+			Result := l_convertor.is_integral_real
 		ensure
 			syntax_and_range:
 				-- 'Result' is True if and only if the following two
@@ -395,9 +409,14 @@ feature -- Status report
 				--	by an instance of type REAL.
 		end
 
-	is_double: BOOLEAN
-			-- Does `Current' represent a DOUBLE?
-		deferred
+	is_double, is_real_64: BOOLEAN
+			-- Does `Current' represent a REAL_64?
+		local
+			l_convertor: like ctor_convertor
+		do
+			l_convertor := ctor_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_double)
+			Result := l_convertor.is_integral_double
 		ensure
 			syntax_and_range:
 				-- 'Result' is True if and only if the following two
@@ -432,43 +451,51 @@ feature -- Status report
 
 	is_integer_8: BOOLEAN
 			-- Does `Current' represent an INTEGER_8?
-		deferred
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_integer_8)
 		end
 
 	is_integer_16: BOOLEAN
 			-- Does `Current' represent an INTEGER_16?
-		deferred
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_integer_16)
 		end
 
 	is_integer, is_integer_32: BOOLEAN
 			-- Does `Current' represent an INTEGER_32?
-		deferred
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_integer_32)
 		end
 
 	is_integer_64: BOOLEAN
 			-- Does `Current' represent an INTEGER_64?
-		deferred
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_integer_64)
 		end
 
 	is_natural_8: BOOLEAN
 			-- Does `Current' represent a NATURAL_8?
-		deferred
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_natural_8)
 		end
 
 	is_natural_16: BOOLEAN
 			-- Does `Current' represent a NATURAL_16?
 
-		deferred
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_natural_16)
 		end
 
 	is_natural, is_natural_32: BOOLEAN
 			-- Does `Current' represent a NATURAL_32?
-		deferred
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_natural_32)
 		end
 
 	is_natural_64: BOOLEAN
 			-- Does `Current' represent a NATURAL_64?
-		deferred
+		do
+			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_natural_64)
 		end
 
 feature -- Conversion
@@ -577,6 +604,142 @@ feature -- Conversion
 			recurse: count > 1 implies Result.substring (2, count) ~ substring (2, count).as_upper
 		end
 
+feature -- Conversion
+
+	to_integer_8: INTEGER_8
+			-- 8-bit integer value
+		require
+			is_integer_8: is_integer_8
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_integer_8
+		end
+
+	to_integer_16: INTEGER_16
+			-- 16-bit integer value
+		require
+			is_integer_16: is_integer_16
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_integer_16
+		end
+
+	to_integer, to_integer_32: INTEGER_32
+			-- 32-bit integer value
+		require
+			is_integer: is_integer_32
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_integer
+		end
+
+	to_integer_64: INTEGER_64
+			-- 64-bit integer value
+		require
+			is_integer_64: is_integer_64
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_integer_64
+		end
+
+	to_natural_8: NATURAL_8
+			-- 8-bit natural value
+		require
+			is_natural_8: is_natural_8
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_natural_8
+		end
+
+	to_natural_16: NATURAL_16
+			-- 16-bit natural value
+		require
+			is_natural_16: is_natural_16
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_natural_16
+		end
+
+	to_natural, to_natural_32: NATURAL_32
+			-- 32-bit natural value
+		require
+			is_natural: is_natural_32
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_natural_32
+		end
+
+	to_natural_64: NATURAL_64
+			-- 64-bit natural value
+		require
+			is_natural_64: is_natural_64
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_natural_64
+		end
+
+	to_real, to_real_32: REAL
+			-- Real value;
+			-- for example, when applied to "123.0", will yield 123.0
+		require
+			represents_a_real: is_real
+		do
+			Result := to_double.truncated_to_real
+		end
+
+	to_double, to_real_64: DOUBLE
+			-- "Double" value;
+			-- for example, when applied to "123.0", will yield 123.0 (double)
+		require
+			represents_a_double: is_double
+		local
+			l_convertor: like ctor_convertor
+		do
+			l_convertor := ctor_convertor
+			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
+			Result := l_convertor.parsed_double
+		end
+
+	to_boolean: BOOLEAN
+			-- Boolean value;
+			-- "True" yields `True', "False" yields `False'
+			-- (case-insensitive)
+		require
+			is_boolean: is_boolean
+		do
+			check true_constant.count = 4 end
+			if count = 4 then
+				Result := True
+			end
+		ensure
+			to_boolean: (Result = as_lower.same_string (true_constant)) or
+				(not Result = as_lower.same_string (false_constant))
+		end
+
 feature -- Element change
 
 	plus alias "+" (s: READABLE_STRING_GENERAL): like Current
@@ -611,6 +774,17 @@ feature {NONE} -- Assertion helper
 			-- Are ELKS checkings verified? Must be True when changing implementation of STRING_GENERAL or descendant.
 
 feature {NONE} -- Implementation
+
+	is_valid_integer_or_natural (type: INTEGER) : BOOLEAN
+			-- Is `Current' a valid number according to given `type'?
+		local
+			l_convertor: like ctoi_convertor
+		do
+			l_convertor := ctoi_convertor
+			l_convertor.reset (type)
+			l_convertor.parse_string_with_type (Current, type)
+			Result := l_convertor.is_integral_integer
+		end
 
 	string_searcher: STRING_SEARCHER
 			-- Facilities to search string in another string.

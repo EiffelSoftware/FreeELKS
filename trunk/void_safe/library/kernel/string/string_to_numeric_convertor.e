@@ -1,7 +1,7 @@
 note
 	description: "Abstract convertor for string to number conversion"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2012, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -128,7 +128,6 @@ feature -- Parse
 			-- See `NUMERIC_INFORMATION' for more information about `type'.
 		require
 			s_not_void: s /= Void
-			s_is_valid_as_string_8: s.is_valid_as_string_8
 			type_valid: conversion_type_valid (type)
 		deferred
 		end
