@@ -1,12 +1,12 @@
 note
 	description: "Convertor to do string to integer/natural conversion"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2012, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
-class
+frozen class
 	STRING_TO_INTEGER_CONVERTOR
 
 inherit
@@ -52,18 +52,17 @@ feature -- Status reporting
 	separators_valid (separators: STRING): BOOLEAN
 			-- Are separators contained in `separators' valid?
 		local
-			i: INTEGER
-			l_c: INTEGER
+			i, nb: INTEGER
 			c: CHARACTER
 			done: BOOLEAN
 		do
 			from
 				i := 1
-				l_c := separators.count
+				nb := separators.count
 				done := False
 				Result := True
 			until
-				i > l_c or done
+				i > nb or done
 			loop
 				c := separators.item (i)
 				if (c >='0' and c <= '9') or c ='+' or c = '-' then
@@ -100,40 +99,53 @@ feature -- String parsing
 	parse_string_with_type (s: READABLE_STRING_GENERAL; type: INTEGER)
 			-- Parse string `s' as integer of type `type'.
 		local
-			i: INTEGER
-			l_c: INTEGER
+			i, nb: INTEGER
 			l_area8: SPECIAL [CHARACTER_8]
 			l_area32: SPECIAL [CHARACTER_32]
+			l_c: CHARACTER_32
+			l_code: NATURAL_32
 		do
 			reset (type)
 			i := 0
-			l_c := s.count
-			if attached {STRING_8} s as l_str8 then
+			nb := s.count
+			if attached {READABLE_STRING_8} s as l_str8 then
 				from
 					l_area8 := l_str8.area
 				until
-					i = l_c or last_state >= 4
+					i = nb or last_state >= 4
 				loop
 					parse_character (l_area8.item (i))
 					i := i + 1
 				end
-			elseif attached {STRING_32} s as l_str32 then
+			elseif attached {READABLE_STRING_32} s as l_str32 then
 				from
 					l_area32 := l_str32.area
 				until
-					i = l_c or last_state >= 4
+					i = nb or last_state >= 4
 				loop
-					parse_character (l_area32.item (i).to_character_8)
+					l_c := l_area32.item (i)
+					if l_c.is_character_8 then
+						parse_character (l_c.to_character_8)
+					else
+							-- Not a valid character.						
+						last_state := 4
+					end
 					i := i + 1
 				end
 			else
 				from
 					i := 1
-					l_c := s.count
+					nb := s.count
 				until
-					i > l_c or last_state >= 4
+					i > nb or last_state >= 4
 				loop
-					parse_character (s.code (i).to_character_8)
+					l_code := s.code (i)
+					if l_code.is_valid_character_8_code then
+						parse_character (l_code.to_character_8)
+					else
+							-- Not a valid character.						
+						last_state := 4
+					end
 					i := i + 1
 				end
 			end

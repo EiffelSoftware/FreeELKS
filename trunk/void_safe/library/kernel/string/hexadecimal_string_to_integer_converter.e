@@ -1,12 +1,12 @@
 note
 	description: "Convertor to do hexadecimal string to integer/natural conversion"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2010, ITPassion Ltd, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2012, ITPassion Ltd, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
 
-class
+frozen class
 	HEXADECIMAL_STRING_TO_INTEGER_CONVERTER
 
 inherit
@@ -103,18 +103,20 @@ feature -- Parse
 			i: INTEGER
 			l_area8: SPECIAL [CHARACTER_8]
 			l_area32: SPECIAL [CHARACTER_32]
-			l_c: INTEGER
+			nb: INTEGER
+			l_code: NATURAL_32
+			l_c: CHARACTER_32
 		do
 			reset (type)
 			i := 0
-			l_c := s.count
-			if attached {STRING_8} s as l_str8 then
+			nb := s.count
+			if attached {READABLE_STRING_8} s as l_str8 then
 				from
 					l_area8 := l_str8.area
 				until
-					i = l_c or last_state >= 4
+					i = nb or last_state >= 4
 				loop
-					if i + 1 < l_c then
+					if i + 1 < nb then
 						internal_lookahead := l_area8.item (i + 1)
 					else
 						internal_lookahead := ' ';
@@ -122,33 +124,45 @@ feature -- Parse
 					parse_character (l_area8.item (i))
 					i := i + 1
 				end
-			elseif attached {STRING_32} s as l_str32 then
+			elseif attached {READABLE_STRING_32} s as l_str32 then
 				from
 					l_area32 := l_str32.area
 				until
-					i = l_c or last_state >= 4
+					i = nb or last_state >= 4
 				loop
-					if i + 1 < l_c then
+					if i + 1 < nb then
 						internal_lookahead := l_area32.item (i + 1).to_character_8
 					else
 						internal_lookahead := ' ';
 					end
-					parse_character (l_area32.item (i).to_character_8)
+					l_c := l_area32.item (i)
+					if l_c.is_character_8 then
+						parse_character (l_c.to_character_8)
+					else
+							-- Not a valid character.						
+						last_state := 4
+					end
 					i := i + 1
 				end
 			else
 				from
 					i := 1
-					l_c := s.count
+					nb := s.count
 				until
-					i > l_c or last_state >= 4
+					i > nb or last_state >= 4
 				loop
-					if i + 1 < l_c then
+					if i + 1 < nb then
 						internal_lookahead := s.code (i + 1).to_character_8
 					else
 						internal_lookahead := ' ';
 					end
-					parse_character (s.code (i).to_character_8)
+					l_code := s.code (i)
+					if l_code.is_valid_character_8_code then
+						parse_character (l_code.to_character_8)
+					else
+							-- Not a valid character.						
+						last_state := 4
+					end
 					i := i + 1
 				end
 			end

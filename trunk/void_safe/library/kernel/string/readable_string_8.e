@@ -4,7 +4,7 @@ note
 		in a contiguous range. Read-only interface.
 		]"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
+	copyright: "Copyright (c) 1986-2012, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see forum.txt)"
 	date: "$Date$"
 	revision: "$Revision$"
@@ -543,54 +543,10 @@ feature -- Status report
 			definition: Result = s.same_string (substring (count - s.count + 1, count))
 		end
 
-	valid_index (i: INTEGER): BOOLEAN
-			-- Is `i' within the bounds of the string?
-		do
-			Result := (i > 0) and (i <= count)
-		ensure then
-			definition: Result = (1 <= i and i <= count)
-		end
-
 	valid_code (v: NATURAL_32): BOOLEAN
 			-- Is `v' a valid code for a CHARACTER_32?
 		do
 			Result := v <= {CHARACTER_8}.max_value.to_natural_32
-		end
-
-	is_number_sequence: BOOLEAN
-			-- Does `Current' represent a number sequence?
-		do
-			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_no_limitation)
-		end
-
-	is_real_sequence: BOOLEAN
-			-- Does `Current' represent a real sequence?
-		local
-			l_convertor: like ctor_convertor
-		do
-			l_convertor := ctor_convertor
-			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
-			Result := l_convertor.is_integral_double
-		end
-
-	is_real: BOOLEAN
-			-- Does `Current' represent a REAL?
-		local
-			l_convertor: like ctor_convertor
-		do
-			l_convertor := ctor_convertor
-			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_real)
-			Result := l_convertor.is_integral_real
-		end
-
-	is_double: BOOLEAN
-			-- Does `Current' represent a DOUBLE?
-		local
-			l_convertor: like ctor_convertor
-		do
-			l_convertor := ctor_convertor
-			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_double)
-			Result := l_convertor.is_integral_double
 		end
 
 	is_boolean: BOOLEAN
@@ -619,55 +575,6 @@ feature -- Status report
 					l_area.item (i + 3).lower = 's' and then
 					l_area.item (i + 4).lower = 'e'
 			end
-		end
-
-	is_integer_8: BOOLEAN
-			-- Does `Current' represent an INTEGER_8?
-		do
-			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_integer_8)
-		end
-
-	is_integer_16: BOOLEAN
-			-- Does `Current' represent an INTEGER_16?
-		do
-			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_integer_16)
-		end
-
-	is_integer, is_integer_32: BOOLEAN
-			-- Does `Current' represent an INTEGER_32?
-		do
-			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_integer_32)
-		end
-
-	is_integer_64: BOOLEAN
-			-- Does `Current' represent an INTEGER_64?
-		do
-			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_integer_64)
-		end
-
-	is_natural_8: BOOLEAN
-			-- Does `Current' represent a NATURAL_8?
-		do
-			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_natural_8)
-		end
-
-	is_natural_16: BOOLEAN
-			-- Does `Current' represent a NATURAL_16?
-
-		do
-			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_natural_16)
-		end
-
-	is_natural, is_natural_32: BOOLEAN
-			-- Does `Current' represent a NATURAL_32?
-		do
-			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_natural_32)
-		end
-
-	is_natural_64: BOOLEAN
-			-- Does `Current' represent a NATURAL_64?
-		do
-			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_natural_64)
 		end
 
 feature {READABLE_STRING_8} -- Duplication
@@ -732,140 +639,6 @@ feature -- Element change
 		end
 
 feature -- Conversion
-
-	to_integer_8: INTEGER_8
-			-- 8-bit integer value
-		require
-			is_integer_8: is_integer_8
-		local
-			l_convertor: like ctoi_convertor
-		do
-			l_convertor := ctoi_convertor
-			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
-			Result := l_convertor.parsed_integer_8
-		end
-
-	to_integer_16: INTEGER_16
-			-- 16-bit integer value
-		require
-			is_integer_16: is_integer_16
-		local
-			l_convertor: like ctoi_convertor
-		do
-			l_convertor := ctoi_convertor
-			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
-			Result := l_convertor.parsed_integer_16
-		end
-
-	to_integer, to_integer_32: INTEGER_32
-			-- 32-bit integer value
-		require
-			is_integer: is_integer_32
-		local
-			l_convertor: like ctoi_convertor
-		do
-			l_convertor := ctoi_convertor
-			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
-			Result := l_convertor.parsed_integer
-		end
-
-	to_integer_64: INTEGER_64
-			-- 64-bit integer value
-		require
-			is_integer_64: is_integer_64
-		local
-			l_convertor: like ctoi_convertor
-		do
-			l_convertor := ctoi_convertor
-			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
-			Result := l_convertor.parsed_integer_64
-		end
-
-	to_natural_8: NATURAL_8
-			-- 8-bit natural value
-		require
-			is_natural_8: is_natural_8
-		local
-			l_convertor: like ctoi_convertor
-		do
-			l_convertor := ctoi_convertor
-			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
-			Result := l_convertor.parsed_natural_8
-		end
-
-	to_natural_16: NATURAL_16
-			-- 16-bit natural value
-		require
-			is_natural_16: is_natural_16
-		local
-			l_convertor: like ctoi_convertor
-		do
-			l_convertor := ctoi_convertor
-			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
-			Result := l_convertor.parsed_natural_16
-		end
-
-	to_natural, to_natural_32: NATURAL_32
-			-- 32-bit natural value
-		require
-			is_natural: is_natural_32
-		local
-			l_convertor: like ctoi_convertor
-		do
-			l_convertor := ctoi_convertor
-			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
-			Result := l_convertor.parsed_natural_32
-		end
-
-	to_natural_64: NATURAL_64
-			-- 64-bit natural value
-		require
-			is_natural_64: is_natural_64
-		local
-			l_convertor: like ctoi_convertor
-		do
-			l_convertor := ctoi_convertor
-			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
-			Result := l_convertor.parsed_natural_64
-		end
-
-	to_real: REAL
-			-- Real value;
-			-- for example, when applied to "123.0", will yield 123.0
-		require
-			represents_a_real: is_real
-		do
-			Result := to_double.truncated_to_real
-		end
-
-	to_double: DOUBLE
-			-- "Double" value;
-			-- for example, when applied to "123.0", will yield 123.0 (double)
-		require
-			represents_a_double: is_double
-		local
-			l_convertor: like ctor_convertor
-		do
-			l_convertor := ctor_convertor
-			l_convertor.parse_string_with_type (Current, {NUMERIC_INFORMATION}.type_no_limitation)
-			Result := l_convertor.parsed_double
-		end
-
-	to_boolean: BOOLEAN
-			-- Boolean value;
-			-- "True" yields `True', "False" yields `False'
-			-- (case-insensitive)
-		require
-			is_boolean: is_boolean
-		do
-			check true_constant.count = 4 end
-			if count = 4 then
-				Result := True
-			end
-		ensure
-			to_boolean: (Result = true_constant.same_string (as_lower)) or
-				(not Result = false_constant.same_string (as_lower))
-		end
 
 	split (a_separator: CHARACTER_8): LIST [like Current]
 			-- Split on `a_separator'.
@@ -959,17 +732,6 @@ feature {NONE} -- Implementation
 			new_string_not_void: Result /= Void
 			new_string_empty: Result.is_empty
 			new_string_area_big_enough: Result.capacity >= n
-		end
-
-	is_valid_integer_or_natural (type: INTEGER) : BOOLEAN
-			-- Is `Current' a valid number according to given `type'?
-		local
-			l_convertor: like ctoi_convertor
-		do
-			l_convertor := ctoi_convertor
-			l_convertor.reset (type)
-			l_convertor.parse_string_with_type (Current, type)
-			Result := l_convertor.is_integral_integer
 		end
 
 	str_strict_cmp (this, other: like area; this_index, other_index, n: INTEGER): INTEGER
@@ -1069,7 +831,12 @@ feature {NONE} -- Implementation
 			end
 		end
 
-feature {READABLE_STRING_8, READABLE_STRING_32, STRING_8_SEARCHER, STRING_32_SEARCHER} -- Implementation
+feature
+	{READABLE_STRING_8, READABLE_STRING_32,
+	STRING_8_SEARCHER, STRING_32_SEARCHER,
+	HEXADECIMAL_STRING_TO_INTEGER_CONVERTER,
+	STRING_TO_INTEGER_CONVERTOR,
+	STRING_TO_REAL_CONVERTOR} -- Implementation
 
 	area: SPECIAL [CHARACTER_8]
 			-- Storage for characters
