@@ -1,9 +1,7 @@
 note
-
-	description:
-		"Trees, without commitment to a particular representation"
+	description: "Trees, without commitment to a particular representation"
+	library: "Free implementation of ELKS library"
 	legal: "See notice at end of class."
-
 	status: "See notice at end of class."
 	names: tree;
 	access: cursor, membership;
@@ -894,9 +892,8 @@ invariant
 	child_after_definition: child_after = (child_index >= child_capacity + 1)
 
 note
-	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2009, Eiffel Software and others"
-	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
+	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
 			5949 Hollister Ave., Goleta, CA 93117 USA
@@ -905,4 +902,4 @@ note
 			Customer support http://support.eiffel.com
 		]"
 
-end -- class TREE
+end

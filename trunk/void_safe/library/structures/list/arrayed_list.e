@@ -1,9 +1,7 @@
 note
-
-	description:
-		"Lists implemented by resizable arrays"
+	description: "Lists implemented by resizable arrays"
+	library: "Free implementation of ELKS library"
 	legal: "See notice at end of class."
-
 	status: "See notice at end of class."
 	names: sequence;
 	representation: array;
@@ -842,9 +840,8 @@ invariant
 	starts_from_one: lower = 1
 
 note
-	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2012, Eiffel Software and others"
-	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
+	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
 			5949 Hollister Ave., Goleta, CA 93117 USA
@@ -853,4 +850,4 @@ note
 			Customer support http://support.eiffel.com
 		]"
 
-end -- class ARRAYED_LIST
+end

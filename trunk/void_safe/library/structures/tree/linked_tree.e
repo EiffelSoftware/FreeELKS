@@ -1,9 +1,7 @@
 note
-
-	description:
-		"Trees implemented using a linked list representation"
+	description: "Trees implemented using a linked list representation"
+	library: "Free implementation of ELKS library"
 	legal: "See notice at end of class."
-
 	status: "See notice at end of class."
 	names: linked_tree, tree, linked_list;
 	representation: recursive, linked;
@@ -370,9 +368,8 @@ invariant
 	no_void_child: readable_child = child_readable
 
 note
-	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2009, Eiffel Software and others"
-	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
+	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
 			5949 Hollister Ave., Goleta, CA 93117 USA
@@ -381,4 +378,4 @@ note
 			Customer support http://support.eiffel.com
 		]"
 
-end -- class LINKED_TREE
+end

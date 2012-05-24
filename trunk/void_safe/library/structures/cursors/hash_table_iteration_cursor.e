@@ -1,6 +1,8 @@
 note
 	description: "Concrete of an external iteration cursor for {HASH_TABLE}."
 	library: "EiffelBase: Library of reusable components for Eiffel."
+	status: "See notice at end of class."
+	legal: "See notice at end of class."
 	copyright: "Copyright (c) 1984-2011, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	date: "$Date$"
@@ -84,7 +86,18 @@ feature -- Cursor movement
 
 feature {ITERABLE, ITERATION_CURSOR} -- Access
 
-	target: HASH_TABLE [G, K]
+	target: HASH_TABLE [G, K];
 			-- <Precursor>
+
+note
+	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
+	source: "[
+			Eiffel Software
+			5949 Hollister Ave., Goleta, CA 93117 USA
+			Telephone 805-685-1006, Fax 805-685-6869
+			Website http://www.eiffel.com
+			Customer support http://support.eiffel.com
+		]"
 
 end

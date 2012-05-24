@@ -1,9 +1,8 @@
 note
-	description:
-		"Sequential files, viewed as persistent sequences of characters"
+	description: "Sequential files, viewed as persistent sequences of characters"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 1986-2008, Eiffel Software and others"
-	license: "Eiffel Forum License v2 (see forum.txt)"
+	status: "See notice at end of class."
+	legal: "See notice at end of class."
 	date: "$Date$"
 	revision: "$Revision$"
 
@@ -1994,5 +1993,16 @@ invariant
 	valid_mode: Closed_file <= mode and mode <= Append_read_file
 	name_exists: name /= Void
 	name_not_empty: not name.is_empty
+
+note
+	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
+	source: "[
+			Eiffel Software
+			5949 Hollister Ave., Goleta, CA 93117 USA
+			Telephone 805-685-1006, Fax 805-685-6869
+			Website http://www.eiffel.com
+			Customer support http://support.eiffel.com
+		]"
 
 end

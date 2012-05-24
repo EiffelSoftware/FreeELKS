@@ -1,11 +1,8 @@
 note
-
-	description:
-		"Packed boolean strings"
-
+	description: "Packed boolean strings"
 	library: "Free implementation of ELKS library"
-	copyright: "Copyright (c) 2005, Eiffel Software and others"
-	license: "Eiffel Forum License v2 (see forum.txt)"
+	status: "See notice at end of class."
+	legal: "See notice at end of class."
 	names: packed_booleans;
 	access: index;
 	representation: array;
@@ -220,7 +217,7 @@ feature -- Basic operations
 
 note
 	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
-	license: "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
+	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
 			5949 Hollister Ave., Goleta, CA 93117 USA
@@ -228,4 +225,5 @@ note
 			Website http://www.eiffel.com
 			Customer support http://support.eiffel.com
 		]"
+
 end
