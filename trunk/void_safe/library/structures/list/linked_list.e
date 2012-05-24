@@ -1,8 +1,7 @@
 note
-
 	description: "Sequential, one-way linked lists"
+	library: "Free implementation of ELKS library"
 	legal: "See notice at end of class."
-
 	status: "See notice at end of class."
 	names: linked_list, sequence;
 	representation: linked;
@@ -741,9 +740,8 @@ invariant
 	after_constraint: after implies (active = last_element)
 
 note
-	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2011, Eiffel Software and others"
-	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
+	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
 			5949 Hollister Ave., Goleta, CA 93117 USA
@@ -752,4 +750,4 @@ note
 			Customer support http://support.eiffel.com
 		]"
 
-end -- class LINKED_LIST
+end

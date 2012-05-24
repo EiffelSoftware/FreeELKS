@@ -1,5 +1,6 @@
 note
 	description: "Hash tables, used to store items identified by hashable keys"
+	library: "Free implementation of ELKS library"
 	legal: "See notice at end of class."
 	instructions: "See instructions at the end of the class."
 	warning: "[
@@ -1659,54 +1660,8 @@ invariant
 	slot_count_big_enough: 0 <= count
 
 note
-	instruction: "[
-		Several procedures are provided for inserting an item
-		with a given key.
-
-		Here is how to choose between them:
-
-			- Use `put' if you want to do an insertion only if
-			  there was no item with the given key, doing nothing
-			  otherwise. (You can find out on return if there was one,
-			  and what it was.)
-
-			- Use `force' if you always want to insert the item;
-			  if there was one for the given key it will be removed,
-			  (and you can find out on return what it was).
-
-			- Use `extend' if you are sure there is no item with
-			  the given key, enabling faster insertion (but
-			  unpredictable behavior if this assumption is not true).
-
-			- Use `replace' if you want to replace an already present
-			  item with the given key, and do nothing if there is none.
-
-		In addition you can use `replace_key' to change the key of an
-		already present item, identified by its previous key, or
-		do nothing if there is nothing for that previous key.
-		You can find out on return.
-
-		To find out whether a key appears in the table, use `has'.
-		To find out the item, if any, associated with a certain key,
-		use `item'.
-
-		Both of these routines perform a search. If you need
-		both pieces of information (does a key appear? And, if so,
-		what is the associated item?), you can avoid performing
-		two redundant traversals by using instead the combination
-		of `search', `found' and `found_item' as follows:
-
-			your_table.search (your_key)
-			if your_table.found then
-				what_you_where_looking_for := your_table.found_item
-				... Do whatever is needed to `what_you_were_looking_for' ...
-			else
-				... No item was present for `your_key' ...
-			end
-		]"
-	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2012, Eiffel Software and others"
-	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
+	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
 			5949 Hollister Ave., Goleta, CA 93117 USA
@@ -1715,4 +1670,4 @@ note
 			Customer support http://support.eiffel.com
 		]"
 
-end -- class HASH_TABLE
+end

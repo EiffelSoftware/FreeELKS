@@ -1,9 +1,7 @@
 note
-
-	description:
-		"Two-way lists, kept sorted."
+	description: "Two-way lists, kept sorted."
+	library: "Free implementation of ELKS library"
 	legal: "See notice at end of class."
-
 	status: "See notice at end of class."
 	names: sorted_two_way_list, sorted_struct, sequence;
 	representation: linked;
@@ -154,9 +152,8 @@ feature {SORTED_TWO_WAY_LIST} -- Implementation
 		end
 
 note
-	library:	"EiffelBase: Library of reusable components for Eiffel."
-	copyright:	"Copyright (c) 1984-2009, Eiffel Software and others"
-	license:	"Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
+	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
 			5949 Hollister Ave., Goleta, CA 93117 USA
@@ -165,6 +162,4 @@ note
 			Customer support http://support.eiffel.com
 		]"
 
-end -- class SORTED_TWO_WAY_LIST
-
-
+end
