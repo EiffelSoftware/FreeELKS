@@ -463,6 +463,16 @@ feature -- Comparison
 			Result := a_search_key ~ a_key
 		end
 
+	disjoint (other: HASH_TABLE [G, K]): BOOLEAN
+			-- Is `Current' and `other' disjoint on their keys?
+			-- Use `same_keys' for comparison.
+		do
+				-- If any of the tables are empty, it is clearly disjoint,
+				-- otherwise we check that no elements of `other' appears in Current.
+			Result := is_empty or else other.is_empty or else
+				not across other as o some has (o.key) end
+		end
+
 feature -- Status report
 
 	full: BOOLEAN = False
