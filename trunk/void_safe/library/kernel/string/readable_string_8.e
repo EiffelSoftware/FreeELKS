@@ -124,6 +124,9 @@ feature {NONE} -- Initialization
 				l_area.put (other.area.item (i), i)
 				i := i + 1
 			end
+			count := nb
+		ensure
+			same_string: -- `other' and `Current' have the same content.
 		end
 
 feature -- Access
