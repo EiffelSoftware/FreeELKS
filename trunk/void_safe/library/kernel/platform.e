@@ -16,6 +16,12 @@ feature -- Platform
 			"built_in static"
 		end
 
+	is_scoop_capable: BOOLEAN
+			-- Is current platform capable of SCOOP?
+		external
+			"built_in static"
+		end
+
 	is_dotnet: BOOLEAN
 			-- Are we targetting .NET?
 		external
