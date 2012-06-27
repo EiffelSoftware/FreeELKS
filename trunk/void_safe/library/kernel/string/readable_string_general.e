@@ -88,6 +88,28 @@ feature -- Access
 				not substring (start_index, Result - 1).has_code (c)
 		end
 
+	last_index_of_code (c: like code; start_index_from_end: INTEGER): INTEGER
+			-- Position of last occurrence of `c'.
+			-- 0 if none.
+		require
+			start_index_small_enough: start_index_from_end <= count
+			start_index_large_enough: start_index_from_end >= 1
+		do
+			from
+				Result := start_index_from_end
+			until
+				Result <= 0 or else code (Result) = c
+			loop
+				Result := Result - 1
+			end
+		ensure
+			valid_result: 0 <= Result and Result <= start_index_from_end
+			zero_if_absent: (Result = 0) = not substring (1, start_index_from_end).has_code (c)
+			found_if_present: substring (1, start_index_from_end).has_code (c) implies code (Result) = c
+			none_after: substring (1, start_index_from_end).has_code (c) implies
+				not substring (Result + 1, start_index_from_end).has_code (c)
+		end
+
 	false_constant: STRING_8 = "false"
 			-- Constant string "false"
 
