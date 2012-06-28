@@ -108,6 +108,48 @@ feature -- Element change
 			appended: elks_checking implies to_string_32 ~ (old to_string_32.twin + old s.to_string_32.twin)
 		end
 
+	prepend (s: READABLE_STRING_GENERAL)
+			-- Append a copy of `s' at end.
+		require
+			argument_not_void: s /= Void
+			compatible_strings: is_string_8 implies s.is_valid_as_string_8
+		local
+			l_count, l_s_count, l_new_size: INTEGER
+			i: INTEGER
+		do
+			l_s_count := s.count
+			if l_s_count > 0 then
+				l_count := count
+				l_new_size := l_s_count + l_count
+				if l_new_size > capacity then
+					resize (l_new_size)
+				end
+					-- Copy `Current' at the end starting from the end since it will probably overlap.
+				set_count (l_new_size)
+				from
+					i := l_count
+				until
+					i = 0
+				loop
+					put_code (code (i), i + l_s_count)
+					i := i - 1
+				end
+					-- Copy `s' at the beginning of Current.
+				from
+					i := 1
+				until
+					i > l_s_count
+				loop
+					put_code (s.code (i), i)
+					i := i + 1
+				end
+				internal_hash_code := 0
+			end
+		ensure
+			new_count: count = old (count + s.count)
+			inserted: elks_checking implies to_string_32 ~ (old s.to_string_32.twin + old to_string_32.twin)
+		end
+
 	keep_head (n: INTEGER)
 			-- Remove all characters except for the first `n';
 			-- do nothing if `n' >= `count'.
