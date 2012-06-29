@@ -216,8 +216,8 @@ feature -- Access
 		end
 
 	last_index_of (c: CHARACTER_32; start_index_from_end: INTEGER): INTEGER
-			-- Position of last occurrence of `c'.
-			-- 0 if none
+			-- Position of last occurrence of `c',
+			-- 0 if none.
 		require
 			start_index_small_enough: start_index_from_end <= count
 			start_index_large_enough: start_index_from_end >= 1
@@ -237,9 +237,11 @@ feature -- Access
 				-- We add +1 due to the area starting at 0 and not at 1.
 			Result := i + 1 - l_lower_area
 		ensure
-			last_index_of_non_negative: Result >= 0
-			correct_place: Result > 0 implies item (Result) = c
-			-- forall x : Result..last, item (x) /= c
+			valid_result: 0 <= Result and Result <= start_index_from_end
+			zero_if_absent: (Result = 0) = not substring (1, start_index_from_end).has (c)
+			found_if_present: substring (1, start_index_from_end).has (c) implies item (Result) = c
+			none_after: substring (1, start_index_from_end).has (c) implies
+				not substring (Result + 1, start_index_from_end).has (c)
 		end
 
 	substring_index_in_bounds (other: READABLE_STRING_GENERAL; start_pos, end_pos: INTEGER): INTEGER
