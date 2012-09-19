@@ -1754,8 +1754,14 @@ feature -- Transformation
 	correct_mismatch
 			-- Attempt to correct object mismatch during retrieve using `mismatch_information'.
 		do
-			-- Nothing to be done because we only added `internal_hash_code' that will
-			-- be recomputed next time we query `hash_code'.
+				-- Nothing to be done because we only added `internal_hash_code' that will
+				-- be recomputed next time we query `hash_code'.
+
+				-- In .NET, we have a mismatch that is triggered due to the implementation of
+				-- SPECIAL [CHARACTER_32] as a .NET array of UInt16.
+			if area = Void and then attached {like area} mismatch_information.item ("area") as l_area then
+				area := l_area
+			end
 		end
 
 invariant
