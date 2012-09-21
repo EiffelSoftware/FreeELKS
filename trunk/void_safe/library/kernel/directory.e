@@ -405,7 +405,7 @@ feature -- Removal
 		end
 
 	delete_content_with_action (
-			action: PROCEDURE [ANY, TUPLE]
+			action: PROCEDURE [ANY, TUPLE [LIST [READABLE_STRING_8]]]
 			is_cancel_requested: FUNCTION [ANY, TUPLE, BOOLEAN]
 			file_number: INTEGER)
 
@@ -506,10 +506,9 @@ feature -- Removal
 		end
 
 	recursive_delete_with_action (
-			action: PROCEDURE [ANY, TUPLE]
+			action: PROCEDURE [ANY, TUPLE [LIST [READABLE_STRING_8]]]
 			is_cancel_requested: FUNCTION [ANY, TUPLE, BOOLEAN]
 			file_number: INTEGER)
-
 			-- Delete directory and all content contained within.
 			--
 			-- `action' is called each time `file_number' files has
@@ -522,7 +521,6 @@ feature -- Removal
 			delete_content_with_action (action, is_cancel_requested, file_number)
 			if (is_cancel_requested = Void) or else (not is_cancel_requested.item (Void)) then
 				delete
-
 					-- Call the agent with the name of the directory
 				if action /= Void then
 					create deleted_files.make (1)
