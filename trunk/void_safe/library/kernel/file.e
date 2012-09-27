@@ -36,6 +36,7 @@ feature -- Initialization
 		do
 			name := fn
 			mode := Closed_file
+			file_pointer := default_pointer
 			create last_string.make_empty
 		ensure
 			file_named: name = fn
@@ -882,6 +883,7 @@ feature -- Status setting
 		do
 			file_close (file_pointer)
 			mode := Closed_file
+			file_pointer := default_pointer
 			descriptor_available := False
 		ensure then
 			is_closed: is_closed
