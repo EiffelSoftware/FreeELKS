@@ -243,18 +243,22 @@ feature -- Access
 			-- Time stamp (time of last modification)
 		require
 			file_exists: exists
+		local
+			external_name: ANY
 		do
-			set_buffer
-			Result := buffered_file_info.date
+			external_name := name.to_c
+			Result := eif_file_date ($external_name)
 		end
 
 	access_date: INTEGER
 			-- Time stamp of last access made to the inode.
 		require
 			file_exists: exists
+		local
+			external_name: ANY
 		do
-			set_buffer
-			Result := buffered_file_info.access_date
+			external_name := name.to_c
+			Result := eif_file_access_date ($external_name)
 		end
 
 	retrieved: ANY
@@ -1934,6 +1938,18 @@ feature {NONE} -- Implementation
 			"C signature (EIF_INTEGER, EIF_REFERENCE) use %"eif_store.h%""
 		alias
 			"sstore"
+		end
+
+	eif_file_date (a_path: POINTER): INTEGER
+			-- Modification date of file named `a_path'.
+		external
+			"C signature (char *): EIF_INTEGER use %"eif_file.h%""
+		end
+
+	eif_file_access_date (a_path: POINTER): INTEGER
+			-- Access date of a file named `a_path'.
+		external
+			"C signature (char *): EIF_INTEGER use %"eif_file.h%""
 		end
 
 feature {NONE} -- Inapplicable
