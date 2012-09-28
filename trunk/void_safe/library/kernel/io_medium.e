@@ -23,7 +23,7 @@ feature -- Access
 		deferred
 		end
 
-	retrieved: ANY
+	retrieved: detachable ANY
 			-- Retrieved object structure
 			-- To access resulting object under correct type,
 			-- use assignment attempt.
@@ -33,8 +33,6 @@ feature -- Access
 			is_readable: readable
 			support_storable: support_storable
 		deferred
-		ensure
-			Result_exists: Result /= Void
 		end
 
 feature -- Element change
