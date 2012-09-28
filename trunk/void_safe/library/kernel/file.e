@@ -261,7 +261,7 @@ feature -- Access
 			Result := eif_file_access_date ($external_name)
 		end
 
-	retrieved: ANY
+	retrieved: detachable ANY
 			-- Retrieved object structure
 			-- To access resulting object under correct type,
 			-- use assignment attempt.
@@ -1904,7 +1904,7 @@ feature {NONE} -- Implementation
 			"C signature (char *, EIF_INTEGER): EIF_BOOLEAN use %"eif_file.h%""
 		end
 
-	c_retrieved (file_handle: INTEGER): ANY
+	c_retrieved (file_handle: INTEGER): detachable ANY
 			-- Object structured retrieved from file of pointer
 			-- `file_ptr'
 		external
