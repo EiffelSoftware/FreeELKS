@@ -167,30 +167,22 @@ feature -- Duplication
 			-- a new pointer area and `is_shared' is set to `False'.
 		do
 			if other /= Current then
-				if item = other.item then
+				if item = other.item or is_shared then
 						-- Copy was most likely called via `twin' but even
 						-- if it is not, it makes sense to duplicate the memory.
+						-- Or before `item' was shared, so we simply allocate
+						-- a new memory area from `other' and reset
+						-- the `is_shared' flag.
 					make_from_pointer (other.item, other.count)
-				elseif count >= other.count then
-						-- No need to reallocate, it is safe to just copy.
-					item.memory_copy (other.item, other.count)
 				else
-						-- We need to reallocate memory here
-					if is_shared then
-							-- Before `item' was shared, so we simply allocate
-							-- a new memory area from `other' and reset
-							-- the `is_shared' flag.
-						make_from_pointer (other.item, other.count)
-					else
-							-- Simply resize Current and copy data.
-						resize (other.count)
-						item.memory_copy (other.item, other.count)
-					end
+						-- Simply resize Current and copy data.
+					resize (other.count)
+					item.memory_copy (other.item, other.count)
 				end
 			end
 		ensure then
-			sharing_status_not_preserved:
-				(old is_shared and not is_shared) implies (other.count > old count)
+			sharing_status_not_preserved: (other /= Current) implies (old is_shared implies not is_shared)
+			count_preserved: count = other.count
 		end
 
 feature -- Access: Platform specific
