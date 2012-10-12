@@ -604,8 +604,6 @@ feature -- Conversion
 
 	as_lower: like Current
 			-- New object with all letters in lower case.
-		require
-			is_valid_as_string_8: is_valid_as_string_8
 		deferred
 		ensure
 			as_lower_attached: Result /= Void
@@ -616,8 +614,6 @@ feature -- Conversion
 
 	as_upper: like Current
 			-- New object with all letters in upper case
-		require
-			is_valid_as_string_8: is_valid_as_string_8
 		deferred
 		ensure
 			as_upper_attached: Result /= Void

@@ -365,12 +365,12 @@ feature -- Comparison
 			-- Is string made of same character sequence as `other' regardless of casing
 			-- (possibly with a different capacity)?
 		require
-			is_valid_as_string_8: is_valid_as_string_8
 			other_not_void: other /= Void
-			other_is_valid_as_string_8: other.is_valid_as_string_8
 		local
 			l_area, l_other_area: like area
 			i, j, nb: INTEGER
+			l_prop: like character_properties
+			c1, c2: CHARACTER_32
 		do
 			if other = Current then
 				Result := True
@@ -378,6 +378,7 @@ feature -- Comparison
 				nb := count
 				if nb = other.count then
 					from
+						l_prop := character_properties
 						l_area := area
 						l_other_area := other.area
 						Result := True
@@ -387,7 +388,9 @@ feature -- Comparison
 					until
 						i = nb
 					loop
-						if l_area.item (i).as_lower /= l_other_area.item (j).as_lower then
+						c1 := l_prop.to_lower (l_area.item (i))
+						c2 := l_prop.to_lower (l_other_area.item (i))
+						if c1 /= c2 then
 							Result := False
 							i := nb - 1 -- Jump out of loop
 						end
@@ -801,16 +804,20 @@ feature {NONE} -- Implementation
 			end_index_valid: end_index < a.count
 		local
 			i: INTEGER
-			c: CHARACTER_32
+			c1, c2: CHARACTER_32
+			l_prop: like character_properties
 		do
 			from
 				i := start_index
+				l_prop := character_properties
 			until
 				i > end_index
 			loop
-				c := a.item (i)
-				if c.is_character_8 then
-					a.put (c.lower, i)
+				c1 := a.item (i)
+				c2 := l_prop.to_lower (c1)
+					-- Let's avoid a write access if not needed.
+				if c1 /= c2 then
+					a.put (c2, i)
 				end
 				i := i + 1
 			end
@@ -826,16 +833,20 @@ feature {NONE} -- Implementation
 			end_index_valid: end_index < a.count
 		local
 			i: INTEGER
-			c: CHARACTER_32
+			c1, c2: CHARACTER_32
+			l_prop: like character_properties
 		do
 			from
 				i := start_index
+				l_prop := character_properties
 			until
 				i > end_index
 			loop
-				c := a.item (i)
-				if c.is_character_8 then
-					a.put (c.upper, i)
+				c1 := a.item (i)
+				c2 := l_prop.to_upper (c1)
+					-- Let's avoid a write access if not needed.
+				if c1 /= c2 then
+					a.put (c2, i)
 				end
 				i := i + 1
 			end
@@ -863,6 +874,12 @@ feature {NONE} -- Implementation
 				i := i - 1
 				j := j + 1
 			end
+		end
+
+	character_properties: CHARACTER_32_PROPERTY
+			-- Access to Unicode character properties
+		once
+			create Result.make
 		end
 
 feature
