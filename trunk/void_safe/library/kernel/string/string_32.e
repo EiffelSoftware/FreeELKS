@@ -513,14 +513,16 @@ feature -- Element change
 		local
 			nb, nb_space: INTEGER
 			l_area: like area
+			l_prop: like character_properties
 		do
+			l_prop := character_properties
+
 				-- Compute number of spaces at the left of current string.
 			from
 				nb := count - 1
 				l_area := area
 			until
-				nb_space > nb or else
-				(attached l_area.item (nb_space) as c and then not (c.is_character_8 and then c.is_space))
+				nb_space > nb or else not l_prop.is_space (l_area.item (nb_space))
 			loop
 				nb_space := nb_space + 1
 			end
@@ -547,7 +549,9 @@ feature -- Element change
 			nb_space: INTEGER
 			l_area: like area
 			c: CHARACTER_32
+			l_prop: like character_properties
 		do
+			l_prop := character_properties
 				-- Compute number of spaces at the right of current string.
 			from
 				nb := count - 1
@@ -557,7 +561,7 @@ feature -- Element change
 				i < 0
 			loop
 				c := l_area.item (i)
-				if c.is_character_8 and then not c.is_space then
+				if not l_prop.is_space (c) then
 						-- We are done.
 					i := -1
 				else
@@ -1472,19 +1476,20 @@ feature -- Conversion
 
 	center_justify
 			-- Center justify Current using `count' as width.
-		require
-			is_valid_as_string_8: is_valid_as_string_8
 		local
 			i, nb, l_offset: INTEGER
 			left_nb_space, right_nb_space: INTEGER
 			l_area: like area
+			l_prop: like character_properties
 		do
+			l_prop := character_properties
+
 				-- Compute number of spaces at the left of current string.
 			from
 				nb := count
 				l_area := area
 			until
-				left_nb_space = nb or else not l_area.item (left_nb_space).is_space
+				left_nb_space = nb or else not l_prop.is_space (l_area.item (left_nb_space))
 			loop
 				left_nb_space := left_nb_space + 1
 			end
@@ -1494,7 +1499,7 @@ feature -- Conversion
 				i := nb - 1
 				l_area := area
 			until
-				i = -1 or else not l_area.item (i).is_space
+				i = -1 or else not l_prop.is_space (l_area.item (i))
 			loop
 				right_nb_space := right_nb_space + 1
 				i := i - 1
@@ -1607,8 +1612,6 @@ feature -- Conversion
 
 	to_lower
 			-- Convert to lower case.
-		require
-			is_valid_as_string_8: is_valid_as_string_8
 		do
 			to_lower_area (area, 0, count - 1)
 			internal_hash_code := 0
@@ -1618,8 +1621,6 @@ feature -- Conversion
 
 	to_upper
 			-- Convert to upper case.
-		require
-			is_valid_as_string_8: is_valid_as_string_8
 		do
 			to_upper_area (area, 0, count - 1)
 			internal_hash_code := 0

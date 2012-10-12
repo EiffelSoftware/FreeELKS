@@ -49,6 +49,7 @@ feature -- Access
 
 	min_value: INTEGER = 0
 	max_value: INTEGER = 255
+	max_ascii_value: INTEGER = 127
 			-- Bounds for integer representation of characters (ASCII)
 
 feature -- Comparison
