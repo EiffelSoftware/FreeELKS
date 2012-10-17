@@ -18,7 +18,8 @@ inherit
 			same_string as same_string_general,
 			starts_with as starts_with_general,
 			ends_with as ends_with_general,
-			plus as plus_string_general
+			plus as plus_string_general,
+			item as character_32_item
 		redefine
 			copy, is_equal, out
 		end
@@ -132,17 +133,14 @@ feature {NONE} -- Initialization
 feature -- Access
 
 	item alias "[]", at alias "@" (i: INTEGER): CHARACTER_8
-			-- Character at position `i'
-		deferred
-		end
-
-	code (i: INTEGER): NATURAL_32
-			-- Numeric code of character at position `i'
+			-- Character at position `i'.
 		deferred
 		end
 
 	item_code (i: INTEGER): INTEGER
-			-- Numeric code of character at position `i'
+			-- Numeric code of character at position `i'.
+		obsolete
+			"For concistency with Unicode string handling, use `code (i)' instead."
 		require
 			index_small_enough: i <= count
 			index_large_enough: i > 0
@@ -150,7 +148,7 @@ feature -- Access
 		end
 
 	hash_code: INTEGER
-			-- Hash code value
+			-- Hash code value.
 		local
 			i, nb: INTEGER
 			l_area: like area

@@ -154,13 +154,15 @@ feature -- Access
 	code (i: INTEGER): NATURAL_32
 			-- Numeric code of character at position `i'
 		do
-			Result := area.item (i + area_lower - 1).code.to_natural_32
+			Result := area.item (i + area_lower - 1).natural_32_code
 		end
 
 	item_code (i: INTEGER): INTEGER
 			-- Numeric code of character at position `i'
+		obsolete
+			"Due to potential truncation it is recommended to use `code (i)' instead."
 		do
-			Result := area.item (i + area_lower - 1).code
+			Result := area.item (i + area_lower - 1).natural_32_code.as_integer_32
 		end
 
 feature -- Element change

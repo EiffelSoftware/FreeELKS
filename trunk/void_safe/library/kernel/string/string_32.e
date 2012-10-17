@@ -183,8 +183,10 @@ feature -- Access
 
 	item_code (i: INTEGER): INTEGER
 			-- Character at position `i'
+		obsolete
+			"Due to potential truncation it is recommended to use `code (i)' instead."
 		do
-			Result := area.item (i - 1).code
+			Result := area.item (i - 1).natural_32_code.as_integer_32
 		end
 
 	area: SPECIAL [CHARACTER_32]
