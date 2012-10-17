@@ -28,6 +28,7 @@ inherit
 			same_string as same_string_general,
 			starts_with as starts_with_general,
 			ends_with as ends_with_general,
+			is_case_insensitive_equal as is_case_insensitive_equal_general,
 			plus as plus_string_general
 		undefine
 			copy, is_equal, out
