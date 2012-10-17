@@ -584,21 +584,10 @@ feature -- Status report
 			nb := count
 			if nb = 4 then
 					-- Check if this is `true_constant'
-				l_area := area
-				i := area_lower
-				Result := l_area.item (i).lower = 't' and then
-					l_area.item (i + 1).lower = 'r' and then
-					l_area.item (i + 2).lower = 'u' and then
-					l_area.item (i + 3).lower = 'e'
+				Result := is_case_insensitive_equal_general (true_constant)
 			elseif nb = 5 then
 					-- Check if this is `false_constant'
-				l_area := area
-				i := area_lower
-				Result := l_area.item (i).lower = 'f' and then
-					l_area.item (i + 1).lower = 'a' and then
-					l_area.item (i + 2).lower = 'l' and then
-					l_area.item (i + 3).lower = 's' and then
-					l_area.item (i + 4).lower = 'e'
+				Result := is_case_insensitive_equal_general (false_constant)
 			end
 		end
 
