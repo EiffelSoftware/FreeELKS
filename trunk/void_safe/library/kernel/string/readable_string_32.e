@@ -18,6 +18,7 @@ inherit
 			same_string as same_string_general,
 			starts_with as starts_with_general,
 			ends_with as ends_with_general,
+			is_case_insensitive_equal as is_case_insensitive_equal_general,
 			plus as plus_string_general
 		redefine
 			copy, is_equal, out
@@ -871,12 +872,6 @@ feature {NONE} -- Implementation
 				i := i - 1
 				j := j + 1
 			end
-		end
-
-	character_properties: CHARACTER_32_PROPERTY
-			-- Access to Unicode character properties
-		once
-			create Result.make
 		end
 
 feature
