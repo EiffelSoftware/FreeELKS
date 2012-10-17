@@ -30,14 +30,16 @@ feature -- Access
 
 	code: INTEGER
 			-- Associated integer value
+		obsolete
+			"Use `natural_32_code' instead."
 		do
-			Result := item.code
+			Result := natural_32_code.as_integer_32
 		end
 
 	hash_code: INTEGER
 			-- Hash code value
 		do
-			Result := code.hash_code
+			Result := natural_32_code.hash_code
 		end
 
 	natural_32_code: NATURAL_32
@@ -60,9 +62,9 @@ feature -- Comparison
 	is_less alias "<" (other: like Current): BOOLEAN
 			-- Is `other' greater than current character?
 		do
-			Result := code < other.code
+			Result := natural_32_code < other.natural_32_code
 		ensure then
-			definition: Result = (code < other.code)
+			definition: Result = (natural_32_code < other.natural_32_code)
 		end
 
 	is_equal (other: like Current): BOOLEAN
@@ -139,7 +141,7 @@ feature -- Output
 			create Result.make (6)
 			Result.append_character ('U')
 			Result.append_character ('+')
-			Result.append_string (code.to_hex_string)
+			Result.append_string (natural_32_code.to_hex_string)
 		end
 
 feature {NONE} -- Initialization

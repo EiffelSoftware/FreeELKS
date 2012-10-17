@@ -136,13 +136,10 @@ feature -- Access
 		deferred
 		end
 
-	code (i: INTEGER): NATURAL_32
-			-- Numeric code of character at position `i'
-		deferred
-		end
-
 	item_code (i: INTEGER): INTEGER
 			-- Numeric code of character at position `i'
+		obsolete
+			"Due to potential truncation it is recommended to use `code (i)' instead."
 		require
 			index_small_enough: i <= count
 			index_large_enough: i > 0

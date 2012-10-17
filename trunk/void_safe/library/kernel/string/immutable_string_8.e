@@ -25,7 +25,8 @@ inherit
 			same_string as same_string_general,
 			starts_with as starts_with_general,
 			ends_with as ends_with_general,
-			plus as plus_string_general
+			plus as plus_string_general,
+			item as character_32_item
 		undefine
 			is_equal, out, copy
 		end
@@ -99,21 +100,29 @@ feature {IMMUTABLE_STRING_8} -- Duplication
 feature -- Access
 
 	item alias "[]", at alias "@" (i: INTEGER): CHARACTER_8
-			-- Character at position `i'
+			-- Character at position `i'.
 		do
 			Result := area.item (i + area_lower - 1)
 		end
 
-	code (i: INTEGER): NATURAL_32
-			-- Numeric code of character at position `i'
+	character_32_item (i: INTEGER): CHARACTER_32
+			-- Character at position `i'.
 		do
-			Result := area.item (i + area_lower - 1).code.to_natural_32
+			Result := area.item (i + area_lower - 1).to_character_32
+		end
+
+	code (i: INTEGER): NATURAL_32
+			-- Numeric code of character at position `i'.
+		do
+			Result := area.item (i + area_lower - 1).natural_32_code
 		end
 
 	item_code (i: INTEGER): INTEGER
-			-- Numeric code of character at position `i'
+			-- Numeric code of character at position `i'.
+		obsolete
+			"For concistency with Unicode string handling, use `code (i)' instead."
 		do
-			Result := area.item (i + area_lower - 1).code
+			Result := area.item (i + area_lower - 1).natural_32_code.as_integer_32
 		end
 
 feature -- Element change
