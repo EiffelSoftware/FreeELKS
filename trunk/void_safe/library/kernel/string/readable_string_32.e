@@ -578,8 +578,6 @@ feature -- Status report
 			-- Does `Current' represent a BOOLEAN?
 		local
 			nb: INTEGER
-			l_area: like area
-			i: INTEGER
 		do
 			nb := count
 			if nb = 4 then
