@@ -43,6 +43,21 @@ feature -- Initialization
 			file_closed: is_closed
 		end
 
+	make_with_name (fn: READABLE_STRING_GENERAL)
+			-- Create file object with `fn' as file name.
+		require
+			string_exists: fn /= Void
+			string_not_empty: not fn.is_empty
+		do
+			name := fn.as_string_8
+			mode := Closed_file
+			file_pointer := default_pointer
+			create last_string.make_empty
+		ensure
+			file_named: name = fn
+			file_closed: is_closed
+		end
+
 	make_open_read (fn: STRING)
 			-- Create file object with `fn' as file name
 			-- and open file in read mode.
