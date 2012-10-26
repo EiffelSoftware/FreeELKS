@@ -49,7 +49,7 @@ feature -- Access
 		local
 			file: RAW_FILE
 		do
-			create file.make (file_name)
+			create file.make_with_name (file_name)
 			if file.exists and then file.is_readable then
 				file.open_read
 				Result := file.retrieved
@@ -143,7 +143,7 @@ feature -- Element change
 			file: RAW_FILE
 			l_io_exception: IO_FAILURE
 		do
-			create file.make (file_name)
+			create file.make_with_name (file_name)
 			if (file.exists and then file.is_writable) or else
 				(file.is_creatable) then
 				file.open_write
