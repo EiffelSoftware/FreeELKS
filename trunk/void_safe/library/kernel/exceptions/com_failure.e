@@ -181,7 +181,7 @@ feature {NONE} -- Accesss
 				end
 				cwin_local_free (l_ptr)
 			else
-				Result := ""
+				Result := {STRING_32} ""
 			end
 		ensure
 			error_message_not_void: Result /= Void
