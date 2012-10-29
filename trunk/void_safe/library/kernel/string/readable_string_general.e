@@ -65,6 +65,58 @@ feature -- Access
 		deferred
 		end
 
+	index_of (c: like item; start_index: INTEGER): INTEGER
+			-- Position of first occurrence of `c' at or after `start_index';
+			-- 0 if none.
+		require
+			start_large_enough: start_index >= 1
+			start_small_enough: start_index <= count + 1
+		local
+			i, nb: INTEGER
+		do
+			nb := count
+			if start_index <= nb then
+				from
+					i := start_index
+				until
+					i > nb or else item (i) = c
+				loop
+					i := i + 1
+				end
+				if i <= nb then
+					Result := i
+				end
+			end
+		ensure
+			valid_result: Result = 0 or (start_index <= Result and Result <= count)
+			zero_if_absent: (Result = 0) = not substring (start_index, count).has (c)
+			found_if_present: substring (start_index, count).has (c) implies item (Result) = c
+			none_before: substring (start_index, count).has (c) implies
+				not substring (start_index, Result - 1).has (c)
+		end
+
+	last_index_of (c: like item; start_index_from_end: INTEGER): INTEGER
+			-- Position of last occurrence of `c'.
+			-- 0 if none.
+		require
+			start_index_small_enough: start_index_from_end <= count
+			start_index_large_enough: start_index_from_end >= 1
+		do
+			from
+				Result := start_index_from_end
+			until
+				Result <= 0 or else item (Result) = c
+			loop
+				Result := Result - 1
+			end
+		ensure
+			valid_result: 0 <= Result and Result <= start_index_from_end
+			zero_if_absent: (Result = 0) = not substring (1, start_index_from_end).has (c)
+			found_if_present: substring (1, start_index_from_end).has (c) implies item (Result) = c
+			none_after: substring (1, start_index_from_end).has (c) implies
+				not substring (Result + 1, start_index_from_end).has (c)
+		end
+
 	index_of_code (c: like code; start_index: INTEGER): INTEGER
 			-- Position of first occurrence of `c' at or after `start_index';
 			-- 0 if none.
@@ -176,6 +228,29 @@ feature -- Status report
 	is_empty: BOOLEAN
 			-- Is structure empty?
 		deferred
+		end
+
+	has (c: like item): BOOLEAN
+			-- Does string include `c'?
+		local
+			i, nb: INTEGER
+		do
+			nb := count
+			if nb > 0 then
+				from
+					i := 1
+				until
+					i > nb or else (item (i) = c)
+				loop
+					i := i + 1
+				end
+				Result := (i <= nb)
+			end
+		ensure then
+			false_if_empty: count = 0 implies not Result
+			true_if_first: count > 0 and then item (1) = c implies Result
+			recurse: (count > 0 and then item (1) /= c) implies
+				(Result = substring (2, count).has (c))
 		end
 
 	has_code (c: like code): BOOLEAN
@@ -660,7 +735,7 @@ feature -- Conversion
 		ensure
 			as_lower_attached: Result /= Void
 			length: Result.count = count
-			anchor: count > 0 implies Result.code (1).to_character_8 = code (1).to_character_8.as_lower
+			anchor: count > 0 implies Result.item (1) = item (1).as_lower
 			recurse: count > 1 implies Result.substring (2, count) ~ substring (2, count).as_lower
 		end
 
@@ -670,7 +745,7 @@ feature -- Conversion
 		ensure
 			as_upper_attached: Result /= Void
 			length: Result.count = count
-			anchor: count > 0 implies Result.code (1).to_character_8 = code (1).to_character_8.as_upper
+			anchor: count > 0 implies Result.item (1) = item (1).as_upper
 			recurse: count > 1 implies Result.substring (2, count) ~ substring (2, count).as_upper
 		end
 
@@ -833,7 +908,7 @@ feature -- Duplication
 		ensure
 			substring_not_void: Result /= Void
 			substring_count: Result.count = end_index - start_index + 1 or Result.count = 0
-			first_code: Result.count > 0 implies Result.code (1) = code (start_index)
+			first_code: Result.count > 0 implies Result.item (1) = item (start_index)
 			recurse: Result.count > 0 implies
 				Result.substring (2, Result.count) ~ substring (start_index + 1, end_index)
 		end

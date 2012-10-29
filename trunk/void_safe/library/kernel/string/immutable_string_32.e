@@ -28,7 +28,7 @@ inherit
 			is_case_insensitive_equal as is_case_insensitive_equal_general,
 			plus as plus_string_general
 		undefine
-			is_equal, out, copy
+			is_equal, out, copy, has, index_of, last_index_of
 		end
 
 create

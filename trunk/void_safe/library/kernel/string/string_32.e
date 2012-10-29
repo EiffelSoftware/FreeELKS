@@ -31,7 +31,7 @@ inherit
 			is_case_insensitive_equal as is_case_insensitive_equal_general,
 			plus as plus_string_general
 		undefine
-			copy, is_equal, out
+			copy, is_equal, out, has, index_of, last_index_of
 		redefine
 			append_string_general,
 			prepend_string_general
