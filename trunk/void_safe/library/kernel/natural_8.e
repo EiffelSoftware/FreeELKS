@@ -47,6 +47,7 @@ create
 
 convert
 	make_from_reference ({NATURAL_8_REF}),
+	to_character_8: {CHARACTER_8},
 	to_real_32: {REAL_32},
 	to_real_64: {REAL_64},
 	to_integer_16: {INTEGER_16},
