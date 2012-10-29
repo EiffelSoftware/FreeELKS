@@ -21,7 +21,7 @@ inherit
 			is_case_insensitive_equal as is_case_insensitive_equal_general,
 			plus as plus_string_general
 		redefine
-			copy, is_equal, out
+			copy, is_equal, out, has, index_of, last_index_of
 		end
 
 	READABLE_INDEXABLE [CHARACTER_32]
@@ -181,9 +181,6 @@ feature -- Access
 	index_of (c: CHARACTER_32; start_index: INTEGER): INTEGER
 			-- Position of first occurrence of `c' at or after `start_index';
 			-- 0 if none.
-		require
-			start_large_enough: start_index >= 1
-			start_small_enough: start_index <= count + 1
 		local
 			a: like area
 			i, nb, l_lower_area: INTEGER
@@ -206,20 +203,11 @@ feature -- Access
 					Result := i + 1 - l_lower_area
 				end
 			end
-		ensure
-			valid_result: Result = 0 or (start_index <= Result and Result <= count)
-			zero_if_absent: (Result = 0) = not substring (start_index, count).has (c)
-			found_if_present: substring (start_index, count).has (c) implies item (Result) = c
-			none_before: substring (start_index, count).has (c) implies
-				not substring (start_index, Result - 1).has (c)
 		end
 
 	last_index_of (c: CHARACTER_32; start_index_from_end: INTEGER): INTEGER
 			-- Position of last occurrence of `c',
 			-- 0 if none.
-		require
-			start_index_small_enough: start_index_from_end <= count
-			start_index_large_enough: start_index_from_end >= 1
 		local
 			a: like area
 			i, l_lower_area: INTEGER
@@ -235,12 +223,6 @@ feature -- Access
 			end
 				-- We add +1 due to the area starting at 0 and not at 1.
 			Result := i + 1 - l_lower_area
-		ensure
-			valid_result: 0 <= Result and Result <= start_index_from_end
-			zero_if_absent: (Result = 0) = not substring (1, start_index_from_end).has (c)
-			found_if_present: substring (1, start_index_from_end).has (c) implies item (Result) = c
-			none_after: substring (1, start_index_from_end).has (c) implies
-				not substring (Result + 1, start_index_from_end).has (c)
 		end
 
 	substring_index_in_bounds (other: READABLE_STRING_GENERAL; start_pos, end_pos: INTEGER): INTEGER

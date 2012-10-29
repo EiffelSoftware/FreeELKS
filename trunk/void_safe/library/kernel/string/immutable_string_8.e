@@ -27,7 +27,10 @@ inherit
 			ends_with as ends_with_general,
 			plus as plus_string_general,
 			is_case_insensitive_equal as is_case_insensitive_equal_general,
-			item as character_32_item
+			item as character_32_item,
+			has as character_32_has,
+			index_of as character_32_index_of,
+			last_index_of as character_32_last_index_of
 		undefine
 			is_equal, out, copy
 		end
