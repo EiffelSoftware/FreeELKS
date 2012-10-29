@@ -33,7 +33,8 @@ inherit
 convert
 	to_cil: {SYSTEM_STRING},
 	as_string_8: {STRING_8},
-	as_string_32: {READABLE_STRING_32, STRING_32}
+	as_readable_string_32: {READABLE_STRING_32},
+	as_string_32: {STRING_32}
 
 feature {NONE} -- Initialization
 

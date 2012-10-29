@@ -580,6 +580,14 @@ feature -- Conversion
 			identity: (conforms_to ("") and Result = Current) or (not conforms_to ("") and Result /= Current)
 		end
 
+	as_readable_string_8: READABLE_STRING_8
+			--
+		obsolete
+			"Use explicit conversion `to_string_8' instead."
+		do
+			Result := as_string_8
+		end
+
 	as_string_8: STRING_8
 			-- Convert `Current' as a STRING_8. If a code of `Current' is
 			-- not a valid code for a STRING_8 it is replaced with the null
@@ -611,6 +619,14 @@ feature -- Conversion
 		ensure
 			as_string_8_not_void: Result /= Void
 			identity: (conforms_to ("") and Result = Current) or (not conforms_to ("") and Result /= Current)
+		end
+
+	as_readable_string_32: READABLE_STRING_32
+			--
+		obsolete
+			"Use explicit conversion `to_string_32' instead."
+		do
+			Result := as_string_32
 		end
 
 	as_string_32, to_string_32: STRING_32
