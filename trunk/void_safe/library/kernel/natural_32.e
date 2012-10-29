@@ -47,6 +47,7 @@ create
 
 convert
 	make_from_reference ({NATURAL_32_REF}),
+	to_character_32: {CHARACTER_32},
 	to_real_32: {REAL_32},
 	to_real_64: {REAL_64},
 	to_integer_64: {INTEGER_64},
