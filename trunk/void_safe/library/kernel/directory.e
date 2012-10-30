@@ -11,22 +11,26 @@ class DIRECTORY
 inherit
 	DISPOSABLE
 
+	PATH_HANDLER
+
 create
 	make, make_open_read
 
-feature -- Initialization
+feature -- Initalization
 
-	make (dn: STRING)
+	make (dn: READABLE_STRING_GENERAL)
 			-- Create directory object for directory
 			-- of name `dn'.
 		require
 			string_exists: dn /= Void
 		do
-			name := dn
+			set_name (dn)
 			mode := Close_directory
+		ensure
+			name_set: internal_name = dn
 		end
 
-	make_open_read (dn: STRING)
+	make_open_read (dn: READABLE_STRING_GENERAL)
 			-- Create directory object for directory
 			-- of name `dn' and open it for reading.
 		require
@@ -34,54 +38,55 @@ feature -- Initialization
 		do
 			make (dn)
 			open_read
+		ensure
+			name_set: internal_name = dn
 		end
+
+feature -- Creation
 
 	create_dir
 			-- Create a physical directory.
 		require
 			physical_not_exists: not exists
-		local
-			external_name: ANY
 		do
-			external_name := name.to_c
-			file_mkdir ($external_name)
+			file_mkdir (internal_name_pointer.item)
 		end
 
 	recursive_create_dir
-			-- Create the directory `a_directory_name' recursively.
+			-- Create the directory recursively.
 			--
-			-- Ex: if /temp/ exists but not /temp/test, calling
-			--     `recursive_create_directory ("/temp/test/toto")'
-			--     will create /temp/test and then /temp/test/toto.
-		require
-			physical_not_exists: not exists
+			-- Ex: if /temp/ exists but not /temp/test, then trying
+			--  to create /temp/test/toto will create /temp/test
+			--  and then /temp/test/toto.
 		local
 			l_directory: DIRECTORY
-			l_new_directory_name: DIRECTORY_NAME
-			l_directories_to_build: ARRAYED_LIST [STRING]
-			l_built_directory: STRING
-			l_loc_directory_name: STRING
+			l_dir_name: STRING_GENERAL
+			l_directories_to_build: ARRAYED_LIST [READABLE_STRING_GENERAL]
+			l_built_directory: READABLE_STRING_GENERAL
+			l_loc_directory_name: READABLE_STRING_GENERAL
 			l_separator_index: INTEGER
 			l_io_exception: IO_FAILURE
+			u: UTF_CONVERTER
 		do
 			create l_directories_to_build.make (10)
 
 				-- Find the first existing directory in the path name
 			from
-				l_built_directory := name.twin
+				l_built_directory := internal_name
 				l_separator_index := l_built_directory.count
 				create l_directory.make (l_built_directory)
 			until
 				l_directory.exists
 			loop
-				l_separator_index := l_built_directory.last_index_of (Operating_environment.Directory_separator, l_built_directory.count)
+				l_separator_index := l_built_directory.last_index_of_code (Operating_environment.Directory_separator.natural_32_code, l_built_directory.count)
 				if l_separator_index = 0 then
 					create l_io_exception
-					l_io_exception.set_message ("Invalid directory: " + l_built_directory)
+						-- Directory name is converted to UTF-8
+					l_io_exception.set_message ("Invalid directory: " + u.utf_32_string_to_utf_8_string_8 (l_built_directory))
 					l_io_exception.raise
 				end
 				l_directories_to_build.extend (l_built_directory.substring (l_separator_index + 1, l_built_directory.count))
-				if l_built_directory @ (l_separator_index - 1) = ':' then
+				if l_built_directory.item (l_separator_index - 1) = ':' then
 					l_loc_directory_name := l_built_directory.substring (1, l_separator_index)
 				else
 					l_loc_directory_name := l_built_directory.substring (1, l_separator_index - 1)
@@ -91,20 +96,27 @@ feature -- Initialization
 			end
 
 				-- Recursively create the directory.
+			l_directories_to_build.finish
+			if attached {READABLE_STRING_8} internal_name then
+				create {STRING_8} l_dir_name.make (l_built_directory.count)
+			else
+				create {STRING_32} l_dir_name.make (l_built_directory.count)
+			end
 			from
-				l_directories_to_build.finish
-				create l_new_directory_name.make_from_string (l_built_directory)
+				l_dir_name.append (l_built_directory)
 			until
 				l_directories_to_build.before
 			loop
-				l_new_directory_name.extend (l_directories_to_build.item)
+				l_dir_name.append (directory_separator_string)
+				l_dir_name.append (l_directories_to_build.item)
 				l_directories_to_build.back
 
-				create l_directory.make (l_new_directory_name)
+				create l_directory.make (l_dir_name)
 				l_directory.create_dir
 				if not l_directory.exists then
 					create l_io_exception
-					l_io_exception.set_message ("Cannot create: " + l_new_directory_name)
+						-- Use UTF-8 to display directory we cannot create.
+					l_io_exception.set_message ("Cannot create: " + u.utf_32_string_to_utf_8_string_8 (l_dir_name))
 					l_io_exception.raise
 				end
 			end
@@ -121,45 +133,63 @@ feature -- Access
 		require
 			is_opened: not is_closed
 		do
-			lastentry := dir_next (directory_pointer)
+			last_entry_pointer := eif_dir_next (directory_pointer)
+			if last_entry_pointer /= default_pointer then
+					-- For backward compatibility, we had to leave `lastentry' as an attribute
+					-- which is being updated at each `readentry' call.
+				lastentry := file_info.pointer_to_file_name_8 (last_entry_pointer)
+			else
+					-- We reached the end of our iteration.
+				lastentry := Void
+			end
 		end
 
-	name: STRING
-			-- Directory name
+	name: STRING_8
+			-- File name as a STRING_8 instance. The value might be truncated
+			-- from the original name used to create the current FILE instance.
+		obsolete
+			"Use `entry' to ensure you can retrieve a all kind of names."
+		do
+			Result := internal_name.as_string_8
+		ensure then
+			name_not_empty: not Result.is_empty
+		end
 
-	has_entry (entry_name: STRING): BOOLEAN
+	has_entry (entry_name: READABLE_STRING_GENERAL): BOOLEAN
 			-- Has directory the entry `entry_name'?
-			-- The use of `dir_temp' is required not
-			-- to change the position in the current
-			-- directory entries list.
+			--| The use of `dir_temp' is required not
+			--| to change the position in the current
+			--| directory entries list.
 		require
 			string_exists: entry_name /= Void
 		local
 			dir_temp: DIRECTORY
-			e: detachable STRING
+			e: like last_entry_pointer
 		do
-			create dir_temp.make_open_read (name)
+			create dir_temp.make_open_read (internal_name)
 			from
 				dir_temp.start
 				dir_temp.readentry
-				e := dir_temp.lastentry
+				e := dir_temp.last_entry_pointer
 			until
-				Result or e = Void
+				Result or e = default_pointer
 			loop
-				Result := e.same_string (entry_name)
+				if attached {READABLE_STRING_8} entry_name then
+						-- We were given a STRING_8 instance, we lookup the name uing the old way
+					Result := entry_name.same_string (file_info.pointer_to_file_name_8 (e))
+				elseif attached file_info.pointer_to_file_name_32 (e) as l_str then
+					Result := entry_name.same_string (l_str)
+				end
 				dir_temp.readentry
-				e := dir_temp.lastentry
+				e := dir_temp.last_entry_pointer
 			end
 			dir_temp.close
 		end
 
 	open_read
 			-- Open directory for reading.
-		local
-			external_name: ANY
 		do
-			external_name := name.to_c
-			directory_pointer := dir_open ($external_name)
+			directory_pointer := dir_open (internal_name_pointer.item)
 			mode := Read_directory
 		end
 
@@ -178,41 +208,38 @@ feature -- Access
 		require
 			is_opened: not is_closed
 		do
-			dir_rewind (directory_pointer)
+			directory_pointer := dir_rewind (directory_pointer, internal_name_pointer.item)
 		end
 
-	change_name (new_name: STRING)
-			-- Change directory `name' to `new_name'.
+	change_name (new_name: READABLE_STRING_GENERAL)
+			-- Change directory name to `new_name'.
 		require
 			new_name_not_void: new_name /= Void
 			directory_exists: exists
 		local
-			ext_old_name, ext_new_name: ANY
+			l_ptr: MANAGED_POINTER
 		do
-			ext_old_name := name.to_c
-			ext_new_name := new_name.to_c
-			eif_dir_rename ($ext_old_name, $ext_new_name)
-			name := new_name
+			l_ptr := file_info.file_name_to_pointer (new_name, Void)
+			eif_dir_rename (internal_name_pointer.item, l_ptr.item)
+			set_name (new_name)
 		ensure
-			name_changed: name ~ new_name
+			name_changed: internal_name = new_name
 		end
 
 feature -- Measurement
 
 	count: INTEGER
-			-- Number of entries in directory.
-		require
-			directory_exists: exists
+			-- <Precursor>
 		local
 			dir_temp: DIRECTORY
 			counter: INTEGER
 		do
-			create dir_temp.make_open_read (name)
+			create dir_temp.make_open_read (internal_name)
 			from
 				dir_temp.start
 				dir_temp.readentry
 			until
-				dir_temp.lastentry = Void
+				dir_temp.last_entry_pointer = default_pointer
 			loop
 				counter := counter + 1
 				dir_temp.readentry
@@ -223,13 +250,17 @@ feature -- Measurement
 
 feature -- Conversion
 
-	linear_representation: ARRAYED_LIST [STRING]
-			-- The entries, in sequential format.
+	linear_representation: ARRAYED_LIST [STRING_8]
+			-- The entries, in sequential format. Entries that can be
+			-- expressed in Unicode are excluded and one has to use
+			-- `linear_representation' to get them.
+		obsolete
+			"Use `linear_representation_32' instead if your application is using Unicode file names."
 		local
 			dir_temp: DIRECTORY
-			e: detachable STRING
+			e: like last_entry_pointer
 		do
-			create dir_temp.make_open_read (name)
+			create dir_temp.make_open_read (internal_name)
 				-- Arbitrary size for arrayed_list creation to avoid
 				-- querying `count' which traverses list of entries
 				-- in current directory as we do here, making current
@@ -238,21 +269,76 @@ feature -- Conversion
 			from
 				dir_temp.start
 				dir_temp.readentry
-				e := dir_temp.lastentry
+				e := dir_temp.last_entry_pointer
 			until
-				e = Void
+				e = default_pointer
 			loop
-				Result.extend (e)
+				Result.extend (file_info.pointer_to_file_name_8 (e))
 				dir_temp.readentry
-				e := dir_temp.lastentry
+				e := dir_temp.last_entry_pointer
+			end
+			dir_temp.close
+		end
+
+	linear_representation_32: ARRAYED_LIST [STRING_32]
+			-- The entries, in sequential format. Entries
+			-- that cannot be expressed in UTF-32 are excluded from
+			-- the list and one has to use `entries' to get them.
+		obsolete
+			"Use `entries' instead."
+		local
+			dir_temp: DIRECTORY
+			e: like last_entry_pointer
+		do
+			create dir_temp.make_open_read (internal_name)
+				-- Arbitrary size for arrayed_list creation to avoid
+				-- querying `count' which traverses list of entries
+				-- in current directory as we do here, making current
+				-- less efficient if Current has a lot of entries.
+			create Result.make (16)
+			from
+				dir_temp.start
+				dir_temp.readentry
+				e := dir_temp.last_entry_pointer
+			until
+				e = default_pointer
+			loop
+					-- Not all entries can be represented as a Unicode string.
+				if attached file_info.pointer_to_file_name_32 (e) as l_str then
+					Result.extend (l_str)
+				end
+				dir_temp.readentry
+				e := dir_temp.last_entry_pointer
 			end
 			dir_temp.close
 		end
 
 feature -- Status report
 
-	lastentry: detachable STRING
-			-- Last entry read by `readentry'
+	last_entry_32: detachable STRING_32
+			-- Last Unicode entry read by `readentry' if any.
+		do
+			if last_entry_pointer /= default_pointer then
+				Result := file_info.pointer_to_file_name_32 (last_entry_pointer)
+			end
+		end
+
+	last_entry_8: detachable STRING_8
+			-- Raw byte sequence of the last found entry if this entry cannot be
+			-- expressed with Unicode characters. This is useful
+			-- when handeling a file that is not a valid UTF-8 sequence on Unix.
+		do
+			if last_entry_pointer /= default_pointer then
+				Result := file_info.pointer_to_file_name_8 (last_entry_pointer)
+			end
+		end
+
+	lastentry: detachable STRING_8
+			-- Last entry which is
+		obsolete
+			"Use `last_entry_32' for Unicode file names, or `last_entry_8' otherwise."
+		attribute
+		end
 
 	is_closed: BOOLEAN
 			-- Is current directory closed?
@@ -270,54 +356,34 @@ feature -- Status report
 			Result := (count = 2)
 		end
 
-	empty: BOOLEAN
-			-- Is directory empty?
-		obsolete
-			"Use `is_empty' instead"
-		do
-			Result := is_empty
-		end
-
 	exists: BOOLEAN
 			-- Does the directory exist?
-		local
-			external_name: ANY
 		do
-			external_name := name.to_c
-			Result := eif_dir_exists ($external_name)
+			Result := eif_dir_exists (internal_name_pointer.item)
 		end
 
 	is_readable: BOOLEAN
 			-- Is the directory readable?
 		require
 			directory_exists: exists
-		local
-			external_name: ANY
 		do
-			external_name := name.to_c
-			Result := eif_dir_is_readable ($external_name)
+			Result := eif_dir_is_readable (internal_name_pointer.item)
 		end
 
 	is_executable: BOOLEAN
 			-- Is the directory executable?
 		require
 			directory_exists: exists
-		local
-			external_name: ANY
 		do
-			external_name := name.to_c
-			Result := eif_dir_is_executable ($external_name)
+			Result := eif_dir_is_executable (internal_name_pointer.item)
 		end
 
 	is_writable: BOOLEAN
 			-- Is the directory writable?
 		require
 			directory_exists: exists
-		local
-			external_name: ANY
 		do
-			external_name := name.to_c
-			Result := eif_dir_is_writable ($external_name)
+			Result := eif_dir_is_writable (internal_name_pointer.item)
 		end
 
 feature -- Removal
@@ -327,70 +393,14 @@ feature -- Removal
 		require
 			directory_exists: exists
 			empty_directory: is_empty
-		local
-			external_name: ANY
 		do
-			external_name := name.to_c
-			eif_dir_delete ($external_name)
+			eif_dir_delete (internal_name_pointer.item)
 		end
 
 	delete_content
-			-- Delete all files located in directory and subdirectories.
-		require
-			directory_exists: exists
-		local
-			file_name: detachable FILE_NAME
-			file: detachable RAW_FILE
-			l_info: like file_info
-			dir: detachable DIRECTORY
-			dir_temp: DIRECTORY
-			l_name: detachable STRING
+			-- <Precursor>
 		do
-			from
-					-- To delete files we do not need to follow symbolic links.
-				l_info := file_info
-				l_info.set_is_following_symlinks (False)
-					-- Create a new directory that we will use to list all of its content.
-				create dir_temp.make_open_read (name)
-				dir_temp.start
-				dir_temp.readentry
-				l_name := dir_temp.lastentry
-			until
-				l_name = Void
-			loop
-					-- Ignore current and parent directories.
-				if not l_name.same_string (current_directory_string) and not l_name.same_string (parent_directory_string) then
-						-- Avoid creating too many objects.
-					if file_name /= Void then
-						file_name.reset (name)
-					else
-						create file_name.make_from_string (name)
-					end
-					file_name.set_file_name (l_name)
-					l_info.update (file_name)
-					if l_info.exists then
-						if not l_info.is_symlink and then l_info.is_directory then
-								-- Start the recursion for true directory, we do not follow links to delete their content.
-							if dir /= Void then
-								dir.make (file_name)
-							else
-								create dir.make (file_name)
-							end
-							dir.recursive_delete
-						elseif l_info.is_writable then
-							if file /= Void then
-								file.reset (file_name)
-							else
-								create file.make (file_name)
-							end
-							file.delete
-						end
-					end
-				end
-				dir_temp.readentry
-				l_name := dir_temp.lastentry
-			end
-			dir_temp.close
+			delete_content_with_action (Void, Void, 0)
 		end
 
 	recursive_delete
@@ -405,10 +415,9 @@ feature -- Removal
 		end
 
 	delete_content_with_action (
-			action: PROCEDURE [ANY, TUPLE [LIST [READABLE_STRING_8]]]
-			is_cancel_requested: FUNCTION [ANY, TUPLE, BOOLEAN]
+			action: detachable PROCEDURE [ANY, TUPLE [LIST [READABLE_STRING_GENERAL]]]
+			is_cancel_requested: detachable FUNCTION [ANY, TUPLE, BOOLEAN]
 			file_number: INTEGER)
-
 			-- Delete all files located in directory and subdirectories.
 			--
 			-- `action' is called each time `file_number' files has
@@ -418,18 +427,16 @@ feature -- Removal
 			-- Same for `is_cancel_requested'.
 			-- Make it return `True' to cancel the operation.
 			-- `is_cancel_requested' may be set to Void if you don't need it.
-		require
-			directory_exists: exists
-			valid_file_number: file_number > 0
 		local
-			file_name: detachable FILE_NAME
+			file_name: detachable FILE_NAME_32
 			file: detachable RAW_FILE
 			l_info: like file_info
 			dir: detachable DIRECTORY
 			dir_temp: DIRECTORY
-			l_name: detachable STRING
+			l_last_entry_pointer: like last_entry_pointer
+			l_name: detachable STRING_8
 			file_count: INTEGER
-			deleted_files: ARRAYED_LIST [STRING]
+			deleted_files: ARRAYED_LIST [READABLE_STRING_32]
 			requested_cancel: BOOLEAN
 		do
 			file_count := 1
@@ -440,20 +447,21 @@ feature -- Removal
 				l_info := file_info
 				l_info.set_is_following_symlinks (False)
 					-- Create a new directory that we will use to list all of its content.
-				create dir_temp.make_open_read (name)
+				create dir_temp.make_open_read (internal_name)
 				dir_temp.start
 				dir_temp.readentry
-				l_name := dir_temp.lastentry
+				l_last_entry_pointer := dir_temp.last_entry_pointer
 			until
-				l_name = Void or requested_cancel
+				l_last_entry_pointer = default_pointer or requested_cancel
 			loop
 					-- Ignore current and parent directories.
-				if not l_name.same_string (current_directory_string) and not l_name.same_string (parent_directory_string) then
+				l_name := l_info.pointer_to_file_name_8 (l_last_entry_pointer)
+				if (not l_name.same_string (current_directory_string) and not l_name.same_string (parent_directory_string)) then
 						-- Avoid creating too many objects.
 					if file_name /= Void then
-						file_name.reset (name)
+						file_name.reset (internal_name)
 					else
-						create file_name.make_from_string (name)
+						create file_name.make_from_string (internal_name)
 					end
 					file_name.set_file_name (l_name)
 					l_info.update (file_name)
@@ -470,7 +478,7 @@ feature -- Removal
 							if file /= Void then
 								file.reset (file_name)
 							else
-								create file.make (file_name)
+								create file.make_with_name (file_name)
 							end
 							file.delete
 						end
@@ -494,7 +502,7 @@ feature -- Removal
 					end
 				end
 				dir_temp.readentry
-				l_name := dir_temp.lastentry
+				l_last_entry_pointer := dir_temp.last_entry_pointer
 			end
 			dir_temp.close
 
@@ -506,8 +514,8 @@ feature -- Removal
 		end
 
 	recursive_delete_with_action (
-			action: PROCEDURE [ANY, TUPLE [LIST [READABLE_STRING_8]]]
-			is_cancel_requested: FUNCTION [ANY, TUPLE, BOOLEAN]
+			action: detachable PROCEDURE [ANY, TUPLE [LIST [READABLE_STRING_GENERAL]]]
+			is_cancel_requested: detachable FUNCTION [ANY, TUPLE, BOOLEAN]
 			file_number: INTEGER)
 			-- Delete directory and all content contained within.
 			--
@@ -516,7 +524,7 @@ feature -- Removal
 		require
 			directory_exists: exists
 		local
-			deleted_files: ARRAYED_LIST [STRING]
+			deleted_files: ARRAYED_LIST [READABLE_STRING_GENERAL]
 		do
 			delete_content_with_action (action, is_cancel_requested, file_number)
 			if (is_cancel_requested = Void) or else (not is_cancel_requested.item (Void)) then
@@ -524,7 +532,7 @@ feature -- Removal
 					-- Call the agent with the name of the directory
 				if action /= Void then
 					create deleted_files.make (1)
-					deleted_files.extend (name)
+					deleted_files.extend (internal_name)
 					action.call ([deleted_files])
 				end
 			end
@@ -543,7 +551,40 @@ feature {DIRECTORY} -- Implementation
 	directory_pointer: POINTER
 			-- Directory pointer as required in C
 
+	last_entry_pointer: POINTER
+			-- Pointer to the underlying C memory representing the last directory entry.
+
 feature {NONE} -- Implementation
+
+	set_name (a_name: READABLE_STRING_GENERAL)
+			-- Set `name' with `a_name'.
+		do
+			internal_name := a_name
+			internal_detachable_name_pointer := file_info.file_name_to_pointer (a_name, internal_detachable_name_pointer)
+		ensure
+			name_set: internal_name = a_name
+		end
+
+	internal_name: READABLE_STRING_GENERAL
+			-- Store the name of the file as it was given to us by the user
+			-- to avoid conversion on storing as it is not necessary.
+
+	internal_name_pointer: MANAGED_POINTER
+			-- File system specific encoding of `internal_name'.
+			-- Typically a UTF-16 sequence on Windows, a UTF-8 sequence on Unix.
+		do
+			if attached internal_detachable_name_pointer as l_ptr then
+				Result := l_ptr
+			else
+					-- This is never True because `internal_detachable_name_pointer' is set during the creation
+					-- of the FILE object.
+				check internal_name_pointer_set: False then end
+			end
+		end
+
+	internal_detachable_name_pointer: detachable MANAGED_POINTER note option: stable attribute end
+			-- File system specific encoding of `internal_name'.
+			-- Typically a UTF-16 sequence on Windows, a UTF-8 sequence on Unix.
 
 	mode: INTEGER
 			-- Status mode of the directory.
@@ -557,7 +598,14 @@ feature {NONE} -- Implementation
 	parent_directory_string: STRING = ".."
 			-- Constants to represent current (".") and parent ("..") directory.
 
-	file_info: UNIX_FILE_INFO
+	directory_separator_string: STRING
+			-- Constant representing the directory separator
+		once
+			create Result.make (1)
+			Result.append_character (operating_environment.directory_separator)
+		end
+
+	file_info: FILE_INFO
 			-- To avoid creating objects when querying for files.
 		once
 			create Result.make
@@ -566,29 +614,37 @@ feature {NONE} -- Implementation
 	file_mkdir (dir_name: POINTER)
 			-- Make directory `dir_name'.
 		external
-			"C signature (char *) use %"eif_file.h%""
+			"C signature (EIF_FILENAME) use %"eif_file.h%""
+		alias
+			"eif_file_mkdir"
 		end
 
 	dir_open (dir_name: POINTER): POINTER
 			-- Open the directory `dir_name'.
 		external
-			"C signature (char *): EIF_POINTER use %"eif_dir.h%""
+			"C signature (EIF_FILENAME): EIF_POINTER use %"eif_dir.h%""
+		alias
+			"eif_dir_open"
 		end
 
-	dir_rewind (dir_ptr: POINTER)
-			-- Rewind the directory `dir_ptr'.
+	dir_rewind (dir_ptr: POINTER; dir_name: POINTER): POINTER
+			-- Rewind the directory `dir_ptr' with name `a_name' and return a new directory traversal pointer.
 		external
-			"C use %"eif_dir.h%""
+			"C signature (EIF_POINTER, EIF_FILENAME): EIF_POINTER use %"eif_dir.h%""
+		alias
+			"eif_dir_rewind"
 		end
 
 	dir_close (dir_ptr: POINTER)
 			-- Close the directory `dir_ptr'.
 		external
 			"C use %"eif_dir.h%""
+		alias
+			"eif_dir_close"
 		end
 
-	dir_next (dir_ptr: POINTER): detachable STRING
-			-- Return the next entry for directory 'dir_ptr'.
+	eif_dir_next (dir_ptr: POINTER): POINTER
+			-- Return pointer to the next entry in the current iteration.
 		external
 			"C use %"eif_dir.h%""
 		end
@@ -596,44 +652,49 @@ feature {NONE} -- Implementation
 	eif_dir_delete (dir_name: POINTER)
 			-- Delete the directory `dir_name'.
 		external
-			"C signature (char *) use %"eif_dir.h%""
+			"C signature (EIF_FILENAME) use %"eif_file.h%""
+		alias
+			"eif_file_unlink"
 		end
 
 	eif_dir_exists (dir_name: POINTER): BOOLEAN
 			-- Does the directory `dir_name' exist?
 		external
-			"C signature (char *): EIF_BOOLEAN use %"eif_dir.h%""
+			"C signature (EIF_FILENAME): EIF_BOOLEAN use %"eif_dir.h%""
 		end
 
 	eif_dir_is_readable (dir_name: POINTER): BOOLEAN
 			-- Is `dir_name' readable?
 		external
-			"C signature (char *): EIF_BOOLEAN use %"eif_dir.h%""
+			"C signature (EIF_FILENAME): EIF_BOOLEAN use %"eif_dir.h%""
 		end
 
 	eif_dir_is_executable (dir_name: POINTER): BOOLEAN
 			-- Is `dir_name' executable?
 		external
-			"C signature (char *): EIF_BOOLEAN use %"eif_dir.h%""
+			"C signature (EIF_FILENAME): EIF_BOOLEAN use %"eif_dir.h%""
 		end
 
 	eif_dir_is_writable (dir_name: POINTER): BOOLEAN
 			-- Is `dir_name' writable?
 		external
-			"C signature (char *): EIF_BOOLEAN use %"eif_dir.h%""
+			"C signature (EIF_FILENAME): EIF_BOOLEAN use %"eif_dir.h%""
 		end
 
 	eif_dir_rename (old_name, new_name: POINTER)
 			-- Change directory name from `old_name' to `new_name'.
 		external
-			"C signature (char *, char *) use %"eif_file.h%""
+			"C signature (EIF_FILENAME, EIF_FILENAME) use %"eif_file.h%""
 		alias
-			"file_rename"
+			"eif_file_rename"
 		end
+
+invariant
+	name_attached: attached internal_name
 
 note
 	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
-	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
+	license: "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
 			5949 Hollister Ave., Goleta, CA 93117 USA
@@ -641,5 +702,4 @@ note
 			Website http://www.eiffel.com
 			Customer support http://support.eiffel.com
 		]"
-
 end

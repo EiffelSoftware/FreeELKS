@@ -9,9 +9,12 @@ note
 class
 	FILE_COMPARER
 
+inherit
+	PATH_HANDLER
+
 feature -- Comparison
 
-	same_files (a_path1, a_path2: STRING): BOOLEAN
+	same_files (a_path1, a_path2: READABLE_STRING_GENERAL): BOOLEAN
 			-- Are `a_path1' and `a_path1'
 		require
 			a_path1_not_void: a_path1 /= Void
@@ -19,10 +22,12 @@ feature -- Comparison
 			a_path2_not_void: a_path2 /= Void
 			a_path2_not_empty: not a_path2.is_empty
 		local
-			l_p1, l_p2: C_STRING
+			l_p1, l_p2: MANAGED_POINTER
+			l_info: FILE_INFO
 		do
-			create l_p1.make (a_path1)
-			create l_p2.make (a_path2)
+			create l_info.make
+			l_p1 := l_info.file_name_to_pointer (a_path1, Void)
+			l_p2 := l_info.file_name_to_pointer (a_path2, Void)
 			Result := c_same_files (l_p1.item, l_p2.item)
 		end
 
@@ -39,15 +44,15 @@ feature {NONE} -- Implementation
 			"[
 				EIF_BOOLEAN Result = EIF_FALSE;
 			#ifdef EIF_WINDOWS
-					/* To check this, we use `CreateFileA' to open both file, and then using the information
+					/* To check this, we use `CreateFileW' to open both file, and then using the information
 					 * returned by `GetFileInformationByHandle' we can check whether or not they are indeed
 					 * the same.
-					 * Note: it is important to use the A version of CreateFileA because arguments
-					 * are ASCII strings, not unicode. */
+					 * Note: it is important to use the W version of CreateFileW because arguments
+					 * are Unicode, not ASCII. */
 				BY_HANDLE_FILE_INFORMATION l_path1_info, l_path2_info;
-				HANDLE l_path2_file = CreateFileA ((LPCSTR) $a_path2, GENERIC_READ, FILE_SHARE_READ, NULL,
+				HANDLE l_path2_file = CreateFileW ((LPCWSTR) $a_path2, GENERIC_READ, FILE_SHARE_READ, NULL,
 					OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-				HANDLE l_path1_file = CreateFileA ((LPCSTR) $a_path1, GENERIC_READ, FILE_SHARE_READ, NULL,
+				HANDLE l_path1_file = CreateFileW ((LPCWSTR) $a_path1, GENERIC_READ, FILE_SHARE_READ, NULL,
 						OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 			
 				if ((l_path2_file == INVALID_HANDLE_VALUE) || (l_path1_file == INVALID_HANDLE_VALUE)) {
