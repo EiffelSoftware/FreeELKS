@@ -37,12 +37,6 @@ feature -- Access
 			code_in_range: Result >= min_value and Result <= max_value
 		end
 
-	natural_8_code: NATURAL_8
-			-- Associated natural value
-		do
-			Result := item.code.to_natural_8
-		end
-
 	natural_32_code: NATURAL_32
 			-- Associated natural value
 		do

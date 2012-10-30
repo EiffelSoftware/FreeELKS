@@ -24,8 +24,7 @@ create
 
 convert
 	make_from_reference ({CHARACTER_8_REF}),
-	to_character_32: {CHARACTER_32},
-	natural_8_code: {NATURAL_8}
+	to_character_32: {CHARACTER_32}
 
 feature -- Access
 
