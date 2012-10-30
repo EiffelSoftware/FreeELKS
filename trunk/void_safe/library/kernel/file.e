@@ -59,6 +59,18 @@ feature -- Initialization
 			file_closed: is_closed
 		end
 
+	make_with_path (a_path: PATH)
+			-- Create file object with `a_path' as path.
+		require
+			a_path_attached: a_path /= Void
+			a_path_not_empty: not a_path.is_empty
+		do
+			-- NOTE: this is a temporary implementation
+			make_with_name (a_path.string_representation)
+		ensure
+			file_closed: is_closed
+		end
+
 	make_open_read (fn: READABLE_STRING_GENERAL)
 			-- Create file object with `fn' as file name
 			-- and open file in read mode.
