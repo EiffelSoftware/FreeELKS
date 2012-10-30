@@ -138,7 +138,7 @@ feature -- UTF-32 to UTF-8
 				i := i - 1
 			end
 
-				-- Fill `utf_ptr8' with the converted data.
+				-- Fill `p' with the converted data.
 			from
 				i := 0
 				if p.count < m then
@@ -177,6 +177,87 @@ feature -- UTF-32 to UTF-8
 				end
 			end
 			p.put_natural_8 (0, m)
+		end
+
+	utf_32_string_to_utf_8 (s: READABLE_STRING_GENERAL): SPECIAL [NATURAL_8]
+			-- UTF-8 sequence corresponding to `s', interpreted as a UTF-32 sequence.
+			-- The sequence is not zero-terminated.
+		do
+			Result := utf_32_string_to_utf_8_0 (s)
+			Result := Result.aliased_resized_area_with_default (0, Result.count - 1)
+		end
+
+	utf_32_string_to_utf_8_0 (s: READABLE_STRING_GENERAL): SPECIAL [NATURAL_8]
+			-- UTF-8 sequence corresponding to `s', interpreted as a UTF-32 sequence.
+			-- The sequence is zero-terminated.
+		local
+			m: INTEGER
+			i, n: like {STRING_32}.count
+			c: NATURAL_32
+		do
+			n := s.count
+
+				-- First compute how many bytes we need to convert `s' to UTF-8.
+			from
+				i := n
+				m := 0
+			until
+				i = 0
+			loop
+				c := s.code (i)
+				if c <= 0x7F then
+						-- 0xxxxxxx.
+					m := m + 1
+				elseif c <= 0x7FF then
+						-- 110xxxxx 10xxxxxx
+					m := m + 2
+				elseif c <= 0xFFFF then
+						-- 1110xxxx 10xxxxxx 10xxxxxx
+					m := m + 3
+				else
+						-- c <= 1FFFFF - there are no higher code points
+						-- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+					m := m + 4
+				end
+				i := i - 1
+			end
+
+				-- Fill `Result' with the converted data.
+			from
+				create Result.make_filled (0, m + 1)
+				i := 0
+				m := 0
+			until
+				i >= n
+			loop
+				i := i + 1
+				c := s.code (i)
+				if c <= 0x7F then
+						-- 0xxxxxxx.
+					Result.put (c.to_natural_8, m)
+					m := m + 1
+				elseif c <= 0x7FF then
+						-- 110xxxxx 10xxxxxx.
+					Result.put (((c |>> 6) | 0xC0).to_natural_8, m)
+					Result.put (((c & 0x3F) | 0x80).to_natural_8, m + 1)
+					m := m + 2
+				elseif c <= 0xFFFF then
+						-- 1110xxxx 10xxxxxx 10xxxxxx
+					Result.put (((c |>> 12) | 0xE0).to_natural_8, m)
+					Result.put ((((c |>> 6) & 0x3F) | 0x80).to_natural_8, m + 1)
+					Result.put (((c & 0x3F) | 0x80).to_natural_8, m + 2)
+					m := m + 3
+				else
+						-- c <= 1FFFFF - there are no higher code points
+						-- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+					Result.put (((c |>> 18) | 0xF0).to_natural_8, m)
+					Result.put ((((c |>> 12) & 0x3F) | 0x80).to_natural_8, m + 1)
+					Result.put ((((c |>> 6) & 0x3F) | 0x80).to_natural_8, m + 2)
+					Result.put (((c & 0x3F) | 0x80).to_natural_8, m + 3)
+					m := m + 4
+				end
+			end
+			Result.put (0, m)
 		end
 
 feature -- UTF-8 to UTF-32
@@ -239,12 +320,26 @@ feature -- UTF-32 to UTF-16
 			-- UTF-16 sequence corresponding to `s'.
 			-- The sequence is not zero-terminated.
 		do
-			Result := utf_32_to_utf_16 (s)
+			Result := utf_32_string_to_utf_16 (s)
 		end
 
-	utf_32_to_utf_16 (s: READABLE_STRING_GENERAL): SPECIAL [NATURAL_16]
+	utf_32_string_to_utf_16 (s: READABLE_STRING_GENERAL): SPECIAL [NATURAL_16]
 			-- UTF-16 sequence corresponding to `s' interpreted as a UTF-32 sequence.
 			-- The sequence is not zero-terminated.
+		do
+			Result := utf_32_string_to_utf_16_0 (s)
+			Result := Result.aliased_resized_area_with_default (0, Result.count - 1)
+		end
+
+	string_32_to_utf_16_0 (s: READABLE_STRING_32): SPECIAL [NATURAL_16]
+			-- UTF-16 sequence corresponding to `s' with terminating zero.
+		do
+			Result := utf_32_string_to_utf_16_0 (s)
+		end
+
+	utf_32_string_to_utf_16_0 (s: READABLE_STRING_GENERAL): SPECIAL [NATURAL_16]
+			-- UTF-16 sequence corresponding to `s', interpreted as a UTF-32 sequence,
+			-- with terminating zero.
 		local
 			i: like {STRING_32}.count
 			n: like {STRING_32}.count
@@ -256,7 +351,7 @@ feature -- UTF-32 to UTF-16
 				m := 0
 				n := s.count
 				p := n
-				create Result.make_empty (p)
+				create Result.make_empty (p + 1)
 			invariant
 				m = Result.count
 				p = Result.capacity
@@ -267,7 +362,7 @@ feature -- UTF-32 to UTF-16
 					-- Make sure there is sufficient room for at least 2 code units.
 				if p < m + 2 then
 					p := m + (n - i) + 2
-					Result := Result.aliased_resized_area (p)
+					Result := Result.aliased_resized_area (p + 1)
 				end
 				c := s.code (i)
 				if c <= 0xFFFF then
@@ -281,21 +376,7 @@ feature -- UTF-32 to UTF-16
 					m := m + 2
 				end
 			end
-		end
-
-	string_32_to_utf_16_0 (s: READABLE_STRING_32): SPECIAL [NATURAL_16]
-			-- UTF-16 sequence corresponding to `s' with terminating zero.
-		do
-			Result := utf_32_to_utf_16 (s)
-			Result := Result.aliased_resized_area_with_default (0, Result.count + 1)
-		end
-
-	utf_32_to_utf_16_0 (s: READABLE_STRING_GENERAL): SPECIAL [NATURAL_16]
-			-- UTF-16 sequence corresponding to `s', interpreted as a UTF-32 sequence,
-			-- with terminating zero.
-		do
-			Result := utf_32_to_utf_16 (s)
-			Result := Result.aliased_resized_area_with_default (0, Result.count + 1)
+			Result.extend (0)
 		end
 
 	string_32_to_utf_16_pointer (s: READABLE_STRING_32; p: MANAGED_POINTER)
