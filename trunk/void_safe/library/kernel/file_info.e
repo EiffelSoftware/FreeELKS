@@ -589,7 +589,7 @@ feature {NONE} -- Implementation
 		alias
 			"{
 			#ifdef EIF_WINDOWS
-				return (EIF_INTEGER) MultiByteToWideChar(CP_ACP, 0, (LPSTR *) $a_ptr, -1, (LPWSTR) $a_output, (int) $a_output_length);
+				return (EIF_INTEGER) MultiByteToWideChar(CP_ACP, 0, (LPSTR) $a_ptr, -1, (LPWSTR) $a_output, (int) $a_output_length);
 			#else
 				return $a_output_length
 			#endif
@@ -607,7 +607,7 @@ feature {NONE} -- Implementation
 		alias
 			"{
 			#ifdef EIF_WINDOWS
-				return (EIF_INTEGER) WideCharToMultiByte(CP_ACP, 0, (LPSTR *) $a_ptr, -1, (LPWSTR) $a_output, (int) $a_output_length, NULL, NULL);
+				return (EIF_INTEGER) WideCharToMultiByte(CP_ACP, 0, (LPCWSTR) $a_ptr, -1, (LPSTR) $a_output, (int) $a_output_length, NULL, NULL);
 			#else
 				return $a_output_length;
 			#endif
