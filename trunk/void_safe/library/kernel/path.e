@@ -116,7 +116,7 @@ feature -- Status setting
 
 feature -- Obsolete		
 
-	set_file_name (a_filename: READABLE_STRING_GENERAL)
+	set_filename (a_filename: READABLE_STRING_GENERAL)
 			-- Set the value of the file name part of current path to `a_filename'.
 		obsolete "Use extend"
 		require
