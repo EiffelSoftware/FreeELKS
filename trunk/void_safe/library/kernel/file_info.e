@@ -256,7 +256,8 @@ feature {PATH_HANDLER} -- Access
 				l_count := utf_16_to_multi_byte (a_ptr, default_pointer, 0)
 				create l_cstring.make_empty (l_count)
 				l_count := utf_16_to_multi_byte (a_ptr, l_cstring.item, l_count)
-				Result := l_cstring.substring (1, l_count)
+					-- We do -1 since we simply do not count the null terminating character to build our string.
+				Result := l_cstring.substring (1, l_count - 1)
 			else
 					-- On Unix we do not even try to interpret the path, we just give it as is.
 				create l_cstring.make_shared_from_pointer (a_ptr)
@@ -581,7 +582,7 @@ feature {NONE} -- Implementation
 	multi_byte_to_utf_16 (a_ptr, a_output: POINTER; a_output_length: INTEGER): INTEGER
 			-- Given a 8-bit string `a_ptr', fill `a_output' of length `a_output_length' with the UTF-16
 			-- encoding of `a_ptr' but only if `a_output' is not the default_pointer, otherwise it returns
-			-- the number of expected bytes to fill `a_output' if it had been specified.
+			-- the number of expected bytes to fill `a_output' including the null-terminating character.
 		require
 			{PLATFORM}.is_windows
 		external
@@ -589,7 +590,7 @@ feature {NONE} -- Implementation
 		alias
 			"{
 			#ifdef EIF_WINDOWS
-				return (EIF_INTEGER) MultiByteToWideChar(CP_ACP, 0, (LPSTR) $a_ptr, -1, (LPWSTR) $a_output, (int) $a_output_length);
+				return (EIF_INTEGER) MultiByteToWideChar(CP_ACP, 0, (LPSTR) $a_ptr, -1, (LPWSTR) $a_output, (int) $a_output_length) * sizeof(wchar_t);
 			#else
 				return $a_output_length
 			#endif
@@ -599,7 +600,7 @@ feature {NONE} -- Implementation
 	utf_16_to_multi_byte (a_ptr: POINTER; a_output: POINTER; a_output_length: INTEGER): INTEGER
 			-- Given a 16-bit string `a_ptr' encoded in UTF-16, fill `a_output' of length `a_output_length' with the
 			-- 8-bit encoding of `a_ptr' but only if `a_output' is not the default_pointer, otherwise it returns
-			-- the number of expected bytes to fill `a_output' if it had been specified.
+			-- the number of expected bytes to fill `a_output' including the null-terminated character.
 		require
 			{PLATFORM}.is_windows
 		external
