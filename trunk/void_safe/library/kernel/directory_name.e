@@ -12,12 +12,12 @@ inherit
 	PATH_NAME
 
 create
-	make, make_from_string
+	make, make_from_string, make_from_path
 
 create {DIRECTORY_NAME}
 	string_make
 
-feature
+feature -- Status report
 
 	is_valid: BOOLEAN
 			-- Is the directory name valid?
@@ -35,7 +35,7 @@ feature {NONE} -- Implementation
 		do
 			create Result.string_make (n)
 		end
-		
+
 feature {NONE} -- Externals
 
 	eif_is_directory_valid (p: POINTER): BOOLEAN

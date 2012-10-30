@@ -14,7 +14,8 @@ inherit
 	PATH_HANDLER
 
 create
-	make, make_open_read
+	make, make_with_path,
+	make_open_read
 
 feature -- Initalization
 
@@ -28,6 +29,15 @@ feature -- Initalization
 			mode := Close_directory
 		ensure
 			name_set: internal_name = dn
+		end
+
+	make_with_path (a_path: PATH)
+			-- Create file object with `a_path' as path.
+		require
+			a_path_attached: a_path /= Void
+		do
+			-- NOTE: this is a temporary implementation
+			make (a_path.string_representation)
 		end
 
 	make_open_read (dn: READABLE_STRING_GENERAL)
