@@ -529,20 +529,20 @@ feature -- UTF-16 to UTF-32
 			until
 				i >= n
 			loop
-				c := p.read_natural_16 (i * 2)
+				c := p.read_natural_16 (i)
 				if c = 0 then
-					-- We hit our null terminating character, we can stop
+						-- We hit our null terminating character, we can stop
 					i := n
 				else
-					i := i + 1
+					i := i + 2
 					if c < 0xD800 or else c >= 0xE000 then
 							-- Codepoint from Basic Multilingual Plane: one 16-bit code unit.
 						Result.extend (c.to_character_32)
 					else
 							-- Supplementary Planes: surrogate pair with lead and trail surrogates.
 						if i < n then
-							Result.extend (((c.as_natural_32 |<< 10) + p.read_natural_16 (i * 2) - 0x35FDC00).to_character_32)
-							i := i + 1
+							Result.extend (((c.as_natural_32 |<< 10) + p.read_natural_16 (i) - 0x35FDC00).to_character_32)
+							i := i + 2
 						end
 					end
 				end
