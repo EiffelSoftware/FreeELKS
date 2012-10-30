@@ -52,26 +52,26 @@ create {STD_FILES}
 
 feature -- Initialization
 
-	make_open_stdin (fn: STRING)
+	make_open_stdin (fn: READABLE_STRING_GENERAL)
 			-- Create an unix standard input file.
 		do
-			make (fn)
+			make_with_name (fn)
 			file_pointer := console_def (0)
 			set_read_mode
 		end
 
-	make_open_stdout (fn: STRING)
+	make_open_stdout (fn: READABLE_STRING_GENERAL)
 			-- Create an unix standard output file.
 		do
-			make (fn)
+			make_with_name (fn)
 			file_pointer := console_def (1)
 			set_write_mode
 		end
 
-	make_open_stderr (fn: STRING)
+	make_open_stderr (fn: READABLE_STRING_GENERAL)
 			-- Create an unix standard error file.
 		do
-			make (fn)
+			make_with_name (fn)
 			file_pointer := console_def (2)
 			set_write_mode
 		end
@@ -288,7 +288,6 @@ feature -- Output
 
 feature {NONE} -- Inapplicable
 
-
 	is_empty: BOOLEAN = False
 			-- Useless for CONSOLE class.
 			--| `empty' is false not to invalidate invariant clauses.
@@ -354,7 +353,7 @@ feature {NONE} -- Implementation
 			"C signature (FILE *): EIF_CHARACTER use %"eif_console.h%""
 		end
 
-	console_ps (file: POINTER; s_name: POINTER; length: INTEGER)
+	console_ps (file: POINTER; s: POINTER; length: INTEGER)
 			-- Write string `s' at end of `file'
 		external
 			"C signature (FILE *, char *, EIF_INTEGER) use %"eif_console.h%""

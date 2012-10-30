@@ -259,36 +259,48 @@ feature {NONE} -- Implementation
 			-- Get an integer from `file'
 		external
 			"C signature (FILE *): EIF_INTEGER use %"eif_file.h%""
+		alias
+			"eif_file_gi"
 		end
 
 	file_gr (file: POINTER): REAL
 			-- Read a real from `file'
 		external
 			"C signature (FILE *): EIF_REAL_32 use %"eif_file.h%""
+		alias
+			"eif_file_gr"
 		end
 
 	file_gd (file: POINTER): DOUBLE
 			-- Read a double from `file'
 		external
 			"C signature (FILE *): EIF_REAL_64 use %"eif_file.h%""
+		alias
+			"eif_file_gd"
 		end
 
 	file_pi (file: POINTER; n: INTEGER)
 			-- Put `n' to end of `file'.
 		external
 			"C signature (FILE *, EIF_INTEGER) use %"eif_file.h%""
+		alias
+			"eif_file_pi"
 		end
 
 	file_pr (file: POINTER; r: REAL)
 			-- Put `r' to end of `file'.
 		external
 			"C signature (FILE *, EIF_REAL_32) use %"eif_file.h%""
+		alias
+			"eif_file_pr"
 		end
 
 	file_pd (file: POINTER; d: DOUBLE)
 			-- Put `d' to end of `file'.
 		external
 			"C signature (FILE *, EIF_REAL_64) use %"eif_file.h%""
+		alias
+			"eif_file_pd"
 		end
 
 invariant
