@@ -118,11 +118,11 @@ feature -- Access
 		once
 			l_count := 50
 			create l_managed.make (50)
-			l_nbytes := eif_user_directory_name (l_managed.item, l_count)
+			l_nbytes := eif_user_directory_name_ptr (l_managed.item, l_count)
 			if l_nbytes > l_count then
 				l_count := l_nbytes
 				l_managed.resize (l_count)
-				l_nbytes := eif_user_directory_name (l_managed.item, l_count)
+				l_nbytes := eif_user_directory_name_ptr (l_managed.item, l_count)
 			end
 			if l_nbytes > 0 and l_nbytes <= l_count then
 				Result := file_info.pointer_to_file_name_8 (l_managed.item)
@@ -389,33 +389,14 @@ feature {NONE} -- External
 			-- there is a need for more bytes than `a_count', or if `a_ptr' is the default_pointer, nothing is done with `a_ptr'.
 			-- We always return the number of bytes required including the null-terminating character.
 		external
-			"C use %"eif_path_name.h%""
+			"C signature (EIF_FILENAME, EIF_INTEGER): EIF_INTEGER use %"eif_path_name.h%""
 		end
 
-
-	eif_user_directory_name (a_buffer: POINTER; a_count: INTEGER): INTEGER
+	eif_user_directory_name_ptr (a_buffer: POINTER; a_count: INTEGER): INTEGER
 			-- Directory name corresponding to the user directory that will be stored in buffer `a_buffer'
 			-- of size `a_count' bytes. Returns the number of bytes necessary in `a_buffer' to get the full copy.
 		external
-			"C inline use %"eif_eiffel.h%""
-		alias
-			"[
-				#ifdef EIF_WINDOWS
-					if ($a_buffer && ($a_count >= (MAX_PATH * sizeof(wchar_t)))) {
-							/* Buffer is large enough for the call to SHGetFolderPathW. */
-						if (SHGetSpecialFolderPathW (NULL, $a_buffer, CSIDL_PERSONAL, TRUE) {
-							return wcslen($a_buffer) * sizeof (wchar_t);
-						} else {
-							return 0;
-						}
-					} else {
-							/* Buffer is NULL or not large enough we ask for more. */
-						return MAX_PATH * sizeof(wchar_t);
-					}
-				#else
-					return 0;
-				#endif
-			]"
+			"C signature (EIF_FILENAME, EIF_INTEGER): EIF_INTEGER use %"eif_path_name.h%""
 		end
 
 	eif_sleep (nanoseconds: INTEGER_64)
