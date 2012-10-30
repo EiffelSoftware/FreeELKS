@@ -37,6 +37,7 @@ feature {NONE} -- Initialization
 		require
 			n_non_negative: n >= 0
 		do
+			increment_counter
 			item := item.memory_calloc (n.max (1), 1)
 			if item = default_pointer then
 				(create {EXCEPTIONS}).raise ("No more memory")
@@ -55,6 +56,7 @@ feature {NONE} -- Initialization
 		require
 			data_not_void: data /= Void
 		do
+			increment_counter
 			count := data.count
 			item := item.memory_alloc (count.max (1))
 			if item = default_pointer then
@@ -74,6 +76,7 @@ feature {NONE} -- Initialization
 			a_ptr_not_null: a_ptr /= default_pointer
 			n_non_negative: n >= 0
 		do
+			increment_counter
 			item := item.memory_alloc (n.max (1))
 			if item = default_pointer then
 				(create {EXCEPTIONS}).raise ("No more memory")
@@ -93,6 +96,7 @@ feature {NONE} -- Initialization
 			a_ptr_valid: a_ptr = default_pointer implies n = 0
 			n_non_negative: n >= 0
 		do
+			increment_counter
 			item := a_ptr
 			count := n
 			is_shared := True
@@ -111,6 +115,7 @@ feature {NONE} -- Initialization
 			a_ptr_valid: a_ptr /= default_pointer
 			n_non_negative: n >= 0
 		do
+			increment_counter
 			item := a_ptr
 			count := n
 			is_shared := False
@@ -139,7 +144,7 @@ feature -- Settings
 
 feature -- Access
 
-	item: POINTER
+	item: POINTER note option: transient attribute end
 			-- Access to allocated memory.
 
 	count: INTEGER
@@ -1127,6 +1132,27 @@ feature {NONE} -- Disposal
 		ensure then
 			shared_reset: not is_shared
 		end
+
+feature {NONE} -- Debugging
+
+	allocation_counter: CELL [NATURAL_64]
+			-- Store current number of allocation being made.
+		once
+			create Result.put (0)
+		end
+
+	counter: NATURAL_64 note option: transient attribute end
+			-- Allocation number associated to Current.
+
+	increment_counter
+			-- Set `counter' with a new allocation number.
+		do
+			debug ("MANAGED_POINTER_allocation")
+				counter := allocation_counter.item + 1
+				allocation_counter.put (counter)
+			end
+		end
+
 
 invariant
 	item_not_null: item = default_pointer implies (count = 0 and is_shared)
