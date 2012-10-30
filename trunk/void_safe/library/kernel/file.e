@@ -411,7 +411,7 @@ feature -- Status report
 			-- (Uses effective UID to check that parent is writable
 			-- and file does not exist.)
 		do
-			Result := file_creatable (internal_name_pointer.item, internal_name.count)
+			Result := file_creatable (internal_name_pointer.item, internal_name_pointer.count)
 		end
 
 	is_plain: BOOLEAN
