@@ -20,6 +20,11 @@ inherit
 			out
 		end
 
+	DEBUG_OUTPUT
+		redefine
+			out
+		end
+
 create
 	make_from_string,
 	make_from_path,
@@ -97,7 +102,7 @@ feature -- Status setting
 		end
 
 	extend (a_name: READABLE_STRING_GENERAL)
-			-- Append the simple name `a_namee' to the current path.
+			-- Append the simple name `a_name' to the current path.
 		require
 			a_name_not_void: a_name /= Void
 			a_name_not_empty: not a_name.is_empty
@@ -165,6 +170,14 @@ feature -- Output
 			create Result.make_from_string (internal_storage)
 		end
 
+feature -- Status report
+
+	debug_output: STRING
+			-- String that should be displayed in debugger to represent `Current'.
+		do
+			Result := string_representation_8
+		end
+
 feature {NONE} -- Implementation
 
 	internal_storage: STRING_32
@@ -190,15 +203,15 @@ feature {NONE} -- Implementation
 				-- Find out if we should add a directory separator.
 			if a_add_separator then
 				if {PLATFORM}.is_windows then
-					l_add_separator := string_representation.item (string_representation.count) /= {CHARACTER_32} '\'
+					l_add_separator := internal_storage.item (internal_storage.count) /= {CHARACTER_32} '\'
 				else
-					l_add_separator := string_representation.item (string_representation.count) /= {CHARACTER_32} '/'
+					l_add_separator := internal_storage.item (internal_storage.count) /= {CHARACTER_32} '/'
 				end
 			end
 			if l_add_separator then
-				string_representation.append_character (operating_environment.directory_separator)
+				internal_storage.append_character (operating_environment.directory_separator)
 			end
-			string_representation.append_string_general (l_filename)
+			internal_storage.append_string_general (l_filename)
 		end
 
 invariant
