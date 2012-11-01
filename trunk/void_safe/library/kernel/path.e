@@ -17,12 +17,12 @@ class
 inherit
 	ANY
 		redefine
-			out
+			out, is_equal, copy
 		end
 
 	DEBUG_OUTPUT
 		redefine
-			out
+			out, is_equal, copy
 		end
 
 create
@@ -143,6 +143,29 @@ feature -- Obsolete
 			append (".", False)
 			append (ext, False)
 		end
+
+feature -- Comparison
+
+	is_equal (other: like Current): BOOLEAN
+			-- <Precursor>
+		do
+			if other = Current then
+				Result := True
+			else
+				Result := internal_storage.same_string (other.string_representation)
+			end
+		end
+
+feature -- Duplication
+
+	copy (other: like Current)
+			-- <Precursor>
+		do
+			if other /= Current then
+				-- Duplicate storage
+				create internal_storage.make_from_string (other.string_representation)
+			end
+ 		end
 
 feature -- Output
 
