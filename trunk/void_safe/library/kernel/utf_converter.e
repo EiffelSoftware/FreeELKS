@@ -18,7 +18,7 @@ feature -- Status report
 				nb := s.count
 				Result := True
 			until
-				i >= nb
+				i >= nb or not Result
 			loop
 				i := i + 1
 				c := s.code (i)
@@ -30,19 +30,53 @@ feature -- Status report
 					i := i + 1
 				elseif (c & 0xF0) = 0xE0 and then i + 1 < nb then
 					-- Form 1110xxxx 10xxxxxx 10xxxxxx.
-					Result := (s.code (i + 1) & 0xC0) = 0x80  and
+					Result := (s.code (i + 1) & 0xC0) = 0x80 and
 						(s.code (i + 2) & 0xC0) = 0x80
 					i := i + 2
 				elseif (c & 0xF8) = 0xF0 and then i + 2 < nb then
 					-- Form 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx.
-					Result := (s.code (i + 1) & 0xC0) = 0x80  and
+					Result := (s.code (i + 1) & 0xC0) = 0x80 and
 						(s.code (i + 2) & 0xC0) = 0x80 and
 						(s.code (i + 3) & 0xC0) = 0x80
 					i := i + 3
 				else
 						-- Anything else is not a valid UTF-8 sequence that would yield a valid Unicode character.
-					i := nb
 					Result := False
+				end
+			end
+		end
+
+	is_valid_utf_16le_string_8 (s: READABLE_STRING_8): BOOLEAN
+			-- Is `s' a valid UTF-16LE Unicode sequence?
+		local
+			c1, c2: NATURAL_32
+			i, nb: INTEGER
+		do
+			nb := s.count
+				-- If `nb' is not even, then clearly not a valid UTF-16 string.
+			if (nb \\ 2) = 0 then
+				from
+					Result := True
+				until
+					i >= nb or not Result
+				loop
+					i := i + 2
+					c1 := s.code (i - 1) | (s.code (i) |<< 8)
+					if c1 < 0xD800 or else c1 >= 0xE000 then
+						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit, this is valid Unicode.
+					elseif c1 <= 0xDBFF then
+						i := i + 2
+						if i <= nb then
+							c2 := s.code (i - 1) | (s.code (i) |<< 8)
+							Result := 0xDC00 <= c2 and c2 <= 0xDFF
+						else
+								-- Surrogate pair is incomplete, clearly not a valid UTF-16 sequence.
+							Result := False
+						end
+					else
+							-- Invalid starting surrogate pair which should be between 0xD800 and 0xDBFF.
+						Result := False
+					end
 				end
 			end
 		end
@@ -514,10 +548,47 @@ feature -- UTF-32 to UTF-16
 			p_count_may_increase: p.count >= old p.count
 		end
 
+	utf_32_string_to_utf_16le_string_8 (s: READABLE_STRING_GENERAL): STRING_8
+			-- UTF-16LE sequence corresponding to `s' interpreted as a UTF-32 sequence
+		local
+			i: like {STRING_32}.count
+			n: like {STRING_32}.count
+			c: NATURAL_32
+			l_nat16: NATURAL_16
+		do
+			from
+				n := s.count
+					-- We would need at least 2-bytes per characters in `s'.
+				create Result.make (n * 2)
+			until
+				i >= n
+			loop
+				i := i + 1
+				c := s.code (i)
+				if c <= 0xFFFF then
+						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit.
+					Result.extend ((c & 0x00FF).to_character_8)
+					Result.extend (((c & 0xFF00) |>> 8).to_character_8)
+				else
+						-- Write the lead surrogate pair.
+					l_nat16 := (0xD7C0 + (c |>> 10)).to_natural_16
+					Result.extend ((l_nat16 & 0x00FF).to_character_8)
+					Result.extend (((l_nat16 & 0xFF00) |>> 8).to_character_8)
+
+						-- Write the trail surrogate pair.
+					l_nat16 := (0xDC00 + (c & 0x3FF)).to_natural_16
+					Result.extend ((l_nat16 & 0x00FF).to_character_8)
+					Result.extend (((l_nat16 & 0xFF00) |>> 8).to_character_8)
+				end
+			end
+		end
+
 feature -- UTF-16 to UTF-32
 
 	utf_16_0_pointer_to_string_32 (p: MANAGED_POINTER): STRING_32
 			-- {STRING_32} object corresponding to UTF-16 sequence `p' which is zero-terminated.
+		require
+			minimum_size: p.count >= 2
 		local
 			i, n: INTEGER
 			c: NATURAL_32
@@ -570,7 +641,7 @@ feature -- UTF-16 to UTF-32
 				else
 						-- Supplementary Planes: surrogate pair with lead and trail surrogates.
 					if i < n then
-						Result.extend (((c.as_natural_32 |<< 10) + s [i] - 0x35FDC00).to_character_32)
+						Result.extend (((c |<< 10) + s [i] - 0x35FDC00).to_character_32)
 						i := i + 1
 					end
 				end
@@ -579,12 +650,31 @@ feature -- UTF-16 to UTF-32
 
 	utf_16le_string_8_to_string_32 (s: READABLE_STRING_8): STRING_32
 			-- {STRING_32} object corresponding to UTF-16LE sequence `s'.
+		local
+			i, nb: INTEGER
+			c1, c2: NATURAL_32
 		do
-			debug ("to_implement")
-				(create {REFACTORING_HELPER}).to_implement ("Convert directly from UTF-16LE to UTF-32.")
+			from
+				nb := s.count
+					-- There is at least half the characters of `s'.
+				create Result.make (nb |>> 1)
+			until
+				i + 1 >= nb
+			loop
+				i := i + 2
+					-- Extract the first 2-bytes
+				c1 := s.code (i - 1) | (s.code (i) |<< 8)
+				if c1 < 0xD800 or else c1 >= 0xE000 then
+						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit, this is valid Unicode.						
+					Result.extend (c1.to_character_32)
+				else
+					i := i + 2
+					if i <= nb then
+						c2 := s.code (i - 1) | (s.code (i) |<< 8)
+						Result.extend (((c1 |<< 10) + c2 - 0x35FDC00).to_character_32)
+					end
+				end
 			end
-			Result := utf_8_string_8_to_string_32
-				(utf_16le_string_8_to_utf_8_string_8 (s))
 		end
 
 feature -- UTF-16 to UTF-8
