@@ -136,6 +136,14 @@ feature -- Creation
 
 feature -- Access
 
+	entry: PATH
+			-- Associated path of Current.
+		do
+			create Result.make_from_pointer (internal_name_pointer.item)
+		ensure
+			entry_not_empty: not Result.is_empty
+		end
+
 	readentry
 			-- Read next directory entry
 			-- make result available in `lastentry'.
@@ -260,12 +268,38 @@ feature -- Measurement
 
 feature -- Conversion
 
+	entries: ARRAYED_LIST [PATH]
+			-- The entries, in sequential format, in a platform specific order.
+		local
+			dir_temp: DIRECTORY
+			e: like last_entry_pointer
+		do
+			create dir_temp.make_open_read (internal_name)
+				-- Arbitrary size for arrayed_list creation to avoid
+				-- querying `count' which traverses list of entries
+				-- in current directory as we do here, making current
+				-- less efficient if Current has a lot of entries.
+			create Result.make (16)
+			from
+				dir_temp.start
+				dir_temp.readentry
+				e := dir_temp.last_entry_pointer
+			until
+				e = default_pointer
+			loop
+				Result.extend (create {PATH}.make_from_pointer (e))
+				dir_temp.readentry
+				e := dir_temp.last_entry_pointer
+			end
+			dir_temp.close
+		end
+
 	linear_representation: ARRAYED_LIST [STRING_8]
 			-- The entries, in sequential format. Entries that can be
 			-- expressed in Unicode are excluded and one has to use
 			-- `linear_representation' to get them.
 		obsolete
-			"Use `linear_representation_32' instead if your application is using Unicode file names."
+			"Use `entries' instead if your application is using Unicode file names."
 		local
 			dir_temp: DIRECTORY
 			e: like last_entry_pointer

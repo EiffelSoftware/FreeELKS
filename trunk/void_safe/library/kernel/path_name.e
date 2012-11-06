@@ -30,7 +30,7 @@ feature {NONE} -- Initialization
 			-- This is a temporary method to ease migration to PATH
 		obsolete "Use directly the class PATH [2012-oct]"
 		do
-			make_from_string (a_path.string_representation_8)
+			make_from_string (a_path.string_representation)
 		end
 
 feature -- Comparison

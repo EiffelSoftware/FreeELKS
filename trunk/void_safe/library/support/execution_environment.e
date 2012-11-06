@@ -20,10 +20,44 @@ feature -- Access
 			create Result
 		end
 
+	current_working_path: PATH
+			-- Directory of current execution.
+		local
+			l_count, l_nbytes: INTEGER
+			l_managed: MANAGED_POINTER
+		do
+			l_count := 50
+			create l_managed.make (l_count)
+			l_nbytes := eif_dir_current (l_managed.item, l_count)
+			if l_nbytes = -1 then
+					-- The underlying OS could not retrieve the current working directory. Most likely
+					-- a case where it has been deleted under our feet. We simply return that the current
+					-- directory is `.' the symbol for the current working directory.
+				create Result.make_from_string (".")
+			else
+				if l_nbytes > l_count then
+						-- We need more space.
+					l_count := l_nbytes
+					l_managed.resize (l_count)
+					l_nbytes := eif_dir_current (l_managed.item, l_count)
+				end
+				if l_nbytes > 0 and l_nbytes <= l_count then
+					create Result.make_from_pointer (l_managed.item)
+				else
+						-- Something went wrong.
+					create Result.make_from_string (".")
+				end
+			end
+		ensure
+			result_not_void: Result /= Void
+		end
+
 	current_working_directory: STRING
 			-- Directory of current execution.
 			-- Execution of this query on concurrent threads will result in
 			-- an unspecified behavior.
+		obsolete
+			"Use `current_working_path' instead to support Unicode path."
 		local
 			l_count, l_nbytes: INTEGER
 			l_managed: MANAGED_POINTER
@@ -86,8 +120,65 @@ feature -- Access
 			end
 		end
 
+	home_directory_path: detachable PATH
+			-- Directory name corresponding to the home directory.
+		require
+			home_directory_supported: Operating_environment.home_directory_supported
+		local
+			l_count, l_nbytes: INTEGER
+			l_managed: MANAGED_POINTER
+		once
+			l_count := 50
+			create l_managed.make (l_count)
+			l_nbytes := eif_home_directory_name_ptr (l_managed.item, l_count)
+			if l_nbytes > l_count then
+				l_count := l_nbytes
+				l_managed.resize (l_count)
+				l_nbytes := eif_home_directory_name_ptr (l_managed.item, l_count)
+			end
+			if l_nbytes > 0 and l_nbytes <= l_count then
+				create Result.make_from_pointer (l_managed.item)
+			end
+		end
+
+	user_directory_path: detachable PATH
+			-- Directory name corresponding to the user directory
+			-- On Windows: C:\Users\manus\Documents
+			-- On Unix & Mac: $HOME
+			-- Otherwise Void
+		local
+			l_count, l_nbytes: INTEGER
+			l_managed: MANAGED_POINTER
+		once
+			l_count := 50
+			create l_managed.make (50)
+			l_nbytes := eif_user_directory_name_ptr (l_managed.item, l_count)
+			if l_nbytes > l_count then
+				l_count := l_nbytes
+				l_managed.resize (l_count)
+				l_nbytes := eif_user_directory_name_ptr (l_managed.item, l_count)
+			end
+			if l_nbytes > 0 and l_nbytes <= l_count then
+				create Result.make_from_pointer (l_managed.item)
+			end
+			if Result /= Void and then not Result.is_empty then
+					-- Nothing to do here, we take what we got from the OS.
+			elseif
+				operating_environment.home_directory_supported and then
+				attached home_directory_path as l_home
+			then
+					-- We use $HOME.
+				Result := l_home
+			else
+					-- No possibility of a user directory, we let the caller handle that.
+				Result := Void
+			end
+		end
+
 	home_directory_name: detachable STRING
 			-- Directory name corresponding to the home directory.
+		obsolete
+			"Use `home_directory_path' instead to support Unicode path."
 		require
 			home_directory_supported: Operating_environment.home_directory_supported
 		local
@@ -112,6 +203,8 @@ feature -- Access
 			-- On Windows: C:\Users\manus\Documents
 			-- On Unix & Mac: $HOME
 			-- Otherwise Void
+		obsolete
+			"Use `user_directory_path' instead to support Unicode paths."
 		local
 			l_count, l_nbytes: INTEGER
 			l_managed: MANAGED_POINTER
@@ -192,10 +285,21 @@ feature -- Status setting
 
 	change_working_directory (path: READABLE_STRING_GENERAL)
 			-- Set the current directory to `path'
+		obsolete
+			"Use `change_working_path' instead to support Unicode path."
 		local
 			l_ptr: MANAGED_POINTER
 		do
 			l_ptr := file_info.file_name_to_pointer (path, Void)
+			return_code := eif_chdir (l_ptr.item)
+		end
+
+	change_working_path (path: PATH)
+			-- Set the current directory to `path'
+		local
+			l_ptr: MANAGED_POINTER
+		do
+			l_ptr := path.to_pointer (Void)
 			return_code := eif_chdir (l_ptr.item)
 		end
 

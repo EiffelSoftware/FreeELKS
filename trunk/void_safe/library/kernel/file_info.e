@@ -162,6 +162,14 @@ feature -- Access
 			end
 		end
 
+	file_entry: detachable PATH
+			-- Associated entry for Current.
+		do
+			if attached internal_name_pointer as l_ptr then
+				create Result.make_from_pointer (l_ptr.item)
+			end
+		end
+
 feature {PATH_HANDLER} -- Access
 
 	file_name_to_pointer (a_name: READABLE_STRING_GENERAL; a_ptr: detachable MANAGED_POINTER): MANAGED_POINTER
@@ -263,6 +271,21 @@ feature {PATH_HANDLER} -- Access
 				create l_cstring.make_shared_from_pointer (a_ptr)
 				Result := l_cstring.string
 			end
+		end
+
+	pointer_length_in_bytes (a_ptr: POINTER): INTEGER
+			-- Length in bytes of a platform specific file name pointer, not
+			-- including the null-terminating character.
+		external
+			"C inline use %"eif_eiffel.h%""
+		alias
+			"{
+			#ifdef EIF_WINDOWS
+				return (EIF_INTEGER) wcslen($a_ptr) * sizeof(wchar_t);
+			#else
+				return (EIF_INTEGER) strlen($a_ptr) * sizeof(char);
+			#endif
+			}"
 		end
 
 feature -- Status report
@@ -611,23 +634,6 @@ feature {NONE} -- Implementation
 				return (EIF_INTEGER) WideCharToMultiByte(CP_ACP, 0, (LPCWSTR) $a_ptr, -1, (LPSTR) $a_output, (int) $a_output_length, NULL, NULL);
 			#else
 				return $a_output_length;
-			#endif
-			}"
-		end
-
-	pointer_length_in_bytes (a_ptr: POINTER): INTEGER
-			-- Length in bytes of a platform specific file name pointer, not
-			-- including the null-terminating character.
-		require
-			{PLATFORM}.is_windows
-		external
-			"C inline use %"eif_eiffel.h%""
-		alias
-			"{
-			#ifdef EIF_WINDOWS
-				return (EIF_INTEGER) wcslen($a_ptr) * sizeof(wchar_t);
-			#else
-				return (EIF_INTEGER) strlen($a_ptr) * sizeof(char);
 			#endif
 			}"
 		end

@@ -33,7 +33,7 @@ feature -- Initialization
 	make (fn: STRING)
 			-- Create file object with `fn' as file name.
 		obsolete
-			"Use `make_with_name' instead."
+			"Use `make_with_path' instead."
 		require
 			string_exists: fn /= Void
 			string_not_empty: not fn.is_empty
@@ -47,15 +47,14 @@ feature -- Initialization
 	make_with_name (fn: READABLE_STRING_GENERAL)
 			-- Create file object with `fn' as file name.
 		require
-			string_exists: fn /= Void
-			string_not_empty: not fn.is_empty
+			fn_exists: fn /= Void
+			fn_not_empty: not fn.is_empty
 		do
 			set_name (fn)
 			mode := Closed_file
 			file_pointer := default_pointer
 			create last_string.make_empty
 		ensure
-			file_named: internal_name = fn
 			file_closed: is_closed
 		end
 
@@ -65,8 +64,10 @@ feature -- Initialization
 			a_path_attached: a_path /= Void
 			a_path_not_empty: not a_path.is_empty
 		do
-			-- NOTE: this is a temporary implementation
-			make_with_name (a_path.string_representation)
+			set_path (a_path)
+			mode := Closed_file
+			file_pointer := default_pointer
+			create last_string.make_empty
 		ensure
 			file_closed: is_closed
 		end
@@ -170,11 +171,19 @@ feature -- Initialization
 
 feature -- Access
 
+	entry: PATH
+			-- Associated path of Current.
+		do
+			create Result.make_from_pointer (internal_name_pointer.item)
+		ensure
+			entry_not_empty: not Result.is_empty
+		end
+
 	name: STRING
 			-- File name as a STRING_8 instance. The value might be truncated
 			-- from the original name used to create the current FILE instance.
 		obsolete
-			"Use `name_32' to ensure that Unicode filenames are not truncated."
+			"Use `entry' to ensure that Unicode filenames are not truncated."
 		do
 			Result := internal_name.as_string_8
 		ensure then
@@ -187,6 +196,8 @@ feature -- Access
 			-- is that on some platforms a non-unicode filename is interpreted
 			-- in a certain locale and its corresponding Unicode version is not necessary
 			-- made of the same codes.
+		obsolete
+			"Use `entry' to ensure that Unicode filenames are not truncated."
 		do
 			if attached {READABLE_STRING_8} internal_name as l_name then
 				Result := buffered_file_info.pointer_to_file_name_32 (internal_name_pointer.item)
@@ -654,11 +665,8 @@ feature -- Comparison
 		require
 			fn_not_void: fn /= Void
 			fn_not_empty: not fn.is_empty
-		local
-			l_comparer: FILE_COMPARER
 		do
-			create l_comparer
-			Result := l_comparer.same_files (internal_name, fn)
+			Result := entry.is_same_file_as (create {PATH}.make_from_string (fn))
 		end
 
 feature -- Status setting
@@ -1287,6 +1295,25 @@ feature -- Removal
 			file_closed: is_closed
 		end
 
+	reset_path (fp: PATH)
+			-- Change file name to `fp' and reset
+			-- file descriptor and all information.
+		require
+			valid_file_name: fp /= Void
+		do
+			set_path (fp)
+			if mode /= Closed_file then
+				close
+			end
+			last_integer := 0
+			last_real := 0.0
+			last_double := 0.0
+			last_character := '%U'
+			last_string.wipe_out
+		ensure
+			file_closed: is_closed
+		end
+
 feature -- Input
 
 	read_real, readreal
@@ -1589,11 +1616,25 @@ feature {NONE} -- Implementation
 
 	set_name (a_name: READABLE_STRING_GENERAL)
 			-- Set `name' with `a_name'.
+		require
+			a_name_not_void: a_name /= Void
 		do
 			internal_name := a_name
 			internal_detachable_name_pointer := buffered_file_info.file_name_to_pointer (a_name, internal_detachable_name_pointer)
 		ensure
 			name_set: internal_name = a_name
+		end
+
+	set_path (a_path: PATH)
+			-- Set `internal_name_pointer' with a content matching `a_path'.
+		require
+			a_path_not_void: a_path /= Void
+		do
+				-- In the case of `a_path' being a mixed-encoding, `internal_name' holds
+				-- a value close to the actual path but not equal.
+			internal_name := a_path.string_representation
+				-- Create a matching path.
+			internal_detachable_name_pointer := a_path.to_pointer (internal_detachable_name_pointer)
 		end
 
 	create_last_string (a_min_size: INTEGER)
