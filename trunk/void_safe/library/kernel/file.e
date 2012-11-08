@@ -30,7 +30,7 @@ deferred class FILE inherit
 
 feature -- Initialization
 
-	make (fn: STRING)
+	make (fn: STRING_8)
 			-- Create file object with `fn' as file name.
 		obsolete
 			"Use `make_with_path' instead."
@@ -1139,6 +1139,22 @@ feature -- Element change
 			l_ptr := buffered_file_info.file_name_to_pointer (new_name, Void)
 			file_rename (internal_name_pointer.item, l_ptr.item)
 			set_name (new_name)
+		ensure
+			name_changed: internal_name = new_name
+		end
+
+	rename_path (new_name: PATH)
+			-- Change file name to `new_name'
+		require
+			new_name_not_void: new_name /= Void
+			new_name_not_empty: not new_name.is_empty
+			file_exists: exists
+		local
+			l_ptr: MANAGED_POINTER
+		do
+			l_ptr := new_name.to_pointer (Void)
+			file_rename (internal_name_pointer.item, l_ptr.item)
+			set_path (new_name)
 		ensure
 			name_changed: internal_name = new_name
 		end
