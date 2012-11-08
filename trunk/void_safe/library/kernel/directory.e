@@ -136,7 +136,7 @@ feature -- Creation
 
 feature -- Access
 
-	entry: PATH
+	path: PATH
 			-- Associated path of Current.
 		do
 			create Result.make_from_pointer (internal_name_pointer.item)
@@ -166,7 +166,7 @@ feature -- Access
 			-- File name as a STRING_8 instance. The value might be truncated
 			-- from the original name used to create the current FILE instance.
 		obsolete
-			"Use `entry' to ensure you can retrieve a all kind of names."
+			"Use `path' to ensure you can retrieve a all kind of names."
 		do
 			Result := internal_name.as_string_8
 		ensure then

@@ -171,7 +171,7 @@ feature -- Initialization
 
 feature -- Access
 
-	entry: PATH
+	path: PATH
 			-- Associated path of Current.
 		do
 			create Result.make_from_pointer (internal_name_pointer.item)
@@ -183,7 +183,7 @@ feature -- Access
 			-- File name as a STRING_8 instance. The value might be truncated
 			-- from the original name used to create the current FILE instance.
 		obsolete
-			"Use `entry' to ensure that Unicode filenames are not truncated."
+			"Use `path' to ensure that Unicode filenames are not truncated."
 		do
 			Result := internal_name.as_string_8
 		ensure then
@@ -197,7 +197,7 @@ feature -- Access
 			-- in a certain locale and its corresponding Unicode version is not necessary
 			-- made of the same codes.
 		obsolete
-			"Use `entry' to ensure that Unicode filenames are not truncated."
+			"Use `path' to ensure that Unicode filenames are not truncated."
 		do
 			if attached {READABLE_STRING_8} internal_name as l_name then
 				Result := buffered_file_info.pointer_to_file_name_32 (internal_name_pointer.item)
@@ -666,7 +666,7 @@ feature -- Comparison
 			fn_not_void: fn /= Void
 			fn_not_empty: not fn.is_empty
 		do
-			Result := entry.is_same_file_as (create {PATH}.make_from_string (fn))
+			Result := path.is_same_file_as (create {PATH}.make_from_string (fn))
 		end
 
 feature -- Status setting
