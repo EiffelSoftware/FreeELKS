@@ -16,6 +16,11 @@ class FILE_INFO inherit
 			copy, is_equal
 		end
 
+	PATH_HANDLER
+		redefine
+			copy, is_equal
+		end
+
 create
 	make
 
