@@ -347,21 +347,30 @@ feature -- Access
 			-- This is the last name in the current sequence.
 		local
 			l_pos: INTEGER
+			l_end_root: INTEGER
 		do
 			l_pos := position_of_last_directory_separator (False)
 			if l_pos = 0 then
-				l_pos := root_end_position
-				if l_pos > 0 then
-						-- We have a root, case of "C:abc", so we return just "abc".
-					create Result.make_from_storage (storage.substring (l_pos + 1, storage.count))
+				l_end_root := root_end_position
+				if l_end_root > 0 then
+						-- We have a root, case of "C:abc" on Windows or "/" on UNIX.
+						-- On Windows, we return just "abc" and no entry on UNIX.
+					if l_end_root < storage.count then
+						create Result.make_from_storage (storage.substring (l_end_root + 1, storage.count))
+					end
 				else
 						-- There is no directory separator, or just a trailing one, so current is a simple path
-					Result := twin
+					Result := Current
 				end
 			else
 					-- We go after the directory separator
-				if l_pos <= root_end_position then
-						-- We clearly have "\\server\share" for Windows or "/" for Unix, so there is no entry.
+				l_end_root := root_end_position
+				if l_pos <= l_end_root then
+						-- We clearly have "\\server\share" for Windows or "/xxx" for Unix. Thus there is
+						-- only an entry on UNIX if there is something after the / (i.e. "xxx" in the case of "/xxx").
+					if l_end_root < storage.count then
+						create Result.make_from_storage (storage.substring (l_end_root + 1, storage.count))
+					end
 				else
 					create Result.make_from_storage (storage.substring (l_pos + unit_size, storage.count))
 				end
@@ -478,10 +487,10 @@ feature -- Access
 				until
 					l_components.after
 				loop
-					if l_components.item.storage.same_string (current_path_symbol) then
+					if l_components.item.is_dot then
 							-- Our simple name is just ".", we skip it.
 						l_components.remove
-					elseif l_components.item.storage.same_string (parent_path_symbol) then
+					elseif l_components.item.is_dot_dot then
 							-- If our simple name is "..", we skip it and remove the previous
 							-- elements as well. If there is no previous element, then there is
 							-- not much we can do so we ignore it.
@@ -495,7 +504,7 @@ feature -- Access
 					end
 				end
 				across l_components as l_component loop
-					internal_path_append_into (l_storage, l_components.item.storage, True)
+					internal_path_append_into (l_storage, l_component.item.storage, True)
 				end
 				create Result.make_from_storage (l_storage)
 			else
@@ -995,7 +1004,7 @@ feature {NONE} -- Implementation
 			-- If there is only one directory separator, then return value is `a_starting_pos'.
 		require
 			a_starting_pos_valid: a_starting_pos >= 1 and a_starting_pos <= storage.count
-			a_starting_pos_is_well_positionned: a_starting_pos \\ unit_size = 1
+			a_starting_pos_is_well_positionned: {PLATFORM}.is_windows implies a_starting_pos \\ unit_size = 1
 			storage_has_separator: storage.item (a_starting_pos) = directory_separator
 			valid_windows_separator: {PLATFORM}.is_windows implies storage.item (a_starting_pos + 1) = '%U'
 		local
@@ -1031,7 +1040,7 @@ feature {NONE} -- Implementation
 			Result := Result - l_step
 		ensure
 			valid_position: Result >= 1 and Result <= storage.count
-			well_positionned: Result \\ unit_size = 1
+			well_positionned: {PLATFORM}.is_windows implies Result \\ unit_size = 1
 			has_separator: storage.item (Result) = directory_separator
 			valid_windows_separator: {PLATFORM}.is_windows implies storage.item (Result + 1) = '%U'
 		end
@@ -1162,24 +1171,6 @@ feature {NONE} -- Implementation
 				Result := "\%U"
 			else
 				Result := "/"
-			end
-		end
-
-	current_path_symbol: STRING_8
-		once
-			if {PLATFORM}.is_windows then
-				Result := ".%U"
-			else
-				Result := "."
-			end
-		end
-
-	parent_path_symbol: STRING_8
-		once
-			if {PLATFORM}.is_windows then
-				Result := ".%U.%U"
-			else
-				Result := ".."
 			end
 		end
 
