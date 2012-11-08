@@ -111,7 +111,7 @@ inherit
 			out, is_equal, copy
 		end
 
-create {FILE_INFO, DIRECTORY, FILE, EXECUTION_ENVIRONMENT}
+create {PATH_HANDLER}
 	make_from_pointer
 
 create {PATH}
@@ -119,6 +119,7 @@ create {PATH}
 
 create
 	make_empty,
+	make_current,
 	make_from_string,
 	make_from_path,
 	make_from_serialized_path
@@ -131,6 +132,16 @@ feature {NONE} -- Initialization
 			create storage.make_empty
 		ensure
 			is_empty: is_empty
+		end
+
+	make_current
+			-- Initialize current as the symbolic representation of the current working directory
+		do
+			create storage.make (unit_size)
+			storage.append_character ('.')
+			if {PLATFORM}.is_windows then
+				storage.append_character ('%U')
+			end
 		end
 
 	make_from_string (a_path: READABLE_STRING_GENERAL)
@@ -194,6 +205,28 @@ feature {NONE} -- Initialization
 		end
 
 feature -- Status report
+
+	is_dot: BOOLEAN
+			-- Is Current a representation of "."?
+		do
+			if storage.count = unit_size then
+				Result := storage.item (1) = '.'
+				if {PLATFORM}.is_windows and Result then
+					Result := storage.item (2) = '%U'
+				end
+			end
+		end
+
+	is_dot_dot: BOOLEAN
+			-- Is Current Representation of ".."?
+		do
+			if storage.count = 2 * unit_size then
+				Result := storage.item (1) = '.' and storage.item (1 + unit_size) = '.'
+				if {PLATFORM}.is_windows and Result then
+					Result := storage.item (2) = '%U' and storage.item (2 + unit_size) = '%U'
+				end
+			end
+		end
 
 	is_representable: BOOLEAN
 			-- Is current representable as a Unicode character sequence?
@@ -488,7 +521,8 @@ feature -- Access
 feature -- Status setting
 
 	extended (a_name: READABLE_STRING_GENERAL): PATH
-			-- Append the simple name `a_name' to the current path.
+			-- New path instance of current extended with path `a_name'.
+			-- If current is not empty, then `a_path' cannot have a root.
 		require
 			a_name_not_void: a_name /= Void
 			a_name_not_empty: not a_name.is_empty
@@ -498,8 +532,8 @@ feature -- Status setting
 		end
 
 	extended_path alias "+" (a_path: PATH): PATH
-			-- Append the subdirectory `a_directory' to the current path.
-			-- If current is not empty, then `a_directory' cannot have a root.
+			-- New path instance of current extended with simple path `a_path'.
+			-- If current is not empty, then `a_path' cannot have a root.
 		require
 			a_path_not_void: a_path /= Void
 			a_pathnot_empty: not a_path.is_empty
@@ -783,7 +817,10 @@ feature {PATH_HANDLER}
 			l_cstr: C_STRING
 		do
 				-- FIXME: We need to optimize using `an_existing_storage'.
-			create l_cstr.make (storage)
+				-- A `C_STRING' instance is zeroed out, we just need to verify we have an extra `character'
+				-- that is the null character at the end, thus the `+ unit_size'.
+			create l_cstr.make_empty (storage.count + unit_size)
+			l_cstr.set_string (storage)
 			Result := l_cstr.managed_data
 		end
 
