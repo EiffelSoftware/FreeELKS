@@ -538,6 +538,8 @@ feature -- Status setting
 			a_name_has_no_root: not is_empty implies not (create {PATH}.make_from_string (a_name)).has_root
 		do
 			Result := extended_path (create {PATH}.make_from_string (a_name))
+		ensure
+			not_empty: not Result.is_empty
 		end
 
 	extended_path alias "+" (a_path: PATH): PATH
@@ -558,6 +560,8 @@ feature -- Status setting
 			internal_path_append_into (l_storage, a_path.storage, True)
 				-- Create a new PATH instance.
 			create Result.make_from_storage (l_storage)
+		ensure
+			not_empty: not Result.is_empty
 		end
 
 feature -- Obsolete
