@@ -66,20 +66,18 @@ note
 			does not guarantee that the sequence is actually a valid UTF-16 sequence.
 			
 			In other words, when there is an invalid UTF-8 encoding on UNIX, or an invalid UTF-16 encoding
-			on Windows, the filename is not textually representable. In this case, the current instance
-			should be used to build extension of the path, or be used to open file or directories.
-			
-			Use the query `serialized_path: STRING_8', an uninterpreted sequence of bytes, to represent
-			a PATH_ENTRY using a mixed-encoding that can be stored and used to reconstruct a new instance
-			of PATH_ENTRY. That sequence of bytes is specific to the platform from where it was created
-			(i.e. an encoded path on UNIX is not a valid encoded path for Windows).
-			
-			
+			on Windows, the filename is not directly representable as a Unicode string. To make it possible
+			to create and store paths in a textually representable form, the query `name' will create
+			an encoded representation that can be then later used in `make_from_string' to create a PATH
+			equivalent to the original path. The encoding is described in UTF_CONVERTER's note clause
+			and is a fourth variant of the recommended practice for replacement characters in Unicode
+			(see http://www.unicode.org/review/pr-121.html).
+
+						
 			Immutability
 			============
 			
-			Apart from obsolete features which have been added to ease migration from former PATH_NAME classes,
-			instances of the current class are immutable.
+			Instances of the current class are immutable.
 		]"
 
 	library: "Free implementation of ELKS library"
@@ -121,8 +119,7 @@ create
 	make_empty,
 	make_current,
 	make_from_string,
-	make_from_path,
-	make_from_serialized_path
+	make_from_path
 
 feature {NONE} -- Initialization
 
@@ -146,12 +143,18 @@ feature {NONE} -- Initialization
 
 	make_from_string (a_path: READABLE_STRING_GENERAL)
 			-- Initialize current from `a_path' treated as a sequence of Unicode characters.
+			-- If `a_path' is trying to represent a mixed-encoded path, then `a_path' should use
+			-- the escaped representation as described in UTF_CONVERTER.
 		require
 			a_path_not_void: a_path /= Void
 		do
 			create storage.make (a_path.count * unit_size)
-				-- We start from nothing, so we do not add a deirectory separator regardless.
-			internal_append (a_path, False)
+			if not a_path.is_empty then
+					-- We start from nothing, so we do not add a directory separator regardless.
+				internal_append_into (storage, a_path, False)
+			end
+		ensure
+			roundtrip: name.same_string_general (a_path)
 		end
 
 	make_from_path (a_path: PATH)
@@ -161,18 +164,7 @@ feature {NONE} -- Initialization
 		do
 			storage := a_path.storage.twin
 		ensure
-			same_path: Current ~ a_path
-		end
-
-	make_from_serialized_path (a_path: READABLE_STRING_8)
-			-- Initialize current from `a_path'.
-		require
-			a_path_not_void: a_path /= Void
-		do
-			storage := a_path.twin
-		ensure
-			not_shared: storage /= a_path
-			same_storage: storage.same_string (a_path)
+			same_path: same_as (a_path)
 		end
 
 	make_from_storage (a_path: STRING_8)
@@ -206,7 +198,7 @@ feature {NONE} -- Initialization
 
 feature -- Status report
 
-	is_dot: BOOLEAN
+	is_current_symbol: BOOLEAN
 			-- Is Current a representation of "."?
 		do
 			if storage.count = unit_size then
@@ -217,7 +209,7 @@ feature -- Status report
 			end
 		end
 
-	is_dot_dot: BOOLEAN
+	is_parent_symbol: BOOLEAN
 			-- Is Current Representation of ".."?
 		do
 			if storage.count = 2 * unit_size then
@@ -429,7 +421,7 @@ feature -- Access
 								-- Path is not absolute but has a root, it can only be a drive letter.
 								-- Now we have to resolve "c:something\file.txt" using the current working
 								-- directory of the "c:" drive.
-							if attached env.current_working_path as l_env_root and then l_env_root ~ l_root then
+							if attached env.current_working_path as l_env_root and then l_env_root.same_as (l_root) then
 									-- Same root so we simply append.
 								Result := l_env_root
 							else
@@ -477,7 +469,7 @@ feature -- Access
 				l_components := l_absolute_path.components
 				check
 					l_components_has_root: l_components.count >= 1
-					l_components_first_is_root: l_components.first ~ l_root
+					l_components_first_is_root: l_components.first.same_as (l_root)
 				end
 				from
 					l_components.start
@@ -487,10 +479,10 @@ feature -- Access
 				until
 					l_components.after
 				loop
-					if l_components.item.is_dot then
+					if l_components.item.is_current_symbol then
 							-- Our simple name is just ".", we skip it.
 						l_components.remove
-					elseif l_components.item.is_dot_dot then
+					elseif l_components.item.is_parent_symbol then
 							-- If our simple name is "..", we skip it and remove the previous
 							-- elements as well. If there is no previous element, then there is
 							-- not much we can do so we ignore it.
@@ -521,7 +513,7 @@ feature -- Access
 			else
 				Result := internal_hash_code
 				if internal_hash_code = -1  then
-					Result := string_representation.as_lower.hash_code
+					Result := name.as_lower.hash_code
 					internal_hash_code := Result
 				end
 			end
@@ -532,6 +524,8 @@ feature -- Status setting
 	extended (a_name: READABLE_STRING_GENERAL): PATH
 			-- New path instance of current extended with path `a_name'.
 			-- If current is not empty, then `a_path' cannot have a root.
+			-- Note that `a_name' can be an encoding of a mixed-encoding simple name and it will
+			-- be decoded accordingly (see note clause for the class for more details.)
 		require
 			a_name_not_void: a_name /= Void
 			a_name_not_empty: not a_name.is_empty
@@ -547,12 +541,13 @@ feature -- Status setting
 			-- If current is not empty, then `a_path' cannot have a root.
 		require
 			a_path_not_void: a_path /= Void
-			a_pathnot_empty: not a_path.is_empty
+			a_path_not_empty: not a_path.is_empty
 			a_path_has_no_root: not is_empty implies not a_path.has_root
 		local
 			l_storage: like storage
 		do
-				-- Pre-allocate all the bytes necessary to store the combination of `Current' and `a_path'.
+				-- Pre-allocate all the bytes necessary to store the combination of `Current', `a_path' and
+				-- the directory separator.
 			create l_storage.make (storage.count + a_path.storage.count + unit_size)
 				-- Get a copy of `storage' from Current'
 			l_storage.append (storage)
@@ -564,141 +559,34 @@ feature -- Status setting
 			not_empty: not Result.is_empty
 		end
 
-feature -- Obsolete
-
-	reset (a_path: READABLE_STRING_GENERAL)
-			-- Reset content with a path starting with `a_path'.
-		obsolete
-			"Create a new path using `make_from_string' instead."
+	appended (a_extra: READABLE_STRING_GENERAL): PATH
+			-- New path instance of current where `entry' is extended with `a_extra'.
 		require
-			a_path_not_void: a_path /= Void
+			a_extra_not_void: a_extra /= Void
+			a_extra_not_empty: not a_extra.is_empty
+			has_entry: entry /= Void
+		local
+			l_storage: like storage
 		do
-			create storage.make (a_path.count * unit_size)
-				-- We start from nothing, so we do not add a deirectory separator regardless.
-			internal_append (a_path, False)
-		end
-
-	reset_path (a_path: PATH)
-			-- Reset content with a path starting with `a_path'.
-		obsolete
-			"Create a new path using `make_from_path' instead."
-		require
-			a_path_not_void: a_path /= Void
-		do
-			internal_hash_code := -1
-			storage := a_path.storage.twin
-		end
-
-	extend (a_name: READABLE_STRING_GENERAL)
-			-- Append the simple name `a_name' to the current path.
-		obsolete
-			"Use `extended' instead."
-		require
-			a_name_not_void: a_name /= Void
-			a_name_not_empty: not a_name.is_empty
-			a_name_has_no_root: not is_empty implies not (create {PATH}.make_from_string (a_name)).has_root
-		do
-				-- To preserve immutability of PATH instances, each time we modify it,
-				-- we duplicate `storage'.
-			storage := storage.twin
-			internal_append (a_name, True)
-		end
-
-	extend_path (a_path: PATH)
-			-- Append the subdirectory `a_directory' to the current path.
-			-- If current is not empty, then `a_directory' cannot have a root.
-		obsolete
-			"Use `extended_path' instead."
-		require
-			a_path_not_void: a_path /= Void
-			a_pathnot_empty: not a_path.is_empty
-			a_path_has_no_root: not is_empty implies not a_path.has_root
-		do
-				-- To preserve immutability of PATH instances, each time we modify it,
-				-- we duplicate `storage'.
-			storage := storage.twin
-			internal_hash_code := -1
-			internal_path_append_into (storage, a_path.storage, True)
-		end
-
-	extend_from_array (a_names: ARRAY [READABLE_STRING_GENERAL])
-			-- Append each elements of `a_names' to current path.
-		obsolete
-			"Use consecutive calls to `extended' instead."
-		require
-			a_names_not_void: a_names /= Void
-			a_names_not_empty: across a_names as a_name all not a_name.item.is_empty end
-		do
-				-- To preserve immutability of PATH instances, each time we modify it,
-				-- we duplicate `storage'.
-			storage := storage.twin
-			across a_names as l_name loop
-				internal_append (l_name.item, True)
-			end
-		end
-
-	set_subdirectory (a_directory: READABLE_STRING_GENERAL)
-			-- Append the subdirectory `a_directory' to the current path.
-		obsolete
-			"Use `extended' instead."
-		require
-			a_directory_not_void: a_directory /= Void
-			a_directory_not_empty: not a_directory.is_empty
-		do
-				-- To preserve immutability of PATH instances, each time we modify it,
-				-- we duplicate `storage'.
-			storage := storage.twin
-			internal_append (a_directory, True)
-		end
-
-	set_filename (a_filename: READABLE_STRING_GENERAL)
-			-- Set the value of the file name part of current path to `a_filename'.
-		obsolete
-			"Use `extended' instead."
-		require
-			a_filename_not_void: a_filename /= Void
-			a_filename_not_empty: not a_filename.is_empty
-			a_filename_has_no_separator: not a_filename.has ('/') or not a_filename.has ('\')
-		do
-				-- To preserve immutability of PATH instances, each time we modify it,
-				-- we duplicate `storage'.
-			storage := storage.twin
-			internal_append (a_filename, True)
-		end
-
-	add_extension (ext: READABLE_STRING_GENERAL)
-			-- Append the extension `ext' to the file name.
-		obsolete
-			"Use `extended' with a simple name that already contains the extension."
-		require
-			ext_not_void: ext /= Void
-			ext_not_empty: not ext.is_empty
-			ext_not_dot: ext.item (1) /= '.'
-			ext_has_no_separator: not ext.has ('/') or not ext.has ('\')
-		do
-				-- To preserve immutability of PATH instances, each time we modify it,
-				-- we duplicate `storage'.
-			storage := storage.twin
-			internal_append (".", False)
-			internal_append (ext, False)
+				-- Pre-allocate all the bytes necessary to store the combination of `Current'
+				-- and `a_extra'.
+			create l_storage.make (storage.count + a_extra.count * unit_size)
+				-- Get a copy of `storage' from Current'
+			l_storage.append (storage)
+				-- Append `a_extra'.
+			internal_append_into (l_storage, a_extra, False)
+				-- Create a new PATH instance.
+			create Result.make_from_storage (l_storage)
+		ensure
+			not_empty: not Result.is_empty
 		end
 
 feature -- Comparison
 
-	is_less alias "<" (other: like Current): BOOLEAN
-			-- <Precursor>
-		do
-			if {OPERATING_ENVIRONMENT}.case_sensitive_path_names then
-				Result := storage < other.storage
-			else
-					-- FIXME: the implementation of `is_less' is suboptimal since
-					-- it creates 4 new, potentially big, objects
-				Result := string_representation.as_lower < other.string_representation.as_lower
-			end
-		end
-
-	is_equal (other: like Current): BOOLEAN
-			-- <Precursor>
+	same_as (other: PATH): BOOLEAN
+			-- Is Current the same path as `other'?
+			-- Note that no canonicalization is being performed to compare paths,
+			-- paths are compared using the OS-specific convention for letter case.
 		do
 			if other = Current then
 				Result := True
@@ -712,7 +600,25 @@ feature -- Comparison
 			end
 		end
 
-	is_case_sensitive_equal (other: like Current): BOOLEAN
+	is_less alias "<" (other: like Current): BOOLEAN
+			-- <Precursor>
+		do
+			if {OPERATING_ENVIRONMENT}.case_sensitive_path_names then
+				Result := storage < other.storage
+			else
+					-- FIXME: the implementation of `is_less' is suboptimal since
+					-- it creates 4 new, potentially big, objects
+				Result := name.as_lower < other.name.as_lower
+			end
+		end
+
+	is_equal (other: like Current): BOOLEAN
+			-- <Precursor>
+		do
+			Result := same_as (other)
+		end
+
+	is_case_sensitive_equal (other: PATH): BOOLEAN
 			-- Compare path and paying attention to case.
 		do
 			if other = Current then
@@ -722,35 +628,14 @@ feature -- Comparison
 			end
 		end
 
-	is_case_insensitive_equal (other: like Current): BOOLEAN
+	is_case_insensitive_equal (other: PATH): BOOLEAN
 			-- Compare path without paying attention to case. If the path is containing some mixed-encoding
 			-- we might ignore many characters when doing the case comparison.
-		local
-			u: UTF_CONVERTER
 		do
 			if other = Current then
 				Result := True
 			else
-				if is_representable then
-					if other.is_representable then
-						Result := string_representation.is_case_insensitive_equal (other.string_representation)
-					else
-							-- Other is not representable, clearly it is not made of the same character sequence.
-						check not Result end
-					end
-				elseif other.is_representable then
-						-- Other is representable, but not Current, clearly it is not made of the same character sequence.
-						check not Result end
-				else
-						-- Both are not representable.
-						-- We convert to Unicode and we know that the resulting string is not valid unicode, but
-						-- for the unicode characters that are valid, we do case insensitive comparison
-					if {PLATFORM}.is_windows then
-						Result := u.utf_16le_string_8_to_string_32 (storage).is_case_insensitive_equal (u.utf_16le_string_8_to_string_32 (other.storage))
-					else
-						Result := u.utf_8_string_8_to_string_32 (storage).is_case_insensitive_equal (u.utf_8_string_8_to_string_32 (other.storage))
-					end
-				end
+				Result := name.is_case_insensitive_equal (other.name)
 			end
 		end
 
@@ -774,43 +659,43 @@ feature -- Output
 		local
 			u: UTF_CONVERTER
 		do
-			Result := u.utf_32_string_to_utf_8_string_8 (string_representation)
+			Result := u.utf_32_string_to_utf_8_string_8 (name)
 		end
 
-	string_representation: STRING_32
-			-- Unicode representation of the underlying filename, by default it the current path
-			-- has a valid Unicode representation, it is this representation, otherwise it is
-			-- a representation where most valid Unicode character are preserved.
-			-- It is used for display purpose in graphical application. Using this string instead
-			-- of Current to create a `{FILE}' or `{DIRECTORY}' instance may not yield the desired
-			-- effect if the current path doesn't have a valid Unicode representation.
-			-- Use `is_representable' to check if `string_representation' can be safely used for roundtriping.
+	name: STRING_32
+			-- If current is representable in Unicode, the Unicode representation.
+			-- Otherwise all non-valid sequences for the current platform in the path are escaped
+			-- as mentioned in the note clause of the class.
+			-- To ensure roundtrip, you cannot use `name' directly to create a `FILE', you have to
+			-- create a `PATH' instance using `make_from_string' before passing it to the creation
+			-- procedure of `FILE' taking an instance of `PATH'.
 		local
 			u: UTF_CONVERTER
 		do
 			if {PLATFORM}.is_windows then
-				Result := u.utf_16le_string_8_to_string_32 (storage)
+				Result := u.utf_16le_string_8_to_escaped_string_32 (storage)
 			else
-				Result := u.utf_8_string_8_to_string_32 (storage)
+				Result := u.utf_8_string_8_to_escaped_string_32 (storage)
 			end
+		ensure
+			roundtrip: same_as (create {PATH}.make_from_string (Result))
+		end
+
+	string_representation: STRING_32
+		obsolete
+			"Use `name' instead."
+		do
+			Result := name
 		end
 
 	string_representation_8: STRING_8
+		obsolete
+			"Use `name' instead."
 		require
 			is_representable: is_representable
 			is_valid_extended_ascii: string_representation.is_valid_as_string_8
 		do
 			Result := string_representation.as_string_8
-		end
-
-	serialized_path: IMMUTABLE_STRING_8
-			-- A string that can be used by `make_from_serialized_path' to reconstruct the current
-			-- object. Useful for serialization.
-			-- Platform-dependent.
-		do
-			create Result.make_from_string (storage)
-		ensure
-			consistent_path: create {PATH}.make_from_storage (Result) ~ Current
 		end
 
 feature {NONE} -- Output
@@ -1049,18 +934,18 @@ feature {NONE} -- Implementation
 			valid_windows_separator: {PLATFORM}.is_windows implies storage.item (Result + 1) = '%U'
 		end
 
-	internal_append (other: READABLE_STRING_GENERAL; a_add_separator: BOOLEAN)
+	internal_append_into (a_storage: STRING_8; other: READABLE_STRING_GENERAL; a_add_separator: BOOLEAN)
 			-- Append `other' to Current, and add a separator if `a_add_separator'.
 		require
 			other_not_void: other /= Void
 			other_not_empty: not other.is_empty
 		local
 			l_extra_storage: STRING_8
-			u: UTF_CONVERTER
 			l_name: detachable STRING_32
 			l_other: detachable READABLE_STRING_GENERAL
 			l_char: CHARACTER_32
 			i, nb: INTEGER
+			u: UTF_CONVERTER
 		do
 			l_other := other
 			if {PLATFORM}.is_windows then
@@ -1108,17 +993,17 @@ feature {NONE} -- Implementation
 
 			if not l_other.is_empty then
 				if {PLATFORM}.is_windows then
-					l_extra_storage := u.utf_32_string_to_utf_16le_string_8 (l_other)
+					l_extra_storage := u.escaped_utf_32_string_to_utf_16le_string_8 (l_other)
 				else
-					l_extra_storage := u.utf_32_string_to_utf_8_string_8 (l_other)
+					l_extra_storage := u.escaped_utf_32_string_to_utf_8_string_8 (l_other)
 				end
 				internal_hash_code := -1
-				internal_path_append_into (storage, l_extra_storage, a_add_separator)
+				internal_path_append_into (a_storage, l_extra_storage, a_add_separator)
 			end
 		end
 
 	internal_path_append_into (a_storage, other: STRING_8; a_add_separator: BOOLEAN)
-			-- Append `other' in the same format as `storage' to `a_storage',
+			-- Append `other' in the same format as `a_storage' to `a_storage',
 			-- and add a separator if `a_add_separator'.	
 		require
 			other_not_void: other /= Void
