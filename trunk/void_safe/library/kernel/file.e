@@ -1648,7 +1648,7 @@ feature {NONE} -- Implementation
 		do
 				-- In the case of `a_path' being a mixed-encoding, `internal_name' holds
 				-- a value close to the actual path but not equal.
-			internal_name := a_path.string_representation
+			internal_name := a_path.name
 				-- Create a matching path.
 			internal_detachable_name_pointer := a_path.to_pointer (internal_detachable_name_pointer)
 		end

@@ -37,7 +37,7 @@ feature -- Initalization
 			a_path_attached: a_path /= Void
 		do
 			-- NOTE: this is a temporary implementation
-			make (a_path.string_representation)
+			make (a_path.name)
 		end
 
 	make_open_read (dn: READABLE_STRING_GENERAL)
