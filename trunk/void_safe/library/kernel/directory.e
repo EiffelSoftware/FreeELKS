@@ -70,63 +70,55 @@ feature -- Creation
 			--  and then /temp/test/toto.
 		local
 			l_directory: DIRECTORY
-			l_dir_name: STRING_GENERAL
-			l_directories_to_build: ARRAYED_LIST [READABLE_STRING_GENERAL]
-			l_built_directory: READABLE_STRING_GENERAL
-			l_loc_directory_name: READABLE_STRING_GENERAL
-			l_separator_index: INTEGER
+			l_directories_to_build: ARRAYED_LIST [PATH]
+			l_path: PATH
+			l_parent, l_entry: detachable PATH
 			l_io_exception: IO_FAILURE
 			u: UTF_CONVERTER
 		do
-			create l_directories_to_build.make (10)
 
 				-- Find the first existing directory in the path name
 			from
-				l_built_directory := internal_name
-				l_separator_index := l_built_directory.count
-				create l_directory.make (l_built_directory)
+				create l_directories_to_build.make (10)
+				l_path := path
+				create l_directory.make_with_path (l_path)
 			until
-				l_directory.exists
+				l_directory.exists or l_path = Void
 			loop
-				l_separator_index := l_built_directory.last_index_of_code (Operating_environment.Directory_separator.natural_32_code, l_built_directory.count)
-				if l_separator_index = 0 then
+				l_parent := l_path.parent
+				l_entry := l_path.entry
+				if l_parent = Void or l_entry = Void then
 					create l_io_exception
 						-- Directory name is converted to UTF-8
-					l_io_exception.set_message ("Invalid directory: " + u.utf_32_string_to_utf_8_string_8 (l_built_directory))
+					l_io_exception.set_message ("Invalid directory: " + u.utf_32_string_to_utf_8_string_8 (l_path.name))
 					l_io_exception.raise
-				end
-				l_directories_to_build.extend (l_built_directory.substring (l_separator_index + 1, l_built_directory.count))
-				if l_built_directory.item (l_separator_index - 1) = ':' then
-					l_loc_directory_name := l_built_directory.substring (1, l_separator_index)
 				else
-					l_loc_directory_name := l_built_directory.substring (1, l_separator_index - 1)
+					l_directories_to_build.extend (l_entry)
+					create l_directory.make_with_path (l_parent)
+					l_path := l_parent
 				end
-				l_built_directory := l_built_directory.substring (1, l_separator_index - 1)
-				create l_directory.make (l_loc_directory_name)
 			end
 
 				-- Recursively create the directory.
 			l_directories_to_build.finish
-			if attached {READABLE_STRING_8} internal_name then
-				create {STRING_8} l_dir_name.make (l_built_directory.count)
-			else
-				create {STRING_32} l_dir_name.make (l_built_directory.count)
-			end
 			from
-				l_dir_name.append (l_built_directory)
+					-- Make sure we start from somewhere. If `l_path' is Void,
+					-- it means we were trying to create a path without a root such as "abc/def".
+				if l_path = Void then
+					create l_path.make_empty
+				end
 			until
 				l_directories_to_build.before
 			loop
-				l_dir_name.append (directory_separator_string)
-				l_dir_name.append (l_directories_to_build.item)
+				l_path := l_path.extended_path (l_directories_to_build.item)
 				l_directories_to_build.back
 
-				create l_directory.make (l_dir_name)
+				create l_directory.make_with_path (l_path)
 				l_directory.create_dir
 				if not l_directory.exists then
 					create l_io_exception
 						-- Use UTF-8 to display directory we cannot create.
-					l_io_exception.set_message ("Cannot create: " + u.utf_32_string_to_utf_8_string_8 (l_dir_name))
+					l_io_exception.set_message ("Cannot create: " + u.utf_32_string_to_utf_8_string_8 (l_path.name))
 					l_io_exception.raise
 				end
 			end
