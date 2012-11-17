@@ -92,17 +92,27 @@ feature -- Conversion
 	linear_representation: ARRAYED_LIST [G]
 			-- Representation as a linear structure
 			-- (order is same as original order of insertion)
+		local
+			l_list: ARRAYED_LIST [G]
 		do
-			create Result.make_filled (count)
+			create l_list.make (count)
 			from
 				start
-				Result.finish
 			until
 				after
 			loop
-				Result.replace (ll_item)
+				l_list.extend (ll_item)
 				forth
-				Result.back
+			end
+
+			from
+				create Result.make (count)
+				l_list.finish
+			until
+				l_list.before
+			loop
+				Result.extend (l_list.item)
+				l_list.back
 			end
 		end
 
