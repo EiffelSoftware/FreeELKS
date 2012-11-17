@@ -21,11 +21,38 @@ feature -- Access
 		end
 
 	current_working_directory: STRING
-			-- Directory of current execution
-		external
-			"C use %"eif_dir.h%""
-		alias
-			"dir_current"
+			-- Directory of current execution.
+			-- Execution of this query on concurrent threads will result in
+			-- an unspecified behavior.
+		obsolete
+			"Use `current_working_path' instead to support Unicode path."
+		local
+			l_count, l_nbytes: INTEGER
+			l_managed: MANAGED_POINTER
+		do
+			l_count := 50
+			create l_managed.make (l_count)
+			l_nbytes := eif_dir_current (l_managed.item, l_count)
+			if l_nbytes = -1 then
+					-- The underlying OS could not retrieve the current working directory. Most likely
+					-- a case where it has been deleted under our feet. We simply return that the current
+					-- directory is `.' the symbol for the current working directory.
+				Result := "."
+			else
+				if l_nbytes > l_count then
+						-- We need more space.
+					l_count := l_nbytes
+					l_managed.resize (l_count)
+					l_nbytes := eif_dir_current (l_managed.item, l_count)
+				end
+				if l_nbytes > 0 and l_nbytes <= l_count then
+					Result := file_info.pointer_to_file_name_8 (l_managed.item)
+				else
+						-- Something went wrong.
+					Result := "."
+					check False end
+				end
+			end
 		ensure
 			result_not_void: Result /= Void
 		end
@@ -65,16 +92,35 @@ feature -- Access
 			-- Directory name corresponding to the home directory.
 		require
 			home_directory_supported: Operating_environment.home_directory_supported
-		do
-			Result := eif_home_directory_name
+		local
+			l_count, l_nbytes: INTEGER
+			l_managed: MANAGED_POINTER
+		once
+			l_count := 50
+			create l_managed.make (l_count)
+			l_nbytes := eif_home_directory_name_ptr (l_managed.item, l_count)
+			if l_nbytes > l_count then
+				l_count := l_nbytes
+				l_managed.resize (l_count)
+				l_nbytes := eif_home_directory_name_ptr (l_managed.item, l_count)
+			end
+			if l_nbytes > 0 and l_nbytes <= l_count then
+				Result := file_info.pointer_to_file_name_8 (l_managed.item)
+			end
 		end
 
 	root_directory_name: STRING
 			-- Directory name corresponding to the root directory.
 		require
 			root_directory_supported: Operating_environment.root_directory_supported
-		do
-			Result := eif_root_directory_name
+		once
+			if {PLATFORM}.is_windows then
+				Result := "\"
+			elseif {PLATFORM}.is_vms then
+				Result := "[000000]"
+			else
+				Result := "/"
+			end
 		ensure
 			result_not_void: Result /= Void
 		end
@@ -115,10 +161,10 @@ feature -- Status setting
 	change_working_directory (path: STRING)
 			-- Set the current directory to `path'
 		local
-			ext: ANY
+			l_ptr: MANAGED_POINTER
 		do
-			ext := path.to_c
-			return_code := eif_chdir ($ext)
+			l_ptr := file_info.file_name_to_pointer (path, Void)
+			return_code := eif_chdir (l_ptr.item)
 		end
 
 	put (value, key: STRING)
@@ -252,7 +298,21 @@ feature {NONE} -- Implementation
 			end
 		end
 
+	file_info: FILE_INFO
+			-- Platform specific helper of filenames.
+		once
+			create Result.make
+		end
+
 feature {NONE} -- External
+
+	eif_dir_current (a_ptr: POINTER; a_count: INTEGER): INTEGER
+			-- Store platform specific path of current working directory in `a_ptr' with `a_count' bytes. If
+			-- there is a need for more bytes than `a_count', or if `a_ptr' is the default_pointer, nothing is done with `a_ptr'.
+			-- We always return the number of bytes required including the null-terminating character, or -1 on error.
+		external
+			"C signature (EIF_FILENAME, EIF_INTEGER): EIF_INTEGER use %"eif_dir.h%""
+		end
 
 	eif_getenv (s: POINTER): POINTER
 			-- Value of environment variable `s'
@@ -273,7 +333,7 @@ feature {NONE} -- External
 	eif_chdir (path: POINTER): INTEGER
 			-- Set the current directory to `path'
 		external
-			"C use %"eif_dir.h%""
+			"C signature (EIF_FILENAME): EIF_INTEGER use %"eif_dir.h%""
 		end
 
 	system_call (s: POINTER): INTEGER
@@ -292,16 +352,12 @@ feature {NONE} -- External
 			"eif_system_asynchronous"
 		end
 
-	eif_home_directory_name: detachable STRING
-			-- Directory name corresponding to the home directory
+	eif_home_directory_name_ptr (a_ptr: POINTER; a_count: INTEGER): INTEGER
+			-- Stored directory name corresponding to the home directory in `a_ptr' with `a_count' bytes. If
+			-- there is a need for more bytes than `a_count', or if `a_ptr' is the default_pointer, nothing is done with `a_ptr'.
+			-- We always return the number of bytes required including the null-terminating character.
 		external
-			"C use %"eif_path_name.h%""
-		end
-
-	eif_root_directory_name: STRING
-			-- Directory name corresponding to the root directory
-		external
-			"C use %"eif_path_name.h%""
+			"C signature (EIF_FILENAME, EIF_INTEGER): EIF_INTEGER use %"eif_path_name.h%""
 		end
 
 	eif_sleep (nanoseconds: INTEGER_64)
