@@ -709,8 +709,7 @@ feature {NONE} -- Output
 feature {PATH_HANDLER}
 
 	to_pointer: MANAGED_POINTER
-			-- Platform specific representation of Current using `an_existing_storage' if any, otherwise
-			-- a brand new instance.
+			-- Platform specific representation of Current.
 		local
 			l_cstr: C_STRING
 		do
