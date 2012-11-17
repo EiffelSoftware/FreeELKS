@@ -1152,7 +1152,7 @@ feature -- Element change
 		local
 			l_ptr: MANAGED_POINTER
 		do
-			l_ptr := new_name.to_pointer (Void)
+			l_ptr := new_name.to_pointer
 			file_rename (internal_name_pointer.item, l_ptr.item)
 			set_path (new_name)
 		ensure
@@ -1650,7 +1650,7 @@ feature {NONE} -- Implementation
 				-- a value close to the actual path but not equal.
 			internal_name := a_path.name
 				-- Create a matching path.
-			internal_detachable_name_pointer := a_path.to_pointer (internal_detachable_name_pointer)
+			internal_detachable_name_pointer := a_path.to_pointer
 		end
 
 	create_last_string (a_min_size: INTEGER)
