@@ -17,8 +17,8 @@ inherit
 		end
 
 create
-
-	make, make_open_read, make_open_write, make_open_append,
+	make, make_with_name,
+	make_open_read, make_open_write, make_open_append,
 	make_open_read_write, make_create_read_write,
 	make_open_read_append
 
@@ -250,26 +250,32 @@ feature {NONE} -- Implementation
 			-- Get an integer from `file'
 		external
 			"C signature (FILE *): EIF_INTEGER use %"eif_file.h%""
+		alias
+			"eif_file_gib"
 		end
 
 	file_grb (file: POINTER): REAL
 			-- Read a real from `file'
 		external
 			"C signature (FILE *): EIF_REAL_32 use %"eif_file.h%""
+		alias
+			"eif_file_grb"
 		end
 
 	file_gdb (file: POINTER): DOUBLE
 			-- Read a double from `file'
 		external
 			"C signature (FILE *): EIF_REAL_64 use %"eif_file.h%""
+		alias
+			"eif_file_gdb"
 		end
 
 	file_open (f_name: POINTER; how: INTEGER): POINTER
 			-- File pointer for file `f_name', in mode `how'.
 		external
-			"C signature (char *, int): EIF_POINTER use %"eif_file.h%""
+			"C signature (EIF_FILENAME, int): EIF_POINTER use %"eif_file.h%""
 		alias
-			"file_binary_open"
+			"eif_file_binary_open"
 		end
 
 	file_dopen (fd, how: INTEGER): POINTER
@@ -278,34 +284,40 @@ feature {NONE} -- Implementation
 		external
 			"C signature (int, int): EIF_POINTER use %"eif_file.h%""
 		alias
-			"file_binary_dopen"
+			"eif_file_binary_dopen"
 		end
 
-	file_reopen (f_name: POINTER; how: INTEGER; file: POINTER): POINTER
+	file_reopen (fname: POINTER; how: INTEGER; file: POINTER): POINTER
 			-- File pointer to `file', reopened to have new name `f_name'
 			-- in a mode specified by `how'.
 		external
-			"C signature (char *, int, FILE *): EIF_POINTER use %"eif_file.h%""
+			"C signature (EIF_FILENAME, int, FILE *): EIF_POINTER use %"eif_file.h%""
 		alias
-			"file_binary_reopen"
+			"eif_file_binary_reopen"
 		end
 
 	file_pib (file: POINTER; n: INTEGER)
 			-- Put `n' to end of `file'.
 		external
 			"C signature (FILE *, EIF_INTEGER) use %"eif_file.h%""
+		alias
+			"eif_file_pib"
 		end
 
 	file_prb (file: POINTER; r: REAL)
 			-- Put `r' to end of `file'.
 		external
 			"C signature (FILE *, EIF_REAL_32) use %"eif_file.h%""
+		alias
+			"eif_file_prb"
 		end
 
 	file_pdb (file: POINTER; d: DOUBLE)
 			-- Put `d' to end of `file'.
 		external
 			"C signature (FILE *, EIF_REAL_64) use %"eif_file.h%""
+		alias
+			"eif_file_pdb"
 		end
 
 	file_fread (dest: POINTER; elem_size, nb_elems: INTEGER; file: POINTER): INTEGER
