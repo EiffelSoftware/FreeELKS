@@ -282,8 +282,8 @@ feature -- Status report
 		local
 			l_p1, l_p2: MANAGED_POINTER
 		do
-			l_p1 := to_pointer (Void)
-			l_p2 := a_path.to_pointer (Void)
+			l_p1 := to_pointer
+			l_p2 := a_path.to_pointer
 			Result := c_same_files (l_p1.item, l_p2.item)
 		end
 
@@ -708,7 +708,7 @@ feature {NONE} -- Output
 
 feature {PATH_HANDLER}
 
-	to_pointer (an_existing_storage: detachable MANAGED_POINTER): MANAGED_POINTER
+	to_pointer: MANAGED_POINTER
 			-- Platform specific representation of Current using `an_existing_storage' if any, otherwise
 			-- a brand new instance.
 		local

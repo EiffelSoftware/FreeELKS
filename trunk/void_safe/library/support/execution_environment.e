@@ -299,7 +299,7 @@ feature -- Status setting
 		local
 			l_ptr: MANAGED_POINTER
 		do
-			l_ptr := path.to_pointer (Void)
+			l_ptr := path.to_pointer
 			return_code := eif_chdir (l_ptr.item)
 		end
 
