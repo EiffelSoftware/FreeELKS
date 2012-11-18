@@ -118,8 +118,7 @@ create {PATH}
 create
 	make_empty,
 	make_current,
-	make_from_string,
-	make_from_path
+	make_from_string
 
 feature {NONE} -- Initialization
 
@@ -155,16 +154,6 @@ feature {NONE} -- Initialization
 			end
 		ensure
 			roundtrip: name.same_string_general (a_path)
-		end
-
-	make_from_path (a_path: PATH)
-			-- Initialize current from `a_path'.
-		require
-			a_path_not_void: a_path /= Void
-		do
-			storage := a_path.storage.twin
-		ensure
-			same_path: same_as (a_path)
 		end
 
 	make_from_storage (a_path: STRING_8)
