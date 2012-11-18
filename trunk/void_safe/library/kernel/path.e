@@ -682,9 +682,9 @@ feature -- Output
 			"Use `name' instead."
 		require
 			is_representable: is_representable
-			is_valid_extended_ascii: string_representation.is_valid_as_string_8
+			is_valid_extended_ascii: name.is_valid_as_string_8
 		do
-			Result := string_representation.as_string_8
+			Result := name.as_string_8
 		end
 
 feature {NONE} -- Output
