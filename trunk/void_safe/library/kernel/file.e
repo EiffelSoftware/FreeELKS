@@ -26,7 +26,7 @@ deferred class FILE inherit
 			read_line_thread_aware
 		end
 
-	PATH_HANDLER
+	NATIVE_STRING_HANDLER
 
 feature -- Initialization
 

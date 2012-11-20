@@ -13,7 +13,7 @@ obsolete
 	"Use `{PATH}.is_same_file_as' instead."
 
 inherit
-	PATH_HANDLER
+	NATIVE_STRING_HANDLER
 
 feature -- Comparison
 
