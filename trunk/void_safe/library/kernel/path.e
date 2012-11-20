@@ -99,7 +99,7 @@ inherit
 			out, is_equal, copy
 		end
 
-	PATH_HANDLER
+	NATIVE_STRING_HANDLER
 		redefine
 			out, is_equal, copy
 		end
@@ -109,7 +109,7 @@ inherit
 			out, is_equal, copy
 		end
 
-create {PATH_HANDLER}
+create {NATIVE_STRING_HANDLER}
 	make_from_pointer
 
 create {PATH}
@@ -176,7 +176,7 @@ feature {NONE} -- Initialization
 			l_count: INTEGER
 		do
 				-- Let's be safe here, we take the min between the recorded size and the actual size.
-			l_count := file_info.pointer_length_in_bytes (a_path_pointer)
+			l_count := pointer_length_in_bytes (a_path_pointer)
 			create l_cstr.make_shared_from_pointer_and_count (a_path_pointer, l_count)
 			storage := l_cstr.substring (1, l_count)
 			if {PLATFORM}.is_windows then
@@ -508,6 +508,14 @@ feature -- Access
 			end
 		end
 
+	native_string: NATIVE_STRING
+			-- Convert current into an instance of NATIVE_STRING
+		do
+			create Result.make_from_raw_string (storage)
+		ensure
+			set: Result.raw_string.same_string (storage)
+		end
+
 feature -- Status setting
 
 	extended (a_name: READABLE_STRING_GENERAL): PATH
@@ -695,14 +703,13 @@ feature {NONE} -- Output
 			Result := out
 		end
 
-feature {PATH_HANDLER}
+feature {NATIVE_STRING_HANDLER}
 
 	to_pointer: MANAGED_POINTER
 			-- Platform specific representation of Current.
 		local
 			l_cstr: C_STRING
 		do
-				-- FIXME: We need to optimize using `an_existing_storage'.
 				-- A `C_STRING' instance is zeroed out, we just need to verify we have an extra `character'
 				-- that is the null character at the end, thus the `+ unit_size'.
 			create l_cstr.make_empty (storage.count + unit_size)
@@ -722,14 +729,8 @@ feature {NONE} -- Implementation
 	internal_hash_code: INTEGER
 			-- Cache for `hash_code'.
 
-	file_info: FILE_INFO
-			-- Access underlying file system.
-		once
-			create Result.make
-		end
-
 	platform: PLATFORM
-			-- Access underlying platform info.
+			-- Access underlying platform info, used to satisfy invariant below.
 		once
 			create Result
 		end

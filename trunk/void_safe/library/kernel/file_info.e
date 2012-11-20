@@ -16,7 +16,7 @@ class FILE_INFO inherit
 			copy, is_equal
 		end
 
-	PATH_HANDLER
+	NATIVE_STRING_HANDLER
 		redefine
 			copy, is_equal
 		end
@@ -175,7 +175,7 @@ feature -- Access
 			end
 		end
 
-feature {PATH_HANDLER} -- Access
+feature {NATIVE_STRING_HANDLER} -- Access
 
 	file_name_to_pointer (a_name: READABLE_STRING_GENERAL; a_ptr: detachable MANAGED_POINTER): MANAGED_POINTER
 			-- File system specific encoding of `a_name' that will be stored in `a_ptr' if provided
@@ -278,20 +278,7 @@ feature {PATH_HANDLER} -- Access
 			end
 		end
 
-	pointer_length_in_bytes (a_ptr: POINTER): INTEGER
-			-- Length in bytes of a platform specific file name pointer, not
-			-- including the null-terminating character.
-		external
-			"C inline use %"eif_eiffel.h%""
-		alias
-			"{
-			#ifdef EIF_WINDOWS
-				return (EIF_INTEGER) wcslen($a_ptr) * sizeof(wchar_t);
-			#else
-				return (EIF_INTEGER) strlen($a_ptr) * sizeof(char);
-			#endif
-			}"
-		end
+	
 
 feature -- Status report
 

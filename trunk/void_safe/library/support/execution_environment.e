@@ -10,7 +10,7 @@ note
 class EXECUTION_ENVIRONMENT
 
 inherit
-	PATH_HANDLER
+	NATIVE_STRING_HANDLER
 
 feature -- Access
 
@@ -89,34 +89,47 @@ feature -- Access
 			result_not_void: Result /= Void
 		end
 
-	default_shell: STRING
+	default_shell: STRING_32
 			-- Default shell
-		local
-			s: detachable STRING
 		once
-			s := get ("SHELL")
-			if s = Void then
-				Result := ""
+			if attached item ("SHELL") as l_shell then
+				Result := l_shell
 			else
-				Result := s
+				create Result.make_empty
 			end
 		end
 
 	get (s: STRING): detachable STRING
 			-- Value of `s' if it is an environment variable and has been set;
 			-- void otherwise.
+		obsolete
+			"Use `item' instead to retrieve Unicode environment variables."
+		require
+			s_exists: s /= Void
+			not_has_null_character: not s.has ('%U')
+		do
+			if attached item (s) as l_val then
+					-- If the environment variable contains non-ASCII characters they
+					-- will be missing.
+				Result := l_val.as_string_8
+			end
+		end
+
+	item (s: READABLE_STRING_GENERAL): detachable STRING_32
+			-- Value of `s' if it is an environment variable and has been set;
+			-- void otherwise.
 		require
 			s_exists: s /= Void
 			not_has_null_character: not s.has ('%U')
 		local
-			ext: ANY
+			l_key, l_value: NATIVE_STRING
 			c_string: POINTER
-			void_pointer: POINTER
 		do
-			ext := s.to_c
-			c_string := eif_getenv ($ext)
-			if c_string /= void_pointer then
-				create Result.make_from_c (c_string)
+			create l_key.make (s)
+			c_string := eif_getenv (l_key.item)
+			if c_string.is_default_pointer then
+				create l_value.make_from_pointer (c_string)
+				Result := l_value.string
 			end
 		end
 
@@ -303,8 +316,9 @@ feature -- Status setting
 			return_code := eif_chdir (l_ptr.item)
 		end
 
-	put (value, key: STRING)
-			-- Set the environment variable `key' to `value'.
+	put (value, key: READABLE_STRING_GENERAL)
+			-- Set the environment variable `key' to `value' treating both
+			-- `value' and `key' as Unicode characters.
 		require
 			key_exists: key /= Void
 			key_meaningful: not key.is_empty
@@ -312,28 +326,29 @@ feature -- Status setting
 			value_exists: value /= Void
 			not_value_has_null_character: not value.has ('%U')
 		local
-			l_env: STRING
-			l_c_env: C_STRING
+			l_env: STRING_32
+			l_c_env: NATIVE_STRING
 		do
 			create l_env.make (value.count + key.count + 1)
-			l_env.append (key)
+			l_env.append_string_general (key)
 			l_env.append_character ('=')
-			l_env.append (value)
+			l_env.append_string_general (value)
 			create l_c_env.make (l_env)
-			environ.force (l_c_env, key)
+			environ.force (l_c_env, key.as_string_32)
 			return_code := eif_putenv (l_c_env.item)
 		ensure
-			variable_set: (return_code = 0) implies
-				((get (key) ~ value.string) or else (value.is_empty and then (get (key) = Void)))
+			variable_set: return_code = 0 implies
+				((value.is_empty and then item (key) = Void) or else
+				not value.is_empty and then attached item (key) as k and then k.same_string_general (value))
 		end
 
-	system (s: STRING)
-			-- Pass to the operating system a request to execute `s'.
+	system (s: READABLE_STRING_GENERAL)
+			-- Pass to the operating system a request to execute `s' interpreted as a Unicode string.
 			-- If `s' is empty, use the default shell as command.
 		require
 			s_exists: s /= Void
 		local
-			l_cstr: C_STRING
+			l_cstr: NATIVE_STRING
 		do
 			if s.is_empty then
 				create l_cstr.make (default_shell)
@@ -343,14 +358,14 @@ feature -- Status setting
 			return_code := system_call (l_cstr.item)
 		end
 
-	launch (s: STRING)
+	launch (s: READABLE_STRING_GENERAL)
 			-- Pass to the operating system an asynchronous request to
-			-- execute `s'.
+			-- execute `s' interpreted as a Unicode string.
 			-- If `s' is empty, use the default shell as command.
 		require
 			s_not_void: s /= Void
 		local
-			l_cstr: C_STRING
+			l_cstr: NATIVE_STRING
 		do
 			if s.is_empty then
 				create l_cstr.make (default_shell)
@@ -371,11 +386,11 @@ feature -- Status setting
 
 feature {NONE} -- Implementation
 
-	environ: HASH_TABLE [C_STRING, STRING]
+	environ: HASH_TABLE [NATIVE_STRING, STRING_32]
 			-- Environment variable memory set by current execution,
 			-- indexed by environment variable name. Needed otherwise
 			-- we would corrupt memory after freeing memory used by
-			-- C_STRING instance since not referenced anywhere else.
+			-- NATIVE_STRING instance since not referenced anywhere else.
 		once
 			create Result.make (10)
 		end
@@ -436,6 +451,8 @@ feature {NONE} -- Implementation
 
 	file_info: FILE_INFO
 			-- Platform specific helper of filenames.
+		obsolete
+			"Remove when all obsolete routines using it will be removed."
 		once
 			create Result.make
 		end
@@ -453,17 +470,29 @@ feature {NONE} -- External
 	eif_getenv (s: POINTER): POINTER
 			-- Value of environment variable `s'
 		external
-			"C use <stdlib.h>"
+			"C inline use <stdlib.h>"
 		alias
-			"getenv"
+			"[
+			#ifdef EIF_WINDOWS
+				return _wgetenv ((EIF_NATIVE_CHAR *) $s);
+			#else
+				return getenv ((EIF_NATIVE_CHAR *) $s);
+			#endif
+			]"
 		end
 
 	eif_putenv (v: POINTER): INTEGER
 			-- Set `v' in environment.
 		external
-			"C use <stdlib.h>"
+			"C inline use <stdlib.h>"
 		alias
-			"putenv"
+			"[
+			#ifdef EIF_WINDOWS
+				return _wputenv ((EIF_NATIVE_CHAR *) $v);
+			#else
+				return putenv ((EIF_NATIVE_CHAR *) $v);
+			#endif
+			]"
 		end
 
 	eif_chdir (path: POINTER): INTEGER

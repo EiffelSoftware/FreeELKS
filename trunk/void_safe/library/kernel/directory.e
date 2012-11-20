@@ -11,7 +11,7 @@ class DIRECTORY
 inherit
 	DISPOSABLE
 
-	PATH_HANDLER
+	NATIVE_STRING_HANDLER
 
 create
 	make, make_with_path,
