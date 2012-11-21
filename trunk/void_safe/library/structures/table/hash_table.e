@@ -1181,7 +1181,7 @@ feature {NONE} -- Transformation
 						i = l_capacity
 					loop
 						if attached keys.item (i) as l_key_item and then l_key_item /= l_default_key then
-							l_new_table.put (content.item (i), l_default_key)
+							l_new_table.put (content.item (i), l_key_item)
 						end
 						i := i + 1
 					end
