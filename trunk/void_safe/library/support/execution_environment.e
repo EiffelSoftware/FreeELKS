@@ -127,7 +127,7 @@ feature -- Access
 		do
 			create l_key.make (s)
 			c_string := eif_getenv (l_key.item)
-			if c_string.is_default_pointer then
+			if not c_string.is_default_pointer then
 				create l_value.make_from_pointer (c_string)
 				Result := l_value.string
 			end
