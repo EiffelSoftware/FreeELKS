@@ -123,8 +123,23 @@ feature -- UTF-32 to UTF-8
 			Result := utf_32_string_to_utf_8_string_8 (s)
 		end
 
+	string_32_into_utf_8_string_8 (s: READABLE_STRING_32; a_result: STRING_8)
+			-- Copy the UTF-8 sequence corresponding to `s' into `a_result' replacing
+			-- any existing characters.
+		do
+			utf_32_string_into_utf_8_string_8 (s, a_result)
+		end
+
 	utf_32_string_to_utf_8_string_8 (s: READABLE_STRING_GENERAL): STRING_8
-			-- UTF-8 sequence corresponding to `s' interpreted as a UTF-32 sequence
+			-- UTF-8 sequence corresponding to `s' interpreted as a UTF-32 sequence.
+		do
+			create Result.make (s.count)
+			utf_32_string_into_utf_8_string_8 (s, Result)
+		end
+
+	utf_32_string_into_utf_8_string_8 (s: READABLE_STRING_GENERAL; a_result: STRING_8)
+			-- Copy the UTF-8 sequence corresponding to `s' interpreted as a UTF-32 sequence
+			-- into `a_result' replacing any existing characters.
 		local
 			i: like {STRING_32}.count
 			n: like {STRING_32}.count
@@ -132,7 +147,8 @@ feature -- UTF-32 to UTF-8
 		do
 			from
 				n := s.count
-				create Result.make (n)
+				a_result.grow (n)
+				a_result.wipe_out
 			until
 				i >= n
 			loop
@@ -140,29 +156,42 @@ feature -- UTF-32 to UTF-8
 				c := s.code (i)
 				if c <= 0x7F then
 						-- 0xxxxxxx
-					Result.extend (c.to_character_8)
+					a_result.extend (c.to_character_8)
 				elseif c <= 0x7FF then
 						-- 110xxxxx 10xxxxxx
-					Result.extend (((c |>> 6) | 0xC0).to_character_8)
-					Result.extend (((c & 0x3F) | 0x80).to_character_8)
+					a_result.extend (((c |>> 6) | 0xC0).to_character_8)
+					a_result.extend (((c & 0x3F) | 0x80).to_character_8)
 				elseif c <= 0xFFFF then
 						-- 1110xxxx 10xxxxxx 10xxxxxx
-					Result.extend (((c |>> 12) | 0xE0).to_character_8)
-					Result.extend ((((c |>> 6) & 0x3F) | 0x80).to_character_8)
-					Result.extend (((c & 0x3F) | 0x80).to_character_8)
+					a_result.extend (((c |>> 12) | 0xE0).to_character_8)
+					a_result.extend ((((c |>> 6) & 0x3F) | 0x80).to_character_8)
+					a_result.extend (((c & 0x3F) | 0x80).to_character_8)
 				else
 						-- c <= 1FFFFF - there are no higher code points
 						-- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-					Result.extend (((c |>> 18) | 0xF0).to_character_8)
-					Result.extend ((((c |>> 12) & 0x3F) | 0x80).to_character_8)
-					Result.extend ((((c |>> 6) & 0x3F) | 0x80).to_character_8)
-					Result.extend (((c & 0x3F) | 0x80).to_character_8)
+					a_result.extend (((c |>> 18) | 0xF0).to_character_8)
+					a_result.extend ((((c |>> 12) & 0x3F) | 0x80).to_character_8)
+					a_result.extend ((((c |>> 6) & 0x3F) | 0x80).to_character_8)
+					a_result.extend (((c & 0x3F) | 0x80).to_character_8)
 				end
 			end
 		end
 
 	escaped_utf_32_string_to_utf_8_string_8 (s: READABLE_STRING_GENERAL): STRING_8
 			-- UTF-8 sequence corresponding to `s' interpreted as an UTF-32 sequence that could be escaped.
+			-- If `s' contains the `escape_character' followed by either "HH" or "uHHHH" where H stands
+			-- for an hexadecimal digit, then `s' has been escaped and will be converted to what is
+			-- expected by the current platform.
+			-- Otherwise it will be ignored and it will be left as is.
+			-- See the note clause for the class for more details on the encoding.
+		do
+			create Result.make (s.count)
+			escaped_utf_32_string_into_utf_8_string_8 (s, Result)
+		end
+
+	escaped_utf_32_string_into_utf_8_string_8 (s: READABLE_STRING_GENERAL; a_result: STRING_8)
+			-- Copy the UTF-8 sequence corresponding to `s' interpreted as an UTF-32 sequence that could
+			-- be escaped into `a_result' replacing any existing characters.
 			-- If `s' contains the `escape_character' followed by either "HH" or "uHHHH" where H stands
 			-- for an hexadecimal digit, then `s' has been escaped and will be converted to what is
 			-- expected by the current platform.
@@ -177,7 +206,8 @@ feature -- UTF-32 to UTF-8
 		do
 			from
 				n := s.count
-				create Result.make (n)
+				a_result.grow (n)
+				a_result.wipe_out
 			until
 				i >= n
 			loop
@@ -210,41 +240,41 @@ feature -- UTF-32 to UTF-8
 				if not l_decoded then
 					if c <= 0x7F then
 							-- 0xxxxxxx
-						Result.extend (c.to_character_8)
+						a_result.extend (c.to_character_8)
 					elseif c <= 0x7FF then
 							-- 110xxxxx 10xxxxxx
-						Result.extend (((c |>> 6) | 0xC0).to_character_8)
-						Result.extend (((c & 0x3F) | 0x80).to_character_8)
+						a_result.extend (((c |>> 6) | 0xC0).to_character_8)
+						a_result.extend (((c & 0x3F) | 0x80).to_character_8)
 					elseif c <= 0xFFFF then
 							-- 1110xxxx 10xxxxxx 10xxxxxx
-						Result.extend (((c |>> 12) | 0xE0).to_character_8)
-						Result.extend ((((c |>> 6) & 0x3F) | 0x80).to_character_8)
-						Result.extend (((c & 0x3F) | 0x80).to_character_8)
+						a_result.extend (((c |>> 12) | 0xE0).to_character_8)
+						a_result.extend ((((c |>> 6) & 0x3F) | 0x80).to_character_8)
+						a_result.extend (((c & 0x3F) | 0x80).to_character_8)
 					else
 							-- c <= 1FFFFF - there are no higher code points
 							-- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-						Result.extend (((c |>> 18) | 0xF0).to_character_8)
-						Result.extend ((((c |>> 12) & 0x3F) | 0x80).to_character_8)
-						Result.extend ((((c |>> 6) & 0x3F) | 0x80).to_character_8)
-						Result.extend (((c & 0x3F) | 0x80).to_character_8)
+						a_result.extend (((c |>> 18) | 0xF0).to_character_8)
+						a_result.extend ((((c |>> 12) & 0x3F) | 0x80).to_character_8)
+						a_result.extend ((((c |>> 6) & 0x3F) | 0x80).to_character_8)
+						a_result.extend (((c & 0x3F) | 0x80).to_character_8)
 					end
 				else
 					l_decoded := False
 						-- Simply put decoded value directly in stream.
-					Result.extend (c.to_character_8)
+					a_result.extend (c.to_character_8)
 				end
 			end
 		end
 
-	string_32_to_utf_8_0_pointer (s: READABLE_STRING_32; p: MANAGED_POINTER)
+	string_32_into_utf_8_0_pointer (s: READABLE_STRING_32; p: MANAGED_POINTER)
 			-- Write UTF-8 sequence corresponding to `s' with terminating zero
 			-- to address `p' and update the size of `p' to the number of written bytes.
 			-- The sequence is zero-terminated.
 		do
-			utf_32_string_to_utf_8_0_pointer (s, p)
+			utf_32_string_into_utf_8_0_pointer (s, p)
 		end
 
-	utf_32_string_to_utf_8_0_pointer (s: READABLE_STRING_GENERAL; p: MANAGED_POINTER)
+	utf_32_string_into_utf_8_0_pointer (s: READABLE_STRING_GENERAL; p: MANAGED_POINTER)
 			-- Write UTF-8 sequence corresponding to `s', interpreted as a UTF-32 sequence,
 			-- with terminating zero to address `p' and update the size of `p' to the
 			-- number of written bytes.
@@ -407,6 +437,14 @@ feature -- UTF-8 to UTF-32
 
 	utf_8_string_8_to_string_32 (s: READABLE_STRING_8): STRING_32
 			-- STRING_32 corresponding to UTF-8 sequence `s'.
+		do
+			create Result.make (s.count)
+			utf_8_string_8_into_string_32 (s, Result)
+		end
+
+	utf_8_string_8_into_string_32 (s: READABLE_STRING_8; a_result: STRING_32)
+			-- Copy STRING_32 corresponding to UTF-8 sequence `s' into `a_result' replacing all
+			-- existing characters.
 		local
 			i: like {STRING_8}.count
 			n: like {STRING_8}.count
@@ -414,7 +452,8 @@ feature -- UTF-8 to UTF-32
 		do
 			from
 				n := s.count
-				create Result.make (n)
+				a_result.grow (n)
+				a_result.wipe_out
 			until
 				i >= n
 			loop
@@ -422,12 +461,12 @@ feature -- UTF-8 to UTF-32
 				c := s.code (i)
 				if c <= 0x7F then
 						-- 0xxxxxxx
-					Result.extend (c.to_character_32)
+					a_result.extend (c.to_character_32)
 				elseif c <= 0xDF then
 						-- 110xxxxx 10xxxxxx
 					i := i + 1
 					if i <= n then
-						Result.extend ((
+						a_result.extend ((
 							((c & 0x1F) |<< 6) |
 							(s.code (i) & 0x3F)
 						).to_character_32)
@@ -436,7 +475,7 @@ feature -- UTF-8 to UTF-32
 						-- 1110xxxx 10xxxxxx 10xxxxxx
 					i := i + 2
 					if i <= n then
-						Result.extend ((
+						a_result.extend ((
 							((c & 0xF) |<< 12) |
 							((s.code (i - 1) & 0x3F) |<< 6) |
 							(s.code (i) & 0x3F)
@@ -446,7 +485,7 @@ feature -- UTF-8 to UTF-32
 						-- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
 					i := i + 3
 					if i <= n then
-						Result.extend ((
+						a_result.extend ((
 							((c & 0x7) |<< 18) |
 							((s.code (i - 2) & 0x3F) |<< 12) |
 							((s.code (i - 1) & 0x3F) |<< 6) |
@@ -459,6 +498,14 @@ feature -- UTF-8 to UTF-32
 
 	utf_8_string_8_to_escaped_string_32 (s: READABLE_STRING_8): STRING_32
 			-- STRING_32 corresponding to UTF-8 sequence `s', where invalid UTF-8 sequences are escaped.
+		do
+			create Result.make (s.count)
+			utf_8_string_8_into_escaped_string_32 (s, Result)
+		end
+
+	utf_8_string_8_into_escaped_string_32 (s: READABLE_STRING_8; a_result: STRING_32)
+			-- Copy STRING_32 corresponding to UTF-8 sequence `s', where invalid UTF-8 sequences are escaped,
+			-- into `a_result' replacing all existing characters.
 		local
 			i: like {STRING_8}.count
 			n: like {STRING_8}.count
@@ -466,7 +513,8 @@ feature -- UTF-8 to UTF-32
 		do
 			from
 				n := s.count
-				create Result.make (n)
+				a_result.grow (n)
+				a_result.wipe_out
 			until
 				i >= n
 			loop
@@ -474,14 +522,14 @@ feature -- UTF-8 to UTF-32
 				c1 := s.code (i).as_natural_8
 				if c1 <= 0x7F then
 						-- 0xxxxxxx
-					Result.extend (c1.to_character_32)
+					a_result.extend (c1.to_character_32)
 				elseif (c1 & 0xE0) = 0xC0 then
 					if i < n then
 						c2 := s.code (i + 1).as_natural_8
 						if (c2 & 0xC0) = 0x80 then
 								-- Valid UTF-8 sequence:
 								-- 110xxxxx 10xxxxxx
-							Result.extend ((
+							a_result.extend ((
 								((c1.as_natural_32 & 0x1F) |<< 6) |
 								(c2.as_natural_32 & 0x3F)
 								).to_character_32)
@@ -490,11 +538,11 @@ feature -- UTF-8 to UTF-32
 								-- Invalid UTF-8 sequence, we escape the first byte
 								-- and try with the next one to see if it is the starting
 								-- byte of a valid UTF-8 sequence.
-							escape_code_into (Result, c1)
+							escape_code_into (a_result, c1)
 						end
 					else
 							-- Invalid UTF-8 sequence, we escape the first byte.
-						escape_code_into (Result, c1)
+						escape_code_into (a_result, c1)
 					end
 				elseif (c1 & 0xF0) = 0xE0 then
 					if i + 1 < n then
@@ -503,7 +551,7 @@ feature -- UTF-8 to UTF-32
 						if (c2 & 0xC0) = 0x80 and (c3 & 0xC0) = 0x80 then
 								-- Valid UTF-8 sequence:
 								-- 1110xxxx 10xxxxxx 10xxxxxx
-							Result.extend ((
+							a_result.extend ((
 								((c1.as_natural_32 & 0xF) |<< 12) |
 								((c2.as_natural_32 & 0x3F) |<< 6) |
 								(c3.as_natural_32 & 0x3F)
@@ -513,11 +561,11 @@ feature -- UTF-8 to UTF-32
 								-- Invalid UTF-8 sequence, we escape the first byte
 								-- and try with the next one to see if it is the starting
 								-- byte of a valid UTF-8 sequence.
-							escape_code_into (Result, c1)
+							escape_code_into (a_result, c1)
 						end
 					else
 							-- Invalid UTF-8 sequence.
-						escape_code_into (Result, c1)
+						escape_code_into (a_result, c1)
 					end
 				elseif (c1 & 0xF8) = 0xF0 then
 					if i + 2 < n then
@@ -527,7 +575,7 @@ feature -- UTF-8 to UTF-32
 						if (c2 & 0xC0) = 0x80 and (c3 & 0xC0) = 0x80 and (c4 & 0xC0) = 0x80 then
 								-- Valid UTF-8 sequence:
 								-- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-							Result.extend ((
+							a_result.extend ((
 								((c1.as_natural_32 & 0x7) |<< 18) |
 								((c2.as_natural_32 & 0x3F) |<< 12) |
 								((c3.as_natural_32 & 0x3F) |<< 6) |
@@ -538,16 +586,16 @@ feature -- UTF-8 to UTF-32
 								-- Invalid UTF-8 sequence, we escape the first byte
 								-- and try with the next one to see if it is the starting
 								-- byte of a valid UTF-8 sequence.
-							escape_code_into (Result, c1)
+							escape_code_into (a_result, c1)
 						end
 					else
 							-- Invalid UTF-8 sequence.
-						escape_code_into (Result, c1)
+						escape_code_into (a_result, c1)
 					end
 
 				else
 						-- Clearly invalid UTF-8
-					escape_code_into (Result, c1)
+					escape_code_into (a_result, c1)
 				end
 			end
 		end
@@ -617,23 +665,23 @@ feature -- UTF-32 to UTF-16
 			Result.extend (0)
 		end
 
-	string_32_to_utf_16_pointer (s: READABLE_STRING_32; p: MANAGED_POINTER)
+	string_32_into_utf_16_pointer (s: READABLE_STRING_32; p: MANAGED_POINTER)
 			-- Write UTF-16 sequence corresponding to `s' to address `p'
 			-- and update the size of `p' to the number of written bytes.
 			-- The sequence is not zero-terminated.
 		do
-			utf_32_substring_to_utf_16_pointer (s, 1, s.count, p)
+			utf_32_substring_into_utf_16_pointer (s, 1, s.count, p)
 		end
 
-	string_32_to_utf_16_0_pointer (s: READABLE_STRING_32; p: MANAGED_POINTER)
+	string_32_into_utf_16_0_pointer (s: READABLE_STRING_32; p: MANAGED_POINTER)
 			-- Write UTF-16 sequence corresponding to `s' with terminating zero
 			-- to address `p' and update the size of `p' to the number of written bytes.
 			-- The sequence is zero-terminated.
 		do
-			utf_32_substring_to_utf_16_0_pointer (s, 1, s.count, p)
+			utf_32_substring_into_utf_16_0_pointer (s, 1, s.count, p)
 		end
 
-	utf_32_substring_to_utf_16_pointer
+	utf_32_substring_into_utf_16_pointer
 			(s: READABLE_STRING_GENERAL;
 			start_pos, end_pos: like {READABLE_STRING_32}.count;
 			p: MANAGED_POINTER)
@@ -689,7 +737,7 @@ feature -- UTF-32 to UTF-16
 			p_count_may_increase: p.count >= old p.count
 		end
 
-	utf_32_substring_to_utf_16_0_pointer
+	utf_32_substring_into_utf_16_0_pointer
 			(s: READABLE_STRING_GENERAL;
 			start_pos, end_pos: like {READABLE_STRING_32}.count;
 			p: MANAGED_POINTER)
@@ -754,6 +802,15 @@ feature -- UTF-32 to UTF-16
 
 	utf_32_string_to_utf_16le_string_8 (s: READABLE_STRING_GENERAL): STRING_8
 			-- UTF-16LE sequence corresponding to `s' interpreted as a UTF-32 sequence
+		do
+				-- We would need at least 2-bytes per characters in `s'.
+			create Result.make (s.count * 2)
+			utf_32_string_into_utf_16le_string_8 (s, Result)
+		end
+
+	utf_32_string_into_utf_16le_string_8 (s: READABLE_STRING_GENERAL; a_result: STRING_8)
+			-- Copy UTF-16LE sequence corresponding to `s' interpreted as a UTF-32 sequence into
+			-- `a_result' replacing all existing characters.
 		local
 			i: like {STRING_32}.count
 			n: like {STRING_32}.count
@@ -763,7 +820,8 @@ feature -- UTF-32 to UTF-16
 			from
 				n := s.count
 					-- We would need at least 2-bytes per characters in `s'.
-				create Result.make (n * 2)
+				a_result.grow (n * 2)
+				a_result.wipe_out
 			until
 				i >= n
 			loop
@@ -771,24 +829,38 @@ feature -- UTF-32 to UTF-16
 				c := s.code (i)
 				if c <= 0xFFFF then
 						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit.
-					Result.extend ((c & 0x00FF).to_character_8)
-					Result.extend (((c & 0xFF00) |>> 8).to_character_8)
+					a_result.extend ((c & 0x00FF).to_character_8)
+					a_result.extend (((c & 0xFF00) |>> 8).to_character_8)
 				else
 						-- Write the lead surrogate pair.
 					l_nat16 := (0xD7C0 + (c |>> 10)).to_natural_16
-					Result.extend ((l_nat16 & 0x00FF).to_character_8)
-					Result.extend (((l_nat16 & 0xFF00) |>> 8).to_character_8)
+					a_result.extend ((l_nat16 & 0x00FF).to_character_8)
+					a_result.extend (((l_nat16 & 0xFF00) |>> 8).to_character_8)
 
 						-- Write the trail surrogate pair.
 					l_nat16 := (0xDC00 + (c & 0x3FF)).to_natural_16
-					Result.extend ((l_nat16 & 0x00FF).to_character_8)
-					Result.extend (((l_nat16 & 0xFF00) |>> 8).to_character_8)
+					a_result.extend ((l_nat16 & 0x00FF).to_character_8)
+					a_result.extend (((l_nat16 & 0xFF00) |>> 8).to_character_8)
 				end
 			end
 		end
 
 	escaped_utf_32_string_to_utf_16le_string_8 (s: READABLE_STRING_GENERAL): STRING_8
 			-- UTF-16LE sequence corresponding to `s' interpreted as an UTF-32 sequence that could be escaped.
+			-- If `s' contains the `escape_character' followed by either "HH" or "uHHHH" where H stands
+			-- for an hexadecimal digit, then `s' has been escaped and will be converted to what is
+			-- expected by the current platform.
+			-- Otherwise it will be ignored and it will be left as is.
+			-- See the note clause for the class for more details on the encoding.
+		do
+				-- We would need at least 2-bytes per characters in `s'.
+			create Result.make (s.count * 2)
+			escaped_utf_32_string_into_utf_16le_string_8 (s, Result)
+		end
+
+	escaped_utf_32_string_into_utf_16le_string_8 (s: READABLE_STRING_GENERAL; a_result: STRING_8)
+			-- Copy UTF-16LE sequence corresponding to `s' interpreted as an UTF-32 sequence that could be
+			-- escaped into `a_result' replacing all existing characters.
 			-- If `s' contains the `escape_character' followed by either "HH" or "uHHHH" where H stands
 			-- for an hexadecimal digit, then `s' has been escaped and will be converted to what is
 			-- expected by the current platform.
@@ -805,7 +877,8 @@ feature -- UTF-32 to UTF-16
 			from
 				n := s.count
 					-- We would need at least 2-bytes per characters in `s'.
-				create Result.make (n * 2)
+				a_result.grow (n * 2)
+				a_result.wipe_out
 			until
 				i >= n
 			loop
@@ -852,24 +925,24 @@ feature -- UTF-32 to UTF-16
 				if not l_decoded then
 					if c <= 0xFFFF then
 							-- Codepoint from Basic Multilingual Plane: one 16-bit code unit.
-						Result.extend ((c & 0x00FF).to_character_8)
-						Result.extend (((c & 0xFF00) |>> 8).to_character_8)
+						a_result.extend ((c & 0x00FF).to_character_8)
+						a_result.extend (((c & 0xFF00) |>> 8).to_character_8)
 					else
 							-- Write the lead surrogate pair.
 						l_nat16 := (0xD7C0 + (c |>> 10)).to_natural_16
-						Result.extend ((l_nat16 & 0x00FF).to_character_8)
-						Result.extend (((l_nat16 & 0xFF00) |>> 8).to_character_8)
+						a_result.extend ((l_nat16 & 0x00FF).to_character_8)
+						a_result.extend (((l_nat16 & 0xFF00) |>> 8).to_character_8)
 
 								-- Write the trail surrogate pair.
 						l_nat16 := (0xDC00 + (c & 0x3FF)).to_natural_16
-						Result.extend ((l_nat16 & 0x00FF).to_character_8)
-						Result.extend (((l_nat16 & 0xFF00) |>> 8).to_character_8)
+						a_result.extend ((l_nat16 & 0x00FF).to_character_8)
+						a_result.extend (((l_nat16 & 0xFF00) |>> 8).to_character_8)
 					end
 				else
 					l_decoded := False
 						-- Simply put decoded value directly in stream.
-					Result.extend ((c & 0x00FF).to_character_8)
-					Result.extend (((c & 0xFF00) |>> 8).to_character_8)
+					a_result.extend ((c & 0x00FF).to_character_8)
+					a_result.extend (((c & 0xFF00) |>> 8).to_character_8)
 				end
 			end
 		end
@@ -878,6 +951,15 @@ feature -- UTF-16 to UTF-32
 
 	utf_16_0_pointer_to_string_32 (p: MANAGED_POINTER): STRING_32
 			-- {STRING_32} object corresponding to UTF-16 sequence `p' which is zero-terminated.
+		do
+				-- Allocate Result with the same number of bytes as `p'.
+			create Result.make (p.count)
+			utf_16_0_pointer_into_string_32 (p, Result)
+		end
+
+	utf_16_0_pointer_into_string_32 (p: MANAGED_POINTER; a_result: STRING_32)
+			-- Copy {STRING_32} object corresponding to UTF-16 sequence `p' which is zero-terminated into
+			-- `a_result' replacing all existing characters.
 		require
 			minimum_size: p.count >= 2
 		local
@@ -885,9 +967,10 @@ feature -- UTF-16 to UTF-32
 			c: NATURAL_32
 		do
 			from
-					-- Allocate Result with the same number of bytes as `p'.
 				n := p.count
-				create Result.make (n)
+					-- Allocate Result with the same number of bytes as `p'.
+				a_result.grow (n)
+				a_result.wipe_out
 			until
 				i >= n
 			loop
@@ -899,11 +982,11 @@ feature -- UTF-16 to UTF-32
 					i := i + 2
 					if c < 0xD800 or else c >= 0xE000 then
 							-- Codepoint from Basic Multilingual Plane: one 16-bit code unit.
-						Result.extend (c.to_character_32)
+						a_result.extend (c.to_character_32)
 					else
 							-- Supplementary Planes: surrogate pair with lead and trail surrogates.
 						if i < n then
-							Result.extend (((c.as_natural_32 |<< 10) + p.read_natural_16 (i) - 0x35FDC00).to_character_32)
+							a_result.extend (((c.as_natural_32 |<< 10) + p.read_natural_16 (i) - 0x35FDC00).to_character_32)
 							i := i + 2
 						end
 					end
@@ -913,6 +996,14 @@ feature -- UTF-16 to UTF-32
 
 	utf_16_to_string_32 (s: SPECIAL [NATURAL_16]): STRING_32
 			-- {STRING_32} object corresponding to UTF-16 sequence `s'.
+		do
+			create Result.make (s.count)
+			utf_16_into_string_32 (s, Result)
+		end
+
+	utf_16_into_string_32 (s: SPECIAL [NATURAL_16]; a_result: STRING_32)
+			-- Copy {STRING_32} object corresponding to UTF-16 sequence `s' int `a_result' replacing all
+			-- existing characters.
 		local
 			i: like {SPECIAL [NATURAL_16]}.count
 			n: like {SPECIAL [NATURAL_16]}.count
@@ -920,7 +1011,8 @@ feature -- UTF-16 to UTF-32
 		do
 			from
 				n := s.count
-				create Result.make (n)
+				a_result.grow (n)
+				a_result.wipe_out
 			until
 				i >= n
 			loop
@@ -928,11 +1020,11 @@ feature -- UTF-16 to UTF-32
 				i := i + 1
 				if c < 0xD800 or else c >= 0xE000 then
 						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit.
-					Result.extend (c.to_character_32)
+					a_result.extend (c.to_character_32)
 				else
 						-- Supplementary Planes: surrogate pair with lead and trail surrogates.
 					if i < n then
-						Result.extend (((c |<< 10) + s [i] - 0x35FDC00).to_character_32)
+						a_result.extend (((c |<< 10) + s [i] - 0x35FDC00).to_character_32)
 						i := i + 1
 					end
 				end
@@ -941,6 +1033,15 @@ feature -- UTF-16 to UTF-32
 
 	utf_16le_string_8_to_string_32 (s: READABLE_STRING_8): STRING_32
 			-- {STRING_32} object corresponding to UTF-16LE sequence `s'.
+		do
+				-- There is at least half the characters of `s'.
+			create Result.make (s.count |>> 1)
+			utf_16le_string_8_into_string_32 (s, Result)
+		end
+
+	utf_16le_string_8_into_string_32 (s: READABLE_STRING_8; a_result: STRING_32)
+			-- Copy {STRING_32} object corresponding to UTF-16LE sequence `s' into `a_result' replacing
+			-- all existing characters.
 		local
 			i, nb: INTEGER
 			c1, c2: NATURAL_32
@@ -948,7 +1049,8 @@ feature -- UTF-16 to UTF-32
 			from
 				nb := s.count
 					-- There is at least half the characters of `s'.
-				create Result.make (nb |>> 1)
+				a_result.grow (nb |>> 1)
+				a_result.wipe_out
 			until
 				i + 1 >= nb
 			loop
@@ -957,19 +1059,29 @@ feature -- UTF-16 to UTF-32
 				c1 := s.code (i - 1) | (s.code (i) |<< 8)
 				if c1 < 0xD800 or else c1 >= 0xE000 then
 						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit, this is valid Unicode.						
-					Result.extend (c1.to_character_32)
+					a_result.extend (c1.to_character_32)
 				else
 					i := i + 2
 					if i <= nb then
 						c2 := s.code (i - 1) | (s.code (i) |<< 8)
-						Result.extend (((c1 |<< 10) + c2 - 0x35FDC00).to_character_32)
+						a_result.extend (((c1 |<< 10) + c2 - 0x35FDC00).to_character_32)
 					end
 				end
 			end
 		end
 
 	utf_16le_string_8_to_escaped_string_32 (s: READABLE_STRING_8): STRING_32
-			-- {STRING_32} object corresponding to UTF-16LE sequence `s', where invalid UTF-16LE sequences are escaped.
+			-- {STRING_32} object corresponding to UTF-16LE sequence `s', where invalid UTF-16LE
+			-- sequences are escaped.
+		do
+				-- There is at least half the characters of `s'.
+			create Result.make (s.count |>> 1)
+			utf_16le_string_8_into_escaped_string_32 (s, Result)
+		end
+
+	utf_16le_string_8_into_escaped_string_32 (s: READABLE_STRING_8; a_result: STRING_32)
+			-- Copy {STRING_32} object corresponding to UTF-16LE sequence `s', where invalid UTF-16LE
+			-- sequences are escaped, into `a_result' replacing all existing characters.
 		local
 			i, nb: INTEGER
 			c1, c2: NATURAL_16
@@ -977,7 +1089,8 @@ feature -- UTF-16 to UTF-32
 			from
 				nb := s.count
 					-- There is at least half the characters of `s'.
-				create Result.make (nb |>> 1)
+				a_result.grow (nb |>> 1)
+				a_result.wipe_out
 			until
 				i + 1 >= nb
 			loop
@@ -986,7 +1099,7 @@ feature -- UTF-16 to UTF-32
 				c1 := s.code (i - 1).as_natural_16 | (s.code (i).as_natural_16 |<< 8)
 				if c1 < 0xD800 or else c1 >= 0xE000 then
 						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit, this is valid Unicode.						
-					Result.extend (c1.to_character_32)
+					a_result.extend (c1.to_character_32)
 				elseif c1 <= 0xDBFF then
 						-- Only check the trailing code unit if the leading one is valid.
 					i := i + 2
@@ -995,10 +1108,10 @@ feature -- UTF-16 to UTF-32
 						if c2 >= 0xDC00 and c2 <= 0xDFFF then
 								-- This is a valid code unit, we combine the leading and trailing
 								-- code unit to form a Unicode character.
-							Result.extend (((c1 |<< 10) + c2 - 0x35FDC00).to_character_32)
+							a_result.extend (((c1 |<< 10) + c2 - 0x35FDC00).to_character_32)
 						else
 								-- This is an invalid unicode code unit, we escape the leading code unit.
-							escape_code_into (Result, c1)
+							escape_code_into (a_result, c1)
 								-- However we reset, decrement `i' so that if `c2' is a valid
 								-- character we simply encode it as is, or if it is a leading code
 								-- unit, maybe it is followed by a trailing code unit which would make
@@ -1008,11 +1121,11 @@ feature -- UTF-16 to UTF-32
 					else
 							-- Case of a leading code unit not followed by a trailing one.
 							-- We simply escape the leading code unit.
-						escape_code_into (Result, c1)
+						escape_code_into (a_result, c1)
 					end
 				else
 						-- Case of an invalid leading code unit, we escape the leading code unit.
-					escape_code_into (Result, c1)
+					escape_code_into (a_result, c1)
 				end
 			end
 		end
@@ -1028,8 +1141,26 @@ feature -- UTF-16 to UTF-8
 			Result := string_32_to_utf_8_string_8 (utf_16_to_string_32 (s))
 		end
 
+	utf_16_into_utf_8_string_8 (s: SPECIAL [NATURAL_16]; a_result: STRING_8)
+			-- Copy UTF-8 sequence corresponding to UTF-16 sequence `s' into `a_result' replacing all
+			-- existing characters.
+		do
+			debug ("to_implement")
+				(create {REFACTORING_HELPER}).to_implement ("Convert directly from UTF-16 to UTF-8.")
+			end
+			string_32_into_utf_8_string_8 (utf_16_to_string_32 (s), a_result)
+		end
+
 	utf_16le_string_8_to_utf_8_string_8 (s: READABLE_STRING_8): STRING_8
 			-- UTF-8 sequence corresponding to UTF-16LE sequence `s'.
+		do
+			create Result.make (s.count)
+			utf_16le_string_8_into_utf_8_string_8 (s, Result)
+		end
+
+	utf_16le_string_8_into_utf_8_string_8 (s: READABLE_STRING_8; a_result: STRING_8)
+			-- Copy UTF-8 sequence corresponding to UTF-16LE sequence `s' into `a_result' replacing all
+			-- existing characters.
 		require
 			even_count: (s.count & 1) = 0
 		local
@@ -1049,7 +1180,7 @@ feature -- UTF-16 to UTF-8
 				end
 				v.extend (s [i - 1].code.as_natural_16 | (s [i].code.as_natural_16 |<< 8))
 			end
-			Result := utf_16_to_utf_8_string_8 (v)
+			utf_16_into_utf_8_string_8 (v, a_result)
 		end
 
 feature -- UTF-8 to UTF-16
