@@ -55,6 +55,7 @@ feature -- Initialization
 			file_pointer := default_pointer
 			create last_string.make_empty
 		ensure
+			file_named: internal_name = fn
 			file_closed: is_closed
 		end
 
@@ -69,6 +70,7 @@ feature -- Initialization
 			file_pointer := default_pointer
 			create last_string.make_empty
 		ensure
+			path_set: path.same_as (a_path)
 			file_closed: is_closed
 		end
 
@@ -1651,6 +1653,8 @@ feature {NONE} -- Implementation
 			internal_name := a_path.name
 				-- Create a matching path.
 			internal_detachable_name_pointer := a_path.to_pointer
+		ensure
+			path_set: path.same_as (a_path)
 		end
 
 	create_last_string (a_min_size: INTEGER)
