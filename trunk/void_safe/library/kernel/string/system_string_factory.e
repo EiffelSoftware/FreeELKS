@@ -52,6 +52,13 @@ feature -- Conversion
 		do
 		end
 
+	escape_count (a_str: SYSTEM_STRING): INTEGER
+			-- Number of `escape_character' in `a_str'.
+		require
+			is_dotnet: {PLATFORM}.is_dotnet
+		do
+		end
+
 note
 	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
 	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"

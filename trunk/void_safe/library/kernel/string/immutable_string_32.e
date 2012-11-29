@@ -121,7 +121,7 @@ feature {NONE} -- Initialization
 			l_count: INTEGER
 		do
 			if a_system_string /= Void then
-				l_count := a_system_string.length
+				l_count := a_system_string.length + dotnet_convertor.escape_count (a_system_string)
 			end
 			make (l_count)
 			if l_count > 0 then
