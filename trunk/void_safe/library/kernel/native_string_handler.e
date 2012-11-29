@@ -13,15 +13,37 @@ feature {NATIVE_STRING_HANDLER} -- Access
 
 	pointer_length_in_bytes (a_ptr: POINTER): INTEGER
 			-- Length in bytes of a platform specific file name pointer, not
+			-- including the null-terminating character. If size is too large
+			-- to fit into an {INTEGER} instance, the size is truncated to
+			-- `{INTEGER_32}.max_value'.
+		require
+			a_ptr_not_null: a_ptr /= default_pointer
+		local
+			l_length: NATURAL_64
+		do
+			l_length := c_pointer_length_in_bytes (a_ptr)
+			if l_length <= {INTEGER_32}.max_value.to_natural_64 then
+				Result := l_length.to_integer_32
+			else
+				Result := {INTEGER_32}.max_value
+			end
+		end
+
+feature {NONE} -- Implementation
+
+	c_pointer_length_in_bytes (a_ptr: POINTER): NATURAL_64
+			-- Length in bytes of a platform specific file name pointer, not
 			-- including the null-terminating character.
+		require
+			a_ptr_not_null: a_ptr /= default_pointer
 		external
 			"C inline use %"eif_eiffel.h%""
 		alias
 			"{
 			#ifdef EIF_WINDOWS
-				return (EIF_INTEGER) wcslen($a_ptr) * sizeof(wchar_t);
+				return (EIF_NATURAL_64) wcslen($a_ptr) * sizeof(wchar_t);
 			#else
-				return (EIF_INTEGER) strlen($a_ptr) * sizeof(char);
+				return (EIF_NATURAL_64) strlen($a_ptr) * sizeof(char);
 			#endif
 			}"
 		end;
