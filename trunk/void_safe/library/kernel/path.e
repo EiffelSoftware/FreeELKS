@@ -153,7 +153,10 @@ feature {NONE} -- Initialization
 				internal_append_into (storage, a_path, False)
 			end
 		ensure
-			roundtrip: name.same_string_general (a_path)
+			roundtrip: (not a_path.is_empty and then
+				(a_path.item (a_path.count) /= windows_separator and a_path.item (a_path.count) /= unix_separator)) implies
+					name.same_string_general (a_path)
+			roundtrip_with_trailing: -- name.same_string_general (a_path) with all trailing directory separators removed from `a_path'.
 		end
 
 	make_from_storage (a_path: STRING_8)
