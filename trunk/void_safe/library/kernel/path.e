@@ -126,6 +126,7 @@ feature {NONE} -- Initialization
 			-- Initialize current as an empty path.
 		do
 			create storage.make_empty
+			reset_internal_data
 		ensure
 			is_empty: is_empty
 		end
@@ -138,6 +139,7 @@ feature {NONE} -- Initialization
 			if {PLATFORM}.is_windows then
 				storage.append_character ('%U')
 			end
+			reset_internal_data
 		end
 
 	make_from_string (a_path: READABLE_STRING_GENERAL)
@@ -152,6 +154,7 @@ feature {NONE} -- Initialization
 					-- We start from nothing, so we do not add a directory separator regardless.
 				internal_append_into (storage, a_path, False)
 			end
+			reset_internal_data
 		ensure
 			roundtrip: (not a_path.is_empty and then
 				(a_path.item (a_path.count) /= windows_separator and a_path.item (a_path.count) /= unix_separator)) implies
@@ -165,6 +168,7 @@ feature {NONE} -- Initialization
 			a_path_not_void: a_path /= Void
 		do
 			storage := a_path
+			reset_internal_data
 		ensure
 			shared: storage = a_path
 		end
@@ -186,6 +190,7 @@ feature {NONE} -- Initialization
 					-- If we got a PATH that had "/", we need to replace them by "\".
 				storage.replace_substring_all ("/%U", directory_separator_symbol)
 			end
+			reset_internal_data
 		end
 
 feature -- Status report
@@ -438,6 +443,7 @@ feature -- Access
 					end
 						-- Now that we have built a valid path, we just append the relative one.
 					internal_path_append_into (Result.storage, storage, True)
+					Result.reset_internal_data
 				end
 			end
 		ensure
@@ -662,7 +668,7 @@ feature -- Output
 			Result := u.utf_32_string_to_utf_8_string_8 (name)
 		end
 
-	name: STRING_32
+	name: IMMUTABLE_STRING_32
 			-- If current is representable in Unicode, the Unicode representation.
 			-- Otherwise all non-valid sequences for the current platform in the path are escaped
 			-- as mentioned in the note clause of the class.
@@ -672,10 +678,16 @@ feature -- Output
 		local
 			u: UTF_CONVERTER
 		do
-			if {PLATFORM}.is_windows then
-				Result := u.utf_16le_string_8_to_escaped_string_32 (storage)
+				-- We can safely buffer `internal_name' since Current is immutable.
+			if attached internal_name as l_name then
+				Result := l_name
 			else
-				Result := u.utf_8_string_8_to_escaped_string_32 (storage)
+				if {PLATFORM}.is_windows then
+					Result := u.utf_16le_string_8_to_escaped_string_32 (storage)
+				else
+					Result := u.utf_8_string_8_to_escaped_string_32 (storage)
+				end
+				internal_name := Result
 			end
 		ensure
 			roundtrip: same_as (create {PATH}.make_from_string (Result))
@@ -727,10 +739,20 @@ feature {PATH} -- Implementation
 			-- On UNIX, it is a binary sequence encoded in UTF-8 by default.
 			-- On Windows, it is a binary sequence encoded in UTF-16LE by default.
 
+	reset_internal_data
+			-- Reset the private cache data.
+		do
+			internal_hash_code := -1
+			internal_name := Void
+		end
+
 feature {NONE} -- Implementation
 
 	internal_hash_code: INTEGER
 			-- Cache for `hash_code'.
+
+	internal_name: detachable IMMUTABLE_STRING_32
+			-- Cache for `name'.
 
 	platform: PLATFORM
 			-- Access underlying platform info, used to satisfy invariant below.
@@ -989,7 +1011,6 @@ feature {NONE} -- Implementation
 				else
 					l_extra_storage := u.escaped_utf_32_string_to_utf_8_string_8 (l_other)
 				end
-				internal_hash_code := -1
 				internal_path_append_into (a_storage, l_extra_storage, a_add_separator)
 			end
 		end
