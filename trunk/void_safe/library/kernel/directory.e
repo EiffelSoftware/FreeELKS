@@ -463,7 +463,9 @@ feature -- Removal
 			-- subdirectories.
 			--
 			-- `action' is called each time `file_number' files has
-			-- been deleted and before the function exits.
+			-- been deleted and before the function exits. If `a_file_number'
+			-- is non-positive, nothing is done. If `a_file_number' is greater than
+			-- 1024, we limit its value to 1024.
 			-- `action' may be set to Void if you don't need it.
 			--
 			-- Same for `is_cancel_requested'.
@@ -485,7 +487,8 @@ feature -- Removal
 			requested_cancel: BOOLEAN
 		do
 			file_count := 1
-			create deleted_files.make (file_number)
+				-- We limit `file_number' to something reasonable.
+			create deleted_files.make (file_number.min (1024))
 
 			from
 					-- To delete files we do not need to follow symbolic links.
@@ -529,7 +532,7 @@ feature -- Removal
 						file_count := file_count + 1
 
 							-- If `file_number' has been reached, call `action'.
-						if file_count > file_number then
+						if file_number > 0 and then file_count > file_number then
 							if action /= Void then
 								action.call ([deleted_files])
 							end
