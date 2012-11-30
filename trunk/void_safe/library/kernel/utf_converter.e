@@ -597,7 +597,10 @@ feature -- UTF-8 to UTF-32
 				i > end_pos
 			loop
 				c1 := p.read_natural_8 (i)
-				if c1 <= 0x7F then
+				if c1 = 0 and a_stop_at_null then
+						-- We hit our null terminating character, we can stop					
+					i := end_pos + 1
+				elseif c1 <= 0x7F then
 						-- 0xxxxxxx
 					a_result.extend (c1.to_character_32)
 					i := i + 1
