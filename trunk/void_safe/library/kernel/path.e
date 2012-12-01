@@ -396,7 +396,7 @@ feature -- Access
 	absolute_path: PATH
 			-- Absolute path of Current.
 			-- If Current is already absolute, then return Current.
-			-- If Current is empty, then return the current workding directory.
+			-- If Current is empty, then return the current working directory.
 			-- Otherwise resolve the current path in a platform specific way:
 			-- * On UNIX, resolve against the current working directory
 			-- * On Windows:
@@ -432,7 +432,7 @@ feature -- Access
 								if attached Result.root as l_root then
 									Result := l_root
 								else
-										-- The current working path as no root? It is hard to believe.
+										-- The current working path has no root? It is hard to believe.
 								end
 							else
 								Result := env.current_working_path
