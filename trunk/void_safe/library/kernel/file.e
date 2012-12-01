@@ -469,7 +469,7 @@ feature -- Status report
 	is_symlink: BOOLEAN
 			-- Is file a symbolic link?
 		require
-			file_exists: exists
+			file_exists: path_exists
 		local
 			l_buffer: like buffered_file_info
 			l_is_following_symbolic_links: BOOLEAN
@@ -477,7 +477,7 @@ feature -- Status report
 			l_buffer := buffered_file_info
 			l_is_following_symbolic_links := l_buffer.is_following_symlinks
 			l_buffer.set_is_following_symlinks (False)
-			set_buffer
+			l_buffer.fast_update (internal_name, internal_name_pointer)
 			Result := l_buffer.is_symlink
 			l_buffer.set_is_following_symlinks (l_is_following_symbolic_links)
 		end
