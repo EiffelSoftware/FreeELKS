@@ -1193,7 +1193,7 @@ feature {NONE} -- Implementation
 			end
 		end
 
-feature {READABLE_STRING_8, READABLE_STRING_32} -- Implementation
+feature {READABLE_STRING_8, READABLE_STRING_32, HEXADECIMAL_STRING_TO_INTEGER_CONVERTER} -- Implementation
 
 	area: SPECIAL [CHARACTER_8]
 			-- Storage for characters
