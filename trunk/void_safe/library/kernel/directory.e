@@ -473,7 +473,7 @@ feature -- Removal
 			-- `is_cancel_requested' may be set to Void if you don't need it.
 		require
 			directory_exists: exists
-			valid_file_number: file_number > 0
+			valid_file_number: file_number >= 0
 		local
 			l_path, l_file_name: PATH
 			file: detachable RAW_FILE
@@ -508,13 +508,9 @@ feature -- Removal
 				if (not l_name.same_string (current_directory_string) and not l_name.same_string (parent_directory_string)) then
 						-- Avoid creating too many objects.
 					l_file_name := path.extended (l_name)
-					if file /= Void then
-						file.reset_path (l_file_name)
-					else
-						create file.make_with_path (l_file_name)
-					end
-					if file.exists then
-						if not file.is_symlink and then file.is_directory then
+					l_info.update (l_file_name.name)
+					if l_info.exists then
+						if not l_info.is_symlink and then l_info.is_directory then
 								-- Start the recursion for true directory, we do not follow links to delete their content.
 							if dir /= Void then
 								dir.make_with_path (l_file_name)
@@ -522,7 +518,12 @@ feature -- Removal
 								create dir.make_with_path (l_file_name)
 							end
 							dir.recursive_delete_with_action (action, is_cancel_requested, file_number)
-						elseif file.is_writable then
+						elseif l_info.is_writable then
+							if file /= Void then
+								file.reset_path (l_file_name)
+							else
+								create file.make_with_path (l_file_name)
+							end
 							file.delete
 						end
 
