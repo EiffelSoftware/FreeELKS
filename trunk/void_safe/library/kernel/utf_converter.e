@@ -1431,31 +1431,20 @@ feature -- UTF-16 to UTF-32
 								-- we need to escape it.
 							a_result.extend (c1.to_character_32)
 						end
-					elseif c1 <= 0xDBFF then
-							-- Only check the trailing code unit if the leading one is valid.
-						i := i + 2
-						if i < n then
-							c2 := p.read_natural_16 (i)
-							if c2 >= 0xDC00 and c2 <= 0xDFFF then
-									-- This is a valid code unit, we combine the leading and trailing
-									-- code unit to form a Unicode character.
-								a_result.extend (((c1 |<< 10) + c2 - 0x35FDC00).to_character_32)
-							else
-									-- This is an invalid unicode code unit, we escape the leading code unit.
-								escape_code_into (a_result, c1.as_natural_16)
-									-- However we reset, decrement `i' so that if `c2' is a valid
-									-- character we simply encode it as is, or if it is a leading code
-									-- unit, maybe it is followed by a trailing code unit which would make
-									-- a valid Unicode character.
-								i := i - 2
-							end
+					elseif c1 <= 0xDBFF and then i + 2 <= n then
+							-- Check if a lead surrogate is followed by a trail surrogate.
+						c2 := p.read_natural_16 (i)
+						if c2 >= 0xDC00 and c2 <= 0xDFFF then
+								-- Supplementary Planes: surrogate pair with lead and trail surrogates.
+							a_result.extend (((c1 |<< 10) + c2 - 0x35FDC00).to_character_32)
+							i := i + 2
 						else
-								-- Case of a leading code unit not followed by a trailing one.
-								-- We simply escape the leading code unit.
+								-- Escape a lead surrogate not followed by a trail one.
 							escape_code_into (a_result, c1.as_natural_16)
 						end
 					else
-							-- Case of an invalid leading code unit, we escape the leading code unit.
+							-- Escape a trail surrogate not following a lead one or
+							-- a lead surrogate not followed by a trail one.
 						escape_code_into (a_result, c1.as_natural_16)
 					end
 				end
@@ -1562,33 +1551,27 @@ feature -- UTF-16 to UTF-32
 					-- Extract the first 2-bytes
 				c1 := s.code (i - 1) | (s.code (i) |<< 8)
 				if c1 < 0xD800 or else c1 >= 0xE000 then
-						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit, this is valid Unicode.						
+						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit.
 					a_result.extend (c1.to_character_32)
-				elseif c1 <= 0xDBFF then
-						-- Only check the trailing code unit if the leading one is valid.
-					i := i + 2
-					if i <= nb then
-						c2 := s.code (i - 1) | (s.code (i) |<< 8)
-						if c2 >= 0xDC00 and c2 <= 0xDFFF then
-								-- This is a valid code unit, we combine the leading and trailing
-								-- code unit to form a Unicode character.
-							a_result.extend (((c1 |<< 10) + c2 - 0x35FDC00).to_character_32)
-						else
-								-- This is an invalid unicode code unit, we escape the leading code unit.
-							escape_code_into (a_result, c1.as_natural_16)
-								-- However we reset, decrement `i' so that if `c2' is a valid
-								-- character we simply encode it as is, or if it is a leading code
-								-- unit, maybe it is followed by a trailing code unit which would make
-								-- a valid Unicode character.
-							i := i - 2
-						end
+					if c1.to_character_32 = escape_character then
+							-- The character that we just read was the `escape_character',
+							-- we need to escape it.
+						a_result.extend (c1.to_character_32)
+					end
+				elseif c1 <= 0xDBFF and then i + 2 <= nb then
+						-- Check if a lead surrogate is followed by a trail surrogate.
+					c2 := s.code (i + 1) | (s.code (i + 2) |<< 8)
+					if c2 >= 0xDC00 and c2 <= 0xDFFF then
+							-- Supplementary Planes: surrogate pair with lead and trail surrogates.
+						a_result.extend (((c1 |<< 10) + c2 - 0x35FDC00).to_character_32)
+						i := i + 2
 					else
-							-- Case of a leading code unit not followed by a trailing one.
-							-- We simply escape the leading code unit.
+							-- Escape a lead surrogate not followed by a trail one.
 						escape_code_into (a_result, c1.as_natural_16)
 					end
 				else
-						-- Case of an invalid leading code unit, we escape the leading code unit.
+						-- Escape a trail surrogate not following a lead one or
+						-- a lead surrogate not followed by a trail one.
 					escape_code_into (a_result, c1.as_natural_16)
 				end
 			end
