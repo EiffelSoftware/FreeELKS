@@ -236,6 +236,22 @@ feature -- Access
 			name_changed: internal_name = new_name
 		end
 
+	rename_path (new_name: PATH)
+			-- Change directory name to `new_name'.
+		require
+			new_name_not_void: new_name /= Void
+			new_name_not_empty: not new_name.is_empty
+			file_exists: exists
+		local
+			l_ptr: MANAGED_POINTER
+		do
+			l_ptr := new_name.to_pointer
+			eif_dir_rename (internal_name_pointer.item, l_ptr.item)
+			set_name (new_name.name)
+		ensure
+			name_changed: internal_name = new_name
+		end
+
 feature -- Measurement
 
 	count: INTEGER
@@ -319,11 +335,7 @@ feature -- Conversion
 		end
 
 	linear_representation_32: ARRAYED_LIST [STRING_32]
-			-- The entries, in sequential format. Entries
-			-- that cannot be expressed in UTF-32 are excluded from
-			-- the list and one has to use `entries' to get them.
-		obsolete
-			"Use `entries' instead."
+			-- The entries, in sequential format.
 		local
 			dir_temp: DIRECTORY
 			e: like last_entry_pointer
@@ -341,10 +353,7 @@ feature -- Conversion
 			until
 				e = default_pointer
 			loop
-					-- Not all entries can be represented as a Unicode string.
-				if attached file_info.pointer_to_file_name_32 (e) as l_str then
-					Result.extend (l_str)
-				end
+				Result.extend ((create {PATH}.make_from_pointer (e)).name)
 				dir_temp.readentry
 				e := dir_temp.last_entry_pointer
 			end
