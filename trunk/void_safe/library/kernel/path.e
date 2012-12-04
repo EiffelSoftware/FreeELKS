@@ -693,13 +693,6 @@ feature -- Output
 			roundtrip: same_as (create {PATH}.make_from_string (Result))
 		end
 
-	string_representation: STRING_32
-		obsolete
-			"Use `name' instead."
-		do
-			Result := name
-		end
-
 	string_representation_8: STRING_8
 		obsolete
 			"Use `name' instead."
