@@ -263,23 +263,24 @@ feature -- Access
 			result_not_void: Result /= Void
 		end
 
-	starting_environment_variables: HASH_TABLE [STRING, STRING]
+	starting_environment_variables: HASH_TABLE [STRING_32, STRING_32]
 			-- Table of environment variables when current process starts,
 			-- indexed by variable name
 		local
 			l_ptr: POINTER
 			i: INTEGER
-			l_curr_var: detachable TUPLE [value: STRING; key: STRING]
+			ns: NATIVE_STRING
 		do
 			create Result.make (40)
 			from
 				i := 0
 				l_ptr := i_th_environ (i)
+				create ns.make_empty (0)
 			until
-				l_ptr = default_pointer
+				l_ptr.is_default_pointer
 			loop
-				l_curr_var := separated_variables (create {STRING}.make_from_c (l_ptr))
-				if l_curr_var /= Void then
+				ns.set_shared_from_pointer (l_ptr)
+				if attached separated_variables (ns.string) as l_curr_var then
 					Result.force (l_curr_var.value, l_curr_var.key)
 				end
 				i := i + 1
@@ -405,7 +406,7 @@ feature {NONE} -- Implementation
 			"[
 				if (eif_environ) {
 					#ifdef EIF_WINDOWS
-						LPSTR vars = (LPSTR) eif_environ;
+						EIF_NATIVE_CHAR **vars = (EIF_NATIVE_CHAR **) eif_environ;
 						int cnt = 0;
 						for (; *vars; vars++) {
 						   if ($i==cnt) return vars;
@@ -414,7 +415,7 @@ feature {NONE} -- Implementation
 						}
 						return NULL;
 					#else
-						return ((char **)eif_environ)[$i];
+						return ((EIF_NATIVE_CHAR **)eif_environ)[$i];
 					#endif
 				} else {
 					return NULL;
@@ -422,7 +423,7 @@ feature {NONE} -- Implementation
 			]"
 		end
 
-	separated_variables (a_var: STRING): detachable TUPLE [value: STRING; key: STRING]
+	separated_variables (a_var: STRING_32): detachable TUPLE [value: STRING_32; key: STRING_32]
 			-- Given an environment variable `a_var' in form of "key=value",
 			-- return separated key and value.
 			-- Return Void if `a_var' is in incorrect format.
