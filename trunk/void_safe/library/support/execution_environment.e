@@ -263,7 +263,36 @@ feature -- Access
 			result_not_void: Result /= Void
 		end
 
-	starting_environment_variables: HASH_TABLE [STRING_32, STRING_32]
+	starting_environment_variables: HASH_TABLE [STRING_8, STRING_8]
+			-- Table of environment variables when current process starts,
+			-- indexed by variable name
+		obsolete
+			"Use starting_environment which support unicode. [dec/2012]"
+		local
+			l_ptr: POINTER
+			i: INTEGER
+			ns: NATIVE_STRING
+		do
+			create Result.make (40)
+			from
+				i := 0
+				l_ptr := i_th_environ (i)
+				create ns.make_empty (0)
+			until
+				l_ptr.is_default_pointer
+			loop
+				ns.set_shared_from_pointer (l_ptr)
+				if attached separated_variables (ns.string) as l_curr_var then
+					Result.force (l_curr_var.value.to_string_8, l_curr_var.key.to_string_8)
+				end
+				i := i + 1
+				l_ptr := i_th_environ (i)
+			end
+		ensure
+			result_attached: Result /= Void
+		end
+
+	starting_environment: HASH_TABLE [STRING_32, STRING_32]
 			-- Table of environment variables when current process starts,
 			-- indexed by variable name
 		local
