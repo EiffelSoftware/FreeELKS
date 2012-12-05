@@ -36,6 +36,7 @@ create
 	make_empty,
 	make_filled,
 	make_from_string,
+	make_from_string_general,
 	make_from_string_8,
 	make_from_string_32,
 	make_from_c,
@@ -52,6 +53,19 @@ convert
 	as_string_32: {STRING_32}
 
 feature {NONE} -- Initialization
+
+	make_from_string_general (s: READABLE_STRING_GENERAL)
+			-- Initialize from the characters of `s'.
+		do
+			if attached {READABLE_STRING_8} s as s8 then
+				make_from_string_8 (s8)
+			elseif attached {READABLE_STRING_32} s as s32 then
+				make_from_string_32 (s32)
+			else
+				--| Unlikely to happen
+				make_from_string_32 (s.to_string_32)
+			end
+		end
 
 	make_from_string_8 (s: READABLE_STRING_8)
 			-- Initialize from the characters of `s'.

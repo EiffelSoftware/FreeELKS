@@ -75,6 +75,16 @@ feature {NONE} -- Initialization
 			initialized: same_string (s)
 		end
 
+	make_from_string_general (s: READABLE_STRING_GENERAL)
+			-- Initialize from the characters of `s'.
+		require
+			string_exists: s /= Void
+		deferred
+		ensure
+			not_shared_implementation: Current /= s
+			initialized: same_string_general (s)
+		end
+
 	make_from_c (c_string: POINTER)
 			-- Initialize from contents of `c_string',
 			-- a string created by some C function
