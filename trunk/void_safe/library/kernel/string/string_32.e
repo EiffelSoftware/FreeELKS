@@ -13,7 +13,6 @@ class
 	STRING_32
 
 inherit
-
 	READABLE_STRING_32
 		export
 			{ANY} make, make_empty, make_filled, make_from_c, make_from_string, fill_character
@@ -71,6 +70,7 @@ create
 	make_empty,
 	make_filled,
 	make_from_string,
+	make_from_string_general,
 	make_from_c,
 	make_from_c_pointer,
 	make_from_cil,
@@ -82,6 +82,17 @@ convert
 	as_string_8: {READABLE_STRING_8, STRING_8}
 
 feature -- Initialization
+
+	make_from_string_general (s: READABLE_STRING_GENERAL)
+			-- Initialize from the characters of `s'.
+		do
+			if attached {READABLE_STRING_32} s as s32 then
+				make_from_string (s32)
+			else
+				make (s.count)
+				append_string_general (s)
+			end
+		end
 
 	make_from_cil (a_system_string: detachable SYSTEM_STRING)
 			-- Initialize Current with `a_system_string'.
@@ -472,7 +483,6 @@ feature -- Element change
 			new_count: count = n.min (old count)
 			kept: elks_checking implies Current ~ (old substring (1, n.min (count)))
 		end
-
 	keep_head (n: INTEGER)
 			-- Remove all characters except for the first `n';
 			-- do nothing if `n' >= `count'.

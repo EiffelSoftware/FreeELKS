@@ -40,6 +40,7 @@ create
 	make_empty,
 	make_filled,
 	make_from_string,
+	make_from_string_general,
 	make_from_c,
 	make_from_cil
 
@@ -54,6 +55,16 @@ convert
 	as_string_8: {STRING_8}
 
 feature {NONE} -- Initialization
+
+	make_from_string_general (s: READABLE_STRING_GENERAL)
+			-- Initialize from the characters of `s'.
+		do
+			if attached {READABLE_STRING_8} s as s8 then
+				make_from_string (s8)
+			else
+				make_from_string (s.to_string_8)
+			end
+		end
 
 	make_from_area_and_bounds (a: like area; low, n: like count)
 			-- Initialize current with area `a' with lower bounds `low' and count `n'.
