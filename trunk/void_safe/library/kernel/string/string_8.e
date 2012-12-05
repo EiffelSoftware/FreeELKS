@@ -74,7 +74,6 @@ create
 	make_empty,
 	make_filled,
 	make_from_string,
-	make_from_string_general,
 	make_from_c,
 	make_from_c_pointer,
 	make_from_cil,
@@ -86,18 +85,6 @@ convert
 	as_string_32: {READABLE_STRING_32, STRING_32}
 
 feature -- Initialization
-
-	make_from_string_general (s: READABLE_STRING_GENERAL)
-			-- Initialize from the characters of `s'.
-		do
-			if attached {READABLE_STRING_8} s as s8 then
-				make_from_string (s8)
-			else
-				-- Precondition precises `s' is valid as string_8
-				make (s.count)
-				append_string_general (s)
-			end
-		end
 
 	make_from_cil (a_system_string: detachable SYSTEM_STRING)
 			-- Initialize Current with `a_system_string'.
