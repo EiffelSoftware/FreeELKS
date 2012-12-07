@@ -913,6 +913,36 @@ feature -- Duplication
 				Result.substring (2, Result.count) ~ substring (start_index + 1, end_index)
 		end
 
+	head (n: INTEGER): like Current
+			-- Prefix, retaining first `n' characters (or as many as available).
+		require
+			non_negative_argument: n >= 0
+		do
+			if n > count then
+				Result := twin
+			else
+				Result := substring (1, n)
+			end
+		ensure
+			same_count: count = old (count)
+			new_count: Result.count = n.min (count)
+		end
+
+	tail (n: INTEGER): like Current
+			-- Suffix, retaining last `n' characters (or as many as available).
+		require
+			non_negative_argument: n >= 0
+		do
+			if n > count then
+				Result := twin
+			else
+				Result := substring (count - n + 1, count)
+			end
+		ensure
+			same_count: count = old (count)
+			new_count: Result.count = n.min (count)
+		end
+
 feature {NONE} -- Assertion helper
 
 	elks_checking: BOOLEAN = False
