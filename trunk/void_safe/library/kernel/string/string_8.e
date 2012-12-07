@@ -468,20 +468,6 @@ feature -- Element change
 			filled: elks_checking implies occurrences (c) = count
 		end
 
-	head (n: INTEGER)
-			-- Remove all characters except for the first `n';
-			-- do nothing if `n' >= `count'.
-		obsolete
-			"ELKS 2001: use `keep_head' instead'"
-		require
-			non_negative_argument: n >= 0
-		do
-			keep_head (n)
-		ensure
-			new_count: count = n.min (old count)
-			kept: elks_checking implies Current ~ (old substring (1, n.min (count)))
-		end
-
 	keep_head (n: INTEGER)
 			-- Remove all characters except for the first `n';
 			-- do nothing if `n' >= `count'.
@@ -490,20 +476,6 @@ feature -- Element change
 				count := n
 				internal_hash_code := 0
 			end
-		end
-
-	tail (n: INTEGER)
-			-- Remove all characters except for the last `n';
-			-- do nothing if `n' >= `count'.
-		obsolete
-			"ELKS 2001: use `keep_tail' instead'"
-		require
-			non_negative_argument: n >= 0
-		do
-			keep_tail (n)
-		ensure
-			new_count: count = n.min (old count)
-			kept: elks_checking implies Current ~ (old substring (count - n.min(count) + 1, count))
 		end
 
 	keep_tail (n: INTEGER)
