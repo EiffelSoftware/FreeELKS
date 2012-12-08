@@ -524,7 +524,6 @@ feature {FILE, DIRECTORY} -- Element change
 		require
 			f_name_not_empty: not f_name.is_empty
 			a_ptr_not_empty: a_ptr.count > 0
-			consistent_ptr_with_name: a_ptr.count > f_name.count
 		do
 				-- Do not duplicate the file name. That way, if the file is
 				-- renamed, the name here will change accordingly and access()
