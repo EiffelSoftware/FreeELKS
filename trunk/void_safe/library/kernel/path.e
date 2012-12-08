@@ -175,20 +175,51 @@ feature {NONE} -- Initialization
 
 	make_from_pointer (a_path_pointer: POINTER)
 			-- Initialize current from `a_path_pointer', a platform system specific encoding of
-			-- a path.
+			-- a path that is null-terminated.
 		require
 			a_path_pointer_not_null: a_path_pointer /= default_pointer
 		local
 			l_cstr: C_STRING
-			l_count: INTEGER
+			i, nb, l_to_remove: INTEGER
 		do
 				-- Let's be safe here, we take the min between the recorded size and the actual size.
-			l_count := pointer_length_in_bytes (a_path_pointer)
-			create l_cstr.make_shared_from_pointer_and_count (a_path_pointer, l_count)
-			storage := l_cstr.substring (1, l_count)
+			nb := pointer_length_in_bytes (a_path_pointer)
+				-- Let's make sure that `nb' is a valid length, any value on Unix, but an even number on Windows
+			nb := nb - nb \\ unit_size
+			create l_cstr.make_shared_from_pointer_and_count (a_path_pointer, nb)
+			storage := l_cstr.substring (1, nb)
 			if {PLATFORM}.is_windows then
 					-- If we got a PATH that had "/", we need to replace them by "\".
-				storage.replace_substring_all ("/%U", directory_separator_symbol)
+				from
+					i := 1
+				until
+					i > nb
+				loop
+					if storage.item (i) = unix_separator and then storage.item (i + 1) = '%U' then
+						storage.put (windows_separator, i)
+					end
+					i := i + unit_size
+				end
+			end
+				-- We now need to remove any trailing directory separator if any, but if
+				-- there is just one character and it is the directory separator, we keep it.
+			i := nb - unit_size + 1
+			if
+				i > 0 and then storage.item (i) = directory_separator and then
+				({PLATFORM}.is_windows implies storage.item (i + 1) = '%U')
+			then
+				from
+						-- We found a directory separator, we need to discard it and all the ones before.
+					l_to_remove := unit_size
+					i := i - unit_size
+				until
+					i <= unit_size or else storage.item (i) /= directory_separator or else
+					not ({PLATFORM}.is_windows implies storage.item (i + 1) = '%U')
+				loop
+					l_to_remove := l_to_remove + unit_size
+					i := i - unit_size
+				end
+				storage.remove_tail (l_to_remove)
 			end
 			reset_internal_data
 		end
@@ -943,6 +974,8 @@ feature {NONE} -- Implementation
 
 	internal_append_into (a_storage: STRING_8; other: READABLE_STRING_GENERAL; a_add_separator: BOOLEAN)
 			-- Append `other' to Current, and add a separator if `a_add_separator'.
+			--| Replace all `/' into `\' on Windows platform.
+			--| Remove trailing directory separators (if any).
 		require
 			other_not_void: other /= Void
 			other_not_empty: not other.is_empty
