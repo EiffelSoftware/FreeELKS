@@ -232,6 +232,7 @@ feature -- UTF-32 to UTF-8
 						if is_hexa_decimal (l_encoded_value) then
 							c := to_natural_32 (l_encoded_value)
 							l_decoded := True
+							i := i + 2
 						else
 								-- Not an hexadecimal value, it was not escaped.
 						end
@@ -342,6 +343,7 @@ feature -- UTF-32 to UTF-8
 						if is_hexa_decimal (l_encoded_value) then
 							c := to_natural_32 (l_encoded_value)
 							l_decoded := True
+							i := i + 2
 						else
 								-- Not an hexadecimal value, it was not escaped.
 						end
