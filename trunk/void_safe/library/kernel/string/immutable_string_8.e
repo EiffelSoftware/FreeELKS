@@ -25,7 +25,6 @@ inherit
 			same_string as same_string_general,
 			starts_with as starts_with_general,
 			ends_with as ends_with_general,
-			plus as plus_string_general,
 			is_case_insensitive_equal as is_case_insensitive_equal_general,
 			item as character_32_item,
 			has as character_32_has,
@@ -131,18 +130,7 @@ feature -- Access
 
 feature -- Element change
 
-	plus alias "+" (s: READABLE_STRING_8): like Current
-			-- <Precursor>
-		local
-			a: like area
-		do
-			create a.make_empty (count + s.count + 1)
-			a.copy_data (area, area_lower, 0, count)
-			a.copy_data (s.area, s.area_lower, count, s.count + 1)
-			create Result.make_from_area_and_bounds (a, 0, count + s.count)
-		end
-
-	plus_string_general (s: READABLE_STRING_GENERAL): like Current
+	plus alias "+" (s: READABLE_STRING_GENERAL): like Current
 			-- <Precursor>
 		local
 			a, a_8: like area
