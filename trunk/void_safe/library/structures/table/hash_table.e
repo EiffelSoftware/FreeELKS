@@ -173,7 +173,7 @@ feature -- Access
 					l_deleted_marks := deleted_marks
 					l_capacity := capacity
 					stop := l_capacity
-					hash_value := key.hash_code
+					hash_value := hash_code_of (key)
 					increment := 1 + hash_value \\ (l_capacity - 1)
 					l_item_pos := (hash_value \\ l_capacity) - increment
 				until
@@ -237,7 +237,7 @@ feature -- Access
 					l_deleted_marks := deleted_marks
 					l_capacity := capacity
 					stop := l_capacity
-					hash_value := key.hash_code
+					hash_value := hash_code_of (key)
 					increment := 1 + hash_value \\ (l_capacity - 1)
 					l_item_pos := (hash_value \\ l_capacity) - increment
 				until
@@ -394,6 +394,15 @@ feature -- Access
 			-- <Precursor>
 		do
 			Result := content.item (i)
+		end
+
+	hash_code_of (a_key: attached K): INTEGER
+			-- Hash_code value associated to `a_key'.
+		do
+				-- Default implementation uses `{HASHABLE}.hash_code'.
+			Result := a_key.hash_code
+		ensure
+			non_negative: Result >= 0
 		end
 
 feature -- Measurement
@@ -1427,7 +1436,7 @@ feature {NONE} -- Implementation
 					l_deleted_marks := deleted_marks
 					l_capacity := capacity
 					stop := l_capacity
-					hash_value := key.hash_code
+					hash_value := hash_code_of (key)
 					increment := 1 + hash_value \\ (l_capacity - 1)
 					l_item_pos := (hash_value \\ l_capacity) - increment
 					control := not_found_constant
@@ -1499,7 +1508,7 @@ feature {NONE} -- Implementation
 					l_deleted_marks := deleted_marks
 					l_capacity := capacity
 					stop := l_capacity
-					hash_value := key.hash_code
+					hash_value := hash_code_of (key)
 					increment := 1 + hash_value \\ (l_capacity - 1)
 					l_item_pos := (hash_value \\ l_capacity) - increment
 				until
