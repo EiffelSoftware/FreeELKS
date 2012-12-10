@@ -1121,7 +1121,7 @@ feature -- UTF-32 to UTF-16
 			from
 				n := end_pos - start_pos + 1
 				l_count := p.count
-				if l_count + p_offset < (n + 1) * 2 then
+				if l_count - p_offset < (n + 1) * 2 then
 					l_count := (n + 1) * 2 + p_offset
 					p.resize (l_count)
 				end
