@@ -616,16 +616,18 @@ feature -- UTF-8 to UTF-32
 								((c1.as_natural_32 & 0x1F) |<< 6) |
 								(c2.as_natural_32 & 0x3F)
 								).to_character_32)
-							i := i + 1
+							i := i + 2
 						else
 								-- Invalid UTF-8 sequence, we escape the first byte
 								-- and try with the next one to see if it is the starting
 								-- byte of a valid UTF-8 sequence.
 							escape_code_into (a_result, c1)
+							i := i + 1
 						end
 					else
 							-- Invalid UTF-8 sequence, we escape the first byte.
 						escape_code_into (a_result, c1)
+						i := i + 1
 					end
 				elseif (c1 & 0xF0) = 0xE0 then
 					if i + 1 < end_pos then
@@ -646,16 +648,18 @@ feature -- UTF-8 to UTF-32
 									-- to check for this character since its UTF-8 encoding is made of 3 bytes.
 								a_result.extend (l_last_char)
 							end
-							i := i + 2
+							i := i + 3
 						else
 								-- Invalid UTF-8 sequence, we escape the first byte
 								-- and try with the next one to see if it is the starting
 								-- byte of a valid UTF-8 sequence.
 							escape_code_into (a_result, c1)
+							i := i + 1
 						end
 					else
 							-- Invalid UTF-8 sequence.
 						escape_code_into (a_result, c1)
+						i := i + 1
 					end
 				elseif (c1 & 0xF8) = 0xF0 then
 					if i + 2 < end_pos then
@@ -671,21 +675,24 @@ feature -- UTF-8 to UTF-32
 								((c3.as_natural_32 & 0x3F) |<< 6) |
 								(c4.as_natural_32 & 0x3F)
 								).to_character_32)
-							i := i + 3
+							i := i + 4
 						else
 								-- Invalid UTF-8 sequence, we escape the first byte
 								-- and try with the next one to see if it is the starting
 								-- byte of a valid UTF-8 sequence.
 							escape_code_into (a_result, c1)
+							i := i + 1
 						end
 					else
 							-- Invalid UTF-8 sequence.
 						escape_code_into (a_result, c1)
+						i := i + 1
 					end
 
 				else
 						-- Clearly invalid UTF-8
 					escape_code_into (a_result, c1)
+					i := i + 1
 				end
 			end
 		end
