@@ -435,11 +435,11 @@ feature {NONE} -- Implementation
 			"[
 				if (eif_environ) {
 					#ifdef EIF_WINDOWS
-						LPWSTR vars = (LPWSTR) eif_environ;
+						EIF_NATIVE_CHAR *vars = (EIF_NATIVE_CHAR *) eif_environ;
 						int cnt = 0;
-						while (*vars) {
+						for (; *vars; vars++) {
 						   if ($i==cnt) return vars;
-						   vars = vars + wcslen(vars) + 1;
+						   while (*vars) { vars++; }
 						   cnt++;
 						}
 						return NULL;
