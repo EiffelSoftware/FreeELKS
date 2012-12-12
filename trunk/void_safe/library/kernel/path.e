@@ -449,12 +449,18 @@ feature -- Access
 								-- Path is not absolute but has a root, it can only be a drive letter.
 								-- Now we have to resolve "c:something\file.txt" using the current working
 								-- directory of the "c:" drive.
-							if attached env.current_working_path as l_env_root and then l_env_root.same_as (l_root) then
+							if attached env.current_working_path as l_env_root and then l_root.same_as (l_env_root) then
 									-- Same root so we simply append.
 								Result := l_env_root
 							else
 									-- There is no way we can figure this out, so we simply append to the current root.
 								Result := l_root
+							end
+							across components as l_c loop
+									-- We skip the root and append all the remaining components.
+								if not l_c.is_first then
+									internal_path_append_into (Result.storage, l_c.item.storage, True)
+								end
 							end
 						else
 								-- Case of either "abc\dev" or "\abc\def"	
@@ -468,12 +474,14 @@ feature -- Access
 							else
 								Result := env.current_working_path
 							end
+								-- Now that we have built a valid path, we just append the relative one.
+							internal_path_append_into (Result.storage, storage, True)
 						end
 					else
 						Result := env.current_working_path
+							-- Now that we have built a valid path, we just append the relative one.
+						internal_path_append_into (Result.storage, storage, True)
 					end
-						-- Now that we have built a valid path, we just append the relative one.
-					internal_path_append_into (Result.storage, storage, True)
 					Result.reset_internal_data
 				end
 			end
@@ -620,12 +628,14 @@ feature -- Status setting
 
 feature -- Comparison
 
-	same_as (other: PATH): BOOLEAN
+	same_as (other: detachable PATH): BOOLEAN
 			-- Is Current the same path as `other'?
 			-- Note that no canonicalization is being performed to compare paths,
 			-- paths are compared using the OS-specific convention for letter case.
 		do
-			if other = Current then
+			if other = Void then
+					-- False by definition.
+			elseif other = Current then
 				Result := True
 			else
 					-- Depending on the OS specific setting.
