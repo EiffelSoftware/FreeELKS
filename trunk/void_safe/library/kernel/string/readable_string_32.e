@@ -379,7 +379,7 @@ feature -- Comparison
 						i = nb
 					loop
 						c1 := l_prop.to_lower (l_area.item (i))
-						c2 := l_prop.to_lower (l_other_area.item (i))
+						c2 := l_prop.to_lower (l_other_area.item (j))
 						if c1 /= c2 then
 							Result := False
 							i := nb - 1 -- Jump out of loop
