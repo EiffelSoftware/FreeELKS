@@ -351,7 +351,7 @@ feature -- Comparison
 
 		end
 
-	is_case_insensitive_equal (other: like Current): BOOLEAN
+	is_case_insensitive_equal (other: READABLE_STRING_32): BOOLEAN
 			-- Is string made of same character sequence as `other' regardless of casing
 			-- (possibly with a different capacity)?
 		require
@@ -391,7 +391,7 @@ feature -- Comparison
 			end
 		ensure
 			symmetric: Result implies other.is_case_insensitive_equal (Current)
-			consistent: standard_is_equal (other) implies Result
+			consistent: attached {like Current} other as l_other implies (standard_is_equal (l_other) implies Result)
 			valid_result: as_lower ~ other.as_lower implies Result
 		end
 
