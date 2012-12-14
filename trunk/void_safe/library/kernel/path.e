@@ -152,7 +152,7 @@ feature {NONE} -- Initialization
 			create storage.make (a_path.count * unit_size)
 			if not a_path.is_empty then
 					-- We start from nothing, so we do not add a directory separator regardless.
-				internal_append_into (storage, a_path, False)
+				internal_append_into (storage, a_path, '%U')
 			end
 			reset_internal_data
 		ensure
@@ -315,6 +315,12 @@ feature -- Status report
 			Result := c_same_files (l_p1.item, l_p2.item)
 		end
 
+	has_extension (a_ext: READABLE_STRING_GENERAL): BOOLEAN
+			-- Does `Current' has an extension `a_ext' compared in a case insensitive manner?
+		do
+			Result := attached extension as l_ext and then l_ext.is_case_insensitive_equal_general (a_ext)
+		end
+
 feature -- Access
 
 	root: detachable PATH
@@ -397,6 +403,26 @@ feature -- Access
 			end
 		end
 
+	extension: detachable IMMUTABLE_STRING_32
+			-- Extension if any of current entry.
+		local
+			l_name: like name
+			l_pos, nb: INTEGER
+		do
+			if attached entry as l_entry then
+				l_name := l_entry.name
+				nb := l_name.count
+				l_pos := l_name.last_index_of ('.', nb)
+				if l_pos /= 0 and l_pos /= nb then
+						-- Only create the extension if it is not empty.
+					Result := l_name.shared_substring (l_pos + 1, nb)
+				end
+			end
+		ensure
+			not_empty: attached Result implies not Result.is_empty
+			no_dot: attached Result implies not Result.has ('.')
+		end
+
 	components: ARRAYED_LIST [PATH]
 			-- Sequence of simple paths making up Current, including `root' if any.
 		local
@@ -459,7 +485,7 @@ feature -- Access
 							across components as l_c loop
 									-- We skip the root and append all the remaining components.
 								if not l_c.is_first then
-									internal_path_append_into (Result.storage, l_c.item.storage, True)
+									internal_path_append_into (Result.storage, l_c.item.storage, directory_separator)
 								end
 							end
 						else
@@ -475,12 +501,12 @@ feature -- Access
 								Result := env.current_working_path
 							end
 								-- Now that we have built a valid path, we just append the relative one.
-							internal_path_append_into (Result.storage, storage, True)
+							internal_path_append_into (Result.storage, storage, directory_separator)
 						end
 					else
 						Result := env.current_working_path
 							-- Now that we have built a valid path, we just append the relative one.
-						internal_path_append_into (Result.storage, storage, True)
+						internal_path_append_into (Result.storage, storage, directory_separator)
 					end
 					Result.reset_internal_data
 				end
@@ -511,7 +537,7 @@ feature -- Access
 				from
 					l_components.start
 						-- Record `root' and move to the next item in the list
-					internal_path_append_into (l_storage, l_components.item.storage, True)
+					internal_path_append_into (l_storage, l_components.item.storage, directory_separator)
 					l_components.remove
 				until
 					l_components.after
@@ -533,7 +559,7 @@ feature -- Access
 					end
 				end
 				across l_components as l_component loop
-					internal_path_append_into (l_storage, l_component.item.storage, True)
+					internal_path_append_into (l_storage, l_component.item.storage, directory_separator)
 				end
 				create Result.make_from_storage (l_storage)
 			else
@@ -564,6 +590,20 @@ feature -- Access
 			set: Result.raw_string.same_string (storage)
 		end
 
+	unix_separator: CHARACTER = '/'
+	windows_separator: CHARACTER = '\'
+			-- Platform specific directory separator.
+
+	directory_separator: CHARACTER
+			-- Default directory separator for the current platform.
+		do
+			if {PLATFORM}.is_windows then
+				Result := windows_separator
+			else
+				Result := unix_separator
+			end
+		end
+
 feature -- Status setting
 
 	extended (a_name: READABLE_STRING_GENERAL): PATH
@@ -575,8 +615,18 @@ feature -- Status setting
 			a_name_not_void: a_name /= Void
 			a_name_not_empty: not a_name.is_empty
 			a_name_has_no_root: not is_empty implies not (create {PATH}.make_from_string (a_name)).has_root
+		local
+			l_storage: like storage
 		do
-			Result := extended_path (create {PATH}.make_from_string (a_name))
+				-- Pre-allocate all the bytes necessary to store the combination of `Current'
+				-- and `a_extra'.
+			create l_storage.make (storage.count + a_name.count * unit_size + unit_size)
+				-- Get a copy of `storage' from Current'
+			l_storage.append (storage)
+				-- Append `a_name' with the directory separator.
+			internal_append_into (l_storage, a_name, directory_separator)
+				-- Create a new PATH instance.
+			create Result.make_from_storage (l_storage)
 		ensure
 			not_empty: not Result.is_empty
 		end
@@ -597,7 +647,7 @@ feature -- Status setting
 				-- Get a copy of `storage' from Current'
 			l_storage.append (storage)
 				-- Append `a_path.storage' to `l_storage'.
-			internal_path_append_into (l_storage, a_path.storage, True)
+			internal_path_append_into (l_storage, a_path.storage, directory_separator)
 				-- Create a new PATH instance.
 			create Result.make_from_storage (l_storage)
 		ensure
@@ -619,11 +669,36 @@ feature -- Status setting
 				-- Get a copy of `storage' from Current'
 			l_storage.append (storage)
 				-- Append `a_extra'.
-			internal_append_into (l_storage, a_extra, False)
+			internal_append_into (l_storage, a_extra, '%U')
 				-- Create a new PATH instance.
 			create Result.make_from_storage (l_storage)
 		ensure
 			not_empty: not Result.is_empty
+		end
+
+	appended_with_extension (a_ext: READABLE_STRING_GENERAL): PATH
+			-- New path instance of current where `entry' is extended with a dot followed by `a_ext'.
+			-- If Current already has a dot, no dot is added.
+		require
+			a_ext_not_void: a_ext /= Void
+			a_ext_not_empty: not a_ext.is_empty
+			a_ext_has_no_directory_separator: not a_ext.has (windows_separator) and not a_ext.has (unix_separator)
+			has_entry: entry /= Void
+		local
+			l_storage: like storage
+		do
+				-- Pre-allocate all the bytes necessary to store the combination of `Current'
+				-- and `a_extra'.
+			create l_storage.make (storage.count + a_ext.count * unit_size + unit_size)
+				-- Get a copy of `storage' from Current'
+			l_storage.append (storage)
+				-- Append a dot if not already present and then `a_extra'.
+			internal_append_into (l_storage, a_ext, '.')
+				-- Create a new PATH instance.
+			create Result.make_from_storage (l_storage)
+		ensure
+			not_empty: not Result.is_empty
+			extension_set: attached Result.extension as l_ext and then l_ext.same_string_general (a_ext)
 		end
 
 feature -- Comparison
@@ -982,8 +1057,9 @@ feature {NONE} -- Implementation
 			valid_windows_separator: {PLATFORM}.is_windows implies storage.item (Result + 1) = '%U'
 		end
 
-	internal_append_into (a_storage: STRING_8; other: READABLE_STRING_GENERAL; a_add_separator: BOOLEAN)
-			-- Append `other' to Current, and add a separator if `a_add_separator'.
+	internal_append_into (a_storage: STRING_8; other: READABLE_STRING_GENERAL; a_separator: CHARACTER)
+			-- Append `a_separator' if different from '%U' and not already present as last character
+			-- in `a_storage', and then `other' to Current.
 			--| Replace all `/' into `\' on Windows platform.
 			--| Remove trailing directory separators (if any).
 		require
@@ -1047,13 +1123,13 @@ feature {NONE} -- Implementation
 				else
 					l_extra_storage := u.escaped_utf_32_string_to_utf_8_string_8 (l_other)
 				end
-				internal_path_append_into (a_storage, l_extra_storage, a_add_separator)
+				internal_path_append_into (a_storage, l_extra_storage, a_separator)
 			end
 		end
 
-	internal_path_append_into (a_storage, other: STRING_8; a_add_separator: BOOLEAN)
-			-- Append `other' in the same format as `a_storage' to `a_storage',
-			-- and add a separator if `a_add_separator'.	
+	internal_path_append_into (a_storage, other: STRING_8; a_separator: CHARACTER)
+			-- Append `a_separator' if other than '%U' and not already present as last character
+			-- of `a_storage', and then `other' in the same format as `a_storage' to `a_storage'.
 		require
 			other_not_void: other /= Void
 			other_not_empty: not other.is_empty
@@ -1061,35 +1137,21 @@ feature {NONE} -- Implementation
 		local
 			l_add_separator: BOOLEAN
 		do
-			l_add_separator := a_add_separator
+			l_add_separator := a_separator /= '%U'
 			if l_add_separator and not a_storage.is_empty then
 				if {PLATFORM}.is_windows then
-					l_add_separator := not (a_storage.item (a_storage.count - 1) = windows_separator and a_storage.item (a_storage.count) = '%U')
+					l_add_separator := not (a_storage.item (a_storage.count - 1) = a_separator and a_storage.item (a_storage.count) = '%U')
 				else
-					l_add_separator := a_storage.item (a_storage.count) /= unix_separator
+					l_add_separator := a_storage.item (a_storage.count) /= a_separator
 				end
 				if l_add_separator then
-					a_storage.extend (directory_separator)
+					a_storage.extend (a_separator)
 					if {PLATFORM}.is_windows then
 						a_storage.extend ('%U')
 					end
 				end
 			end
 			a_storage.append (other)
-		end
-
-	unix_separator: CHARACTER = '/'
-	windows_separator: CHARACTER = '\'
-			-- Platform specific directory separator.
-
-	directory_separator: CHARACTER
-			-- Default directory separator for the current platform.
-		do
-			if {PLATFORM}.is_windows then
-				Result := windows_separator
-			else
-				Result := unix_separator
-			end
 		end
 
 	unit_size: INTEGER
