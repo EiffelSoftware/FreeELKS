@@ -23,16 +23,6 @@ inherit
 			is_equal
 		end
 
-feature {NONE} -- Initialization
-
-	make_from_path (a_path: PATH)
-			-- Create a path name from `a_path'.
-			-- This is a temporary method to ease migration to PATH
-		obsolete "Use directly the class PATH [2012-oct]"
-		do
-			make_from_string (a_path.name.as_string_8)
-		end
-
 feature -- Comparison
 
 	is_equal (other: like Current): BOOLEAN

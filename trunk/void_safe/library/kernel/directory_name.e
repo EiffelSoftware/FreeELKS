@@ -12,7 +12,7 @@ inherit
 	PATH_NAME
 
 create
-	make, make_from_string, make_from_path
+	make, make_from_string
 
 create {DIRECTORY_NAME}
 	string_make
