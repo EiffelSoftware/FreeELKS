@@ -8,7 +8,7 @@ note
 	date: "$Date$"
 	revision: "$Revision$"
 
-class CHARACTER_32_PROPERTY
+class CHARACTER_PROPERTY
 
 create
 	make

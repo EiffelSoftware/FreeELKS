@@ -268,7 +268,7 @@ feature -- Status report
 
 feature {NONE} -- Implementation
 
-	properties: CHARACTER_32_PROPERTY
+	properties: CHARACTER_PROPERTY
 			-- Property for Unicode characters.
 		once
 			create Result.make

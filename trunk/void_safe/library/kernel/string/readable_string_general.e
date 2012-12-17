@@ -391,8 +391,8 @@ feature -- Status report
 			-- Does `Current' represent a BOOLEAN?
 		deferred
 		ensure
-			is_boolean: Result = (true_constant.same_string (as_lower.as_string_8) or
-				false_constant.same_string (as_lower.as_string_8))
+			is_boolean: Result = (true_constant.same_string_general (as_lower) or
+				false_constant.same_string_general (as_lower))
 		end
 
 	is_integer_8: BOOLEAN
@@ -1008,7 +1008,7 @@ feature {NONE} -- Implementation
 			dotnet_convertor_not_void: Result /= Void
 		end
 
-	character_properties: CHARACTER_32_PROPERTY
+	character_properties: CHARACTER_PROPERTY
 			-- Access to Unicode character properties
 		once
 			create Result.make
