@@ -291,7 +291,7 @@ feature -- Access
 			loop
 				ns.set_shared_from_pointer (l_ptr)
 				if attached separated_variables (ns.string) as l_curr_var then
-					Result.force (l_curr_var.value.to_string_8, l_curr_var.key.to_string_8)
+					Result.force (l_curr_var.value.as_string_8, l_curr_var.key.as_string_8)
 				end
 				i := i + 1
 				l_ptr := i_th_environ (i)
