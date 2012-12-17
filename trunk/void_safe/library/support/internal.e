@@ -48,7 +48,7 @@ feature -- Conformance
 
 feature -- Creation
 
-	dynamic_type_from_string (class_type: STRING): INTEGER
+	dynamic_type_from_string (class_type: READABLE_STRING_GENERAL): INTEGER
 			-- Dynamic type corresponding to `class_type'.
 			-- If no dynamic type available, returns -1.
 		require
@@ -978,7 +978,7 @@ feature -- Marking
 
 feature {NONE} -- Cached data
 
-	internal_dynamic_type_string_table: HASH_TABLE [INTEGER, STRING]
+	internal_dynamic_type_string_table: STRING_TABLE [INTEGER]
 			-- Table of dynamic type indexed by type name
 		once
 			create Result.make (100)
