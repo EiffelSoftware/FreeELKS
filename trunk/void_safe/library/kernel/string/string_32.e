@@ -224,14 +224,14 @@ feature -- Element change
 		require
 			argument_not_void: t /= Void
 		local
-			s: STRING_32
+			s: READABLE_STRING_32
 		do
 			s := t.substring (n1, n2)
 			area := s.area
 			count := s.count
 			internal_hash_code := 0
 		ensure
-			is_substring: Current ~ (t.substring (n1, n2))
+			is_substring: same_string (t.substring (n1, n2))
 		end
 
 	subcopy (other: READABLE_STRING_32; start_pos, end_pos, index_pos: INTEGER)
@@ -638,7 +638,7 @@ feature -- Element change
 			insert_string (s, 1)
 		ensure
 			new_count: count = old (count + s.count)
-			inserted: elks_checking implies string ~ (old (s.twin.as_string_32) + old substring (1, count))
+			inserted: elks_checking implies string.same_string (old (s.twin) + old substring (1, count))
 		end
 
 	prepend_boolean (b: BOOLEAN)
