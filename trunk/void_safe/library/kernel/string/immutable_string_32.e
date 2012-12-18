@@ -27,7 +27,7 @@ inherit
 			ends_with as ends_with_general,
 			is_case_insensitive_equal as is_case_insensitive_equal_general
 		undefine
-			is_equal, out, copy, has, index_of, last_index_of
+			is_equal, out, copy, has, index_of, last_index_of, occurrences
 		end
 
 create

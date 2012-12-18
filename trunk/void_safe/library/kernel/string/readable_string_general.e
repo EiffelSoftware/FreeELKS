@@ -183,20 +183,6 @@ feature -- Status report
 			Result := False
 		end
 
-	count: INTEGER
-			-- Number of characters in Current
-		deferred
-		ensure
-			count_non_negative: Result >= 0
-		end
-
-	capacity: INTEGER
-			-- Number of characters allocated in Current
-		deferred
-		ensure
-			capacity_non_negative: Result >= 0
-		end
-
 	valid_index (i: INTEGER): BOOLEAN
 			-- Is `i' within the bounds of the string?
 		do
@@ -442,6 +428,50 @@ feature -- Status report
 			-- Does `Current' represent a NATURAL_64?
 		do
 			Result := is_valid_integer_or_natural ({NUMERIC_INFORMATION}.type_natural_64)
+		end
+
+feature -- Measurement
+
+	count: INTEGER
+			-- Number of characters in Current
+		deferred
+		ensure
+			count_non_negative: Result >= 0
+		end
+
+	capacity: INTEGER
+			-- Number of characters allocated in Current
+		deferred
+		ensure
+			capacity_non_negative: Result >= 0
+		end
+
+	occurrences (c: CHARACTER_32): INTEGER
+			-- Number of times `c' appears in the string
+		local
+			i, nb: INTEGER
+		do
+			nb := count
+			if nb > 0 then
+				from
+					i := 1
+				until
+					i > nb
+				loop
+					if item (i) = c then
+						Result := Result + 1
+					end
+					i := i + 1
+				end
+			end
+		ensure then
+			zero_if_empty: count = 0 implies Result = 0
+			recurse_if_not_found_at_first_position:
+				(count > 0 and then item (1) /= c) implies
+					Result = substring (2, count).occurrences (c)
+			recurse_if_found_at_first_position:
+				(count > 0 and then item (1) = c) implies
+					Result = 1 + substring (2, count).occurrences (c)
 		end
 
 feature -- Comparison
