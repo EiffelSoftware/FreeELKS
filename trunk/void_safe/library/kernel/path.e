@@ -317,6 +317,8 @@ feature -- Status report
 
 	has_extension (a_ext: READABLE_STRING_GENERAL): BOOLEAN
 			-- Does `Current' has an extension `a_ext' compared in a case insensitive manner?
+		require
+			no_dot: not a_ext.has ('.')
 		do
 			Result := attached extension as l_ext and then l_ext.is_case_insensitive_equal_general (a_ext)
 		end
@@ -340,8 +342,8 @@ feature -- Access
 			has_root_implies_not_void: has_root implies Result /= Void
 		end
 
-	parent: detachable PATH
-			-- Parent directory if any.
+	parent: PATH
+			-- Parent directory if any, otherwise current working path.
 			-- The parent of a path consists of `root' if any, and of each
 			-- simple names in the current sequence except for the last.
 		local
@@ -349,19 +351,26 @@ feature -- Access
 		do
 			l_pos := position_of_last_directory_separator (True)
 				-- Only create
-			if l_pos = 0 and {PLATFORM}.is_windows then
+			if l_pos = 0 then
 				if attached root as l_root then
 						-- Case of a path like "C:abc.txt", the parent is "C:"
+					check is_windows: {PLATFORM}.is_windows end
 					Result := l_root
+				else
+					create Result.make_current
 				end
 			elseif l_pos = 1 then
 					-- Case where we have "/usr" or "\Windows", the parent is just the root "/" or "\"
 				create Result.make_from_storage (storage.substring (1, unit_size))
-			elseif l_pos > 1 then
+			else
 				if l_pos <= root_end_position then
 						-- Case where we have "\\server\share", we cannot cut this path into just "\\server".
 					check is_windows: {PLATFORM}.is_windows end
-					Result := root
+					if attached root as l_root then
+						Result := l_root
+					else
+						create Result.make_current
+					end
 				else
 					create Result.make_from_storage (storage.substring (1, l_pos - 1))
 				end
