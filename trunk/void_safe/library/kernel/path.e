@@ -784,9 +784,16 @@ feature -- Duplication
 feature -- Output
 
 	out: STRING_8
-			-- ASCII representation of the underlying filename, by default if the current path
-			-- has a valid Unicode representation, it is the associated UTF-8 version, otherwise
-			-- the raw sequence.
+			-- ASCII representation of the underlying filename if representable,
+			-- otherwise a UTF-8 encoded version.
+			-- Use `utf_8_name' to have a printable representation whose format is not going
+			-- to be changed in the future.
+		do
+			Result := utf_8_name
+		end
+
+	utf_8_name: STRING_8
+			-- UTF-8 representation of the underlying filename.
 		local
 			u: UTF_CONVERTER
 		do
@@ -816,16 +823,6 @@ feature -- Output
 			end
 		ensure
 			roundtrip: same_as (create {PATH}.make_from_string (Result))
-		end
-
-	string_representation_8: STRING_8
-		obsolete
-			"Use `name' instead."
-		require
-			is_representable: is_representable
-			is_valid_extended_ascii: name.is_valid_as_string_8
-		do
-			Result := name.as_string_8
 		end
 
 feature {NONE} -- Output
