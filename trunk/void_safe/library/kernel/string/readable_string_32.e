@@ -20,7 +20,7 @@ inherit
 			ends_with as ends_with_general,
 			is_case_insensitive_equal as is_case_insensitive_equal_general
 		redefine
-			copy, is_equal, out, has, index_of, last_index_of
+			copy, is_equal, out, has, index_of, last_index_of, occurrences
 		end
 
 	READABLE_INDEXABLE [CHARACTER_32]

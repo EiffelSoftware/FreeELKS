@@ -31,7 +31,8 @@ inherit
 			item as character_32_item,
 			has as character_32_has,
 			index_of as character_32_index_of,
-			last_index_of as character_32_last_index_of
+			last_index_of as character_32_last_index_of,
+			occurrences as character_32_occurrences
 		undefine
 			copy, is_equal, out
 		redefine

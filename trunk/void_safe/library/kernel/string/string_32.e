@@ -29,7 +29,7 @@ inherit
 			ends_with as ends_with_general,
 			is_case_insensitive_equal as is_case_insensitive_equal_general
 		undefine
-			copy, is_equal, out, has, index_of, last_index_of
+			copy, is_equal, out, has, index_of, last_index_of, occurrences
 		redefine
 			append_string_general,
 			prepend_string_general
