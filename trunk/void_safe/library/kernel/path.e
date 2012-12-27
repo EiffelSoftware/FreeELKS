@@ -463,7 +463,7 @@ feature -- Access
 			-- Absolute path of Current.
 			-- If Current is already absolute, then return Current.
 			-- If Current is empty, then return the current working directory.
-			-- Otherwise resolve the current path in a platform specific way:
+			-- Otherwise resolve the path in a platform specific way:
 			-- * On UNIX, resolve against the current working directory
 			-- * On Windows:
 			--    a) if current has a drive letter which is not followed by "\"
@@ -473,8 +473,27 @@ feature -- Access
 			--       against the root of the current working directory (i.e. a drive
 			--       letter "C:\" or a UNC path "\\server\share\".)
 		do
+			Result := absolute_path_in (env.current_working_path)
+		end
+
+	absolute_path_in (a_current_directory: PATH): PATH
+			-- Absolute path of Current in the context of `a_current_directory'.
+			-- If Current is already absolute, then return Current.
+			-- If Current is empty, then return `a_current_directory'.
+			-- Otherwise resolve the path in a platform specific way:
+			-- * On UNIX, resolve against `a_current_directory'
+			-- * On Windows:
+			--    a) if current has a drive letter which is not followed by "\"
+			--       resolve against `a_current_directory' for that drive letter,
+			--       otherwise resolve against `a_current_directory'.
+			--    b) if current path starts with "\", not a double "\\", then resolve
+			--       against the root of `a_current_directory; (i.e. a drive
+			--       letter "C:\" or a UNC path "\\server\share\".)
+		require
+			a_current_directory_absolute: a_current_directory.is_absolute
+		do
 			if storage.is_empty then
-				Result := env.current_working_path
+				Result := a_current_directory
 			else
 				if is_absolute then
 					Result := Current
@@ -484,9 +503,9 @@ feature -- Access
 								-- Path is not absolute but has a root, it can only be a drive letter.
 								-- Now we have to resolve "c:something\file.txt" using the current working
 								-- directory of the "c:" drive.
-							if attached env.current_working_path as l_env_root and then l_root.same_as (l_env_root) then
+							if l_root.same_as (a_current_directory) then
 									-- Same root so we simply append.
-								Result := l_env_root
+								Result := a_current_directory
 							else
 									-- There is no way we can figure this out, so we simply append to the current root.
 								Result := l_root
@@ -500,20 +519,20 @@ feature -- Access
 						else
 								-- Case of either "abc\dev" or "\abc\def"	
 							if storage.item (1) = '\' and storage.item (2) = '%U' then
-								Result := env.current_working_path
+								Result := a_current_directory
 								if attached Result.root as l_root then
 									Result := l_root
 								else
 										-- The current working path has no root? It is hard to believe.
 								end
 							else
-								Result := env.current_working_path
+								Result := a_current_directory
 							end
 								-- Now that we have built a valid path, we just append the relative one.
 							internal_path_append_into (Result.storage, storage, directory_separator)
 						end
 					else
-						Result := env.current_working_path
+						Result := a_current_directory
 							-- Now that we have built a valid path, we just append the relative one.
 						internal_path_append_into (Result.storage, storage, directory_separator)
 					end
