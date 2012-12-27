@@ -151,7 +151,7 @@ feature -- Element change
 				file.close
 			else
 				create l_io_exception
-				l_io_exception.set_message ("write permission failure")
+				l_io_exception.set_description ("write permission failure")
 				l_io_exception.raise
 			end
 		end

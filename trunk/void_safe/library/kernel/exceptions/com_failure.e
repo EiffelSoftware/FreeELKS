@@ -28,6 +28,12 @@ feature -- Access
 			Result := {EXCEP_CONST}.com_exception
 		end
 
+	tag: IMMUTABLE_STRING_32
+			-- <Precursor>
+		once
+			create Result.make_from_string_8 ("COM error.")
+		end
+
 feature -- Status setting
 
 	set_hresult_code(a_code: like hresult_code)
@@ -77,7 +83,7 @@ feature -- Element Change
 		do
 			hresult_code := a_code
 			l_hresult_string := ccom_hresult_to_string (a_code)
-			set_message (l_hresult_string)
+			set_description (l_hresult_string)
 			set_exception_information (l_hresult_string)
 			raise
 		end
@@ -186,8 +192,6 @@ feature {NONE} -- Accesss
 		ensure
 			error_message_not_void: Result /= Void
 		end
-
-	frozen internal_meaning: STRING = "COM error.";
 
 note
 	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"

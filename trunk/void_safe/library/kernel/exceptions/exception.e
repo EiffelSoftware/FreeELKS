@@ -24,16 +24,16 @@ create
 feature {NONE} -- Initialization
 
 	make_with_tag_and_trace (a_tag, a_trace_string: STRING)
-			-- Make `Current' with `tag' set to `a_tag'.
+			-- Make `Current' with `description' set to `a_tag'.
 		obsolete
-			"Use `default_create' and `set_message' instead."
+			"Use `default_create' and `set_description' instead."
 		require
 			tag_not_void: a_tag /= Void
 			trace_string_not_void: a_trace_string /= Void
 		do
-			set_message (a_tag)
+			set_description (a_tag)
 		ensure
-			tag_set: tag ~ a_tag
+			description_set: attached description as l_des and then a_tag.same_string_general (l_des)
 		end
 
 feature -- Raise
@@ -49,26 +49,56 @@ feature -- Raise
 feature -- Access
 
 	meaning: STRING
-			-- A message in English describing what current exception is
+			-- A short message describing what current exception is
+		obsolete
+			"Use `tag' instead."
 		do
-			Result := internal_meaning
+			Result := tag.as_string_8
+		end
+
+	tag: IMMUTABLE_STRING_32
+			-- A short message describing what current exception is
+		once
+			create Result.make_from_string_8 ("General exception")
 		end
 
 	message: detachable STRING
-			-- Message(Tag) of current exception
-		local
-			m: detachable C_STRING
+			-- Message of current exception
+		obsolete
+			"Use `description' instead."
 		do
-			m := c_message
-			if m /= Void then
-				Result := m.substring (1, m.count)
+			if attached c_description as l_m then
+				Result := l_m.substring (1, l_m.count)
+			end
+		end
+
+	description: detachable READABLE_STRING_GENERAL
+			-- Detailed description of current exception
+		local
+			u: UTF_CONVERTER
+		do
+			if attached c_description as l_m then
+					-- Description is encoded in UTF-8 by the runtime.
+				Result := u.utf_8_0_pointer_to_escaped_string_32 (l_m.managed_data)
 			end
 		end
 
 	exception_trace: detachable STRING
 			-- String representation of current exception trace
+		obsolete
+			"Use `trace' instead."
 		do
 			Result := internal_trace
+		end
+
+	trace: detachable STRING_32
+			-- String representation of current exception trace
+		local
+			u: UTF_CONVERTER
+		do
+			if attached internal_trace as l_trace then
+				Result := u.utf_8_string_8_to_string_32 (l_trace)
+			end
 		end
 
 	code: INTEGER
@@ -118,18 +148,10 @@ feature -- Access
 
 feature -- Access obselete
 
-	tag: detachable STRING
-			-- Exception tag of `Current'
-		obsolete
-			"Use `message' instead."
-		do
-			Result := message
-		end
-
 	trace_as_string: detachable STRING
 			-- Exception trace represented as a string
 		obsolete
-			"Use `exception_trace' instead."
+			"Use `trace' instead."
 		do
 			Result := exception_trace
 		end
@@ -138,14 +160,33 @@ feature -- Status settings
 
 	set_message (a_message: like message)
 			-- Set `message' with `a_message'.
+		obsolete
+			"Use `set_description' instead."
 		do
-			if a_message /= Void then
-				create c_message.make (a_message)
-			else
-				c_message := Void
-			end
+			set_description (a_message)
 		ensure
 			message_set: message ~ a_message
+		end
+
+	set_description (a_description: detachable READABLE_STRING_GENERAL)
+			-- Set `description' with `a_description'.
+		local
+			u: UTF_CONVERTER
+			l_upper: CELL [INTEGER]
+			l_c: like c_description
+		do
+			if a_description /= Void then
+				create l_c.make_empty (a_description.count)
+				create l_upper.put (0)
+				u.utf_32_string_into_utf_8_0_pointer (a_description, l_c.managed_data, 0, l_upper)
+				l_c.set_count (l_upper.item)
+				c_description := l_c
+			else
+				c_description := Void
+			end
+		ensure
+			description_set: (attached a_description as a_des and then attached description as l_des and then l_des.same_string (l_des)) or else
+							(a_description = Void and then description = Void)
 		end
 
 feature -- Status report
@@ -186,13 +227,13 @@ feature -- Output
 			-- New string containing terse printable representation
 			-- of current object
 		local
-			t: detachable STRING
+			t: detachable STRING_32
 		do
 			Result := generating_type
-			t := exception_trace
+			t := trace
 			if t /= Void then
 				Result.append_character ('%N')
-				Result.append_string (t)
+				Result.append_string (t.as_string_8)
 			end
 		end
 
@@ -223,14 +264,18 @@ feature {EXCEPTION_MANAGER} -- Implementation
 			line_number := a_number
 		end
 
-	c_message: detachable C_STRING
-			-- Message, stored as C string to keep it alive and usable by the runtime trace printing.		
-
-	internal_meaning: STRING
-			-- Internal `meaning'
-		once
-			Result := "General exception."
+	frozen set_c_description (a_des: detachable STRING_8)
+			-- Set `c_description' with `a_des'. `a_des' is in UTF-8.
+		do
+			if a_des /= Void then
+				create c_description.make (a_des)
+			else
+				c_description := Void
+			end
 		end
+
+	c_description: detachable C_STRING
+			-- Message, stored as C string to keep it alive and usable by the runtime trace printing.
 
 	frozen set_type_name (a_type: like type_name)
 			-- Set `type_name' with `a_type'

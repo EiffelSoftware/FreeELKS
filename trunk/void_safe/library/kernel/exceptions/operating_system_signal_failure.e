@@ -25,6 +25,12 @@ feature -- Access
 	signal_code: INTEGER
 			-- Signal code
 
+	tag: IMMUTABLE_STRING_32
+			-- <Precursor>
+		once
+			create Result.make_from_string_8 ("Operating system signal.")
+		end
+
 feature {EXCEPTION_MANAGER} -- Status setting
 
 	set_signal_code (a_code: like signal_code)
@@ -32,10 +38,6 @@ feature {EXCEPTION_MANAGER} -- Status setting
 		do
 			signal_code := a_code
 		end
-
-feature {NONE} -- Accesss
-
-	frozen internal_meaning: STRING = "Operating system signal.";
 
 note
 	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"

@@ -15,7 +15,7 @@ inherit
 	EXCEPTION
 		redefine
 			code,
-			internal_meaning
+			tag
 		end
 
 feature -- Access
@@ -26,11 +26,9 @@ feature -- Access
 			Result := {EXCEP_CONST}.developer_exception
 		end
 
-feature {NONE} -- Access
-
-	internal_meaning: STRING
+	tag: IMMUTABLE_STRING_32
 		once
-			Result := "Developer exception."
+			create Result.make_from_string_8 ("Developer exception.")
 		end
 
 note
