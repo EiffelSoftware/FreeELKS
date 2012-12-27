@@ -22,9 +22,11 @@ feature -- Access
 			Result := {EXCEP_CONST}.void_call_target
 		end
 
-feature {NONE} -- Accesss
-
-	frozen internal_meaning: STRING = "Feature call on void target.";
+	tag: IMMUTABLE_STRING_32
+			-- <Precursor>
+		once
+			create Result.make_from_string_8 ("Feature call on void target.")
+		end
 
 note
 	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"

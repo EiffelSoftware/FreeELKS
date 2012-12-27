@@ -22,7 +22,7 @@ feature -- Status report
 			-- A message in English describing what `except' is
 		do
 			if attached exception_manager.exception_from_code (except) as l_exception then
-				Result := l_exception.meaning
+				Result := l_exception.tag.as_string_8
 			end
 		end
 
@@ -56,8 +56,8 @@ feature -- Status report
 		require
 			applicable: is_developer_exception
 		do
-			if attached exception_manager.last_exception as l_exception then
-				Result := l_exception.original.message
+			if attached exception_manager.last_exception as l_exception and then attached l_exception.original.description as l_des then
+				Result := l_des.as_string_8
 			end
 		end
 
@@ -85,8 +85,8 @@ feature -- Status report
 	tag_name: detachable STRING
 			-- Tag of last violated assertion clause
 		do
-			if attached exception_manager.last_exception as l_exception then
-				Result := l_exception.message
+			if attached exception_manager.last_exception as l_exception and then attached l_exception.description as l_des then
+				Result := l_des.as_string_8
 			end
 		end
 
@@ -119,8 +119,8 @@ feature -- Status report
 	exception_trace: detachable STRING
 			-- String representation of the exception trace
 		do
-			if attached exception_manager.last_exception as l_exception then
-				Result := l_exception.original.exception_trace
+			if attached exception_manager.last_exception as l_exception and then attached l_exception.original.trace as l_trace then
+				Result := l_trace.as_string_8
 			end
 		end
 
@@ -128,8 +128,8 @@ feature -- Status report
 			-- Assertion tag for original form of last
 			-- assertion violation.
 		do
-			if attached exception_manager.last_exception as l_exception then
-				Result := l_exception.cause.original.message
+			if attached exception_manager.last_exception as l_exception and then attached l_exception.cause.original.description as l_des then
+				Result := l_des.as_string_8
 			end
 		end
 
@@ -186,7 +186,7 @@ feature -- Status setting
 			l_exception: DEVELOPER_EXCEPTION
 		do
 			create l_exception
-			l_exception.set_message (name)
+			l_exception.set_description (name)
 			l_exception.raise
 		end
 
@@ -194,7 +194,7 @@ feature -- Status setting
 			-- Raise a retrieval exception of name `name'.
 		do
 			if attached exception_manager.exception_from_code (serialization_exception) as l_exception then
-				l_exception.set_message (name)
+				l_exception.set_description (name)
 				l_exception.raise
 			end
 		end

@@ -22,9 +22,11 @@ feature -- Access
 			Result := {EXCEP_CONST}.loop_invariant
 		end
 
-feature {NONE} -- Accesss
-
-	frozen internal_meaning: STRING = "Loop invariant violated.";
+	tag: IMMUTABLE_STRING_32
+			-- <Precursor>
+		once
+			create Result.make_from_string_8 ("Loop invariant violated.")
+		end
 
 note
 	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"

@@ -22,9 +22,11 @@ feature -- Access
 			Result := {EXCEP_CONST}.loop_variant
 		end
 
-feature {NONE} -- Accesss
-
-	frozen internal_meaning: STRING = "Non-decreasing loop variant or negative value reached.";
+	tag: IMMUTABLE_STRING_32
+			-- <Precursor>
+		once
+			create Result.make_from_string_8 ("Non-decreasing loop variant or negative value reached.")
+		end
 
 note
 	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"

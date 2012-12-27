@@ -25,6 +25,12 @@ feature -- Access
 	error_code: INTEGER
 			-- Error code
 
+	tag: IMMUTABLE_STRING_32
+			-- <Precursor>
+		once
+			create Result.make_from_string_8 ("Operating system error.")
+		end
+
 feature {EXCEPTION_MANAGER} -- Status setting
 
 	set_error_code (a_code: like error_code)
@@ -32,10 +38,6 @@ feature {EXCEPTION_MANAGER} -- Status setting
 		do
 			error_code := a_code
 		end
-
-feature {NONE} -- Accesss
-
-	frozen internal_meaning: STRING = "Operating system error.";
 
 note
 	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"

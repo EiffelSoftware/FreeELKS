@@ -28,6 +28,12 @@ feature -- Access
 			Result := {EXCEP_CONST}.routine_failure
 		end
 
+	tag: IMMUTABLE_STRING_32
+			-- <Precursor>
+		once
+			create Result.make_from_string_8 ("Routine failure.")
+		end
+
 feature {EXCEPTION_MANAGER} -- Element change
 
 	frozen set_routine_name (a_routine_name: like routine_name)
@@ -45,10 +51,6 @@ feature {EXCEPTION_MANAGER} -- Element change
 		ensure
 			class_name_set: class_name = a_class_name
 		end
-
-feature {NONE} -- Accesss
-
-	frozen internal_meaning: STRING = "Routine failure.";
 
 note
 	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"

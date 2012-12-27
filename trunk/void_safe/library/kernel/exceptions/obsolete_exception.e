@@ -15,7 +15,7 @@ inherit
 	EXCEPTION
 		undefine
 			code,
-			internal_meaning
+			tag
 		end
 
 note

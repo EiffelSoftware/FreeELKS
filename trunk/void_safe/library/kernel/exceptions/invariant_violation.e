@@ -32,9 +32,11 @@ feature {EXCEPTION_MANAGER} -- Element change
 			is_entry_set: is_entry = a_is_entry
 		end
 
-feature {NONE} -- Accesss
-
-	frozen internal_meaning: STRING = "Class invariant violated."
+	tag: IMMUTABLE_STRING_32
+			-- <Precursor>
+		once
+			create Result.make_from_string_8 ("Class invariant violated.")
+		end
 
 feature -- Status report
 
