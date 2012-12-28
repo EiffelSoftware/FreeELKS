@@ -24,7 +24,7 @@ feature -- Status report
 			l_type_name: STRING_32
 			l_start_pos, l_end_pos: INTEGER
 			l_class_type_name: STRING_32
-			l_parameters: detachable ARRAYED_LIST [STRING_32]
+			l_parameters: like parameters_decomposition
 		do
 			if s /= Void and then not s.is_empty then
 				create l_class_type_name.make_from_string_general (s)
@@ -162,7 +162,7 @@ feature {NONE} -- Implementation: status report
 
 feature {NONE} -- Decompose string type
 
-	parameters_decomposition (a_str: READABLE_STRING_32): detachable ARRAYED_LIST [STRING_32]
+	parameters_decomposition (a_str: READABLE_STRING_32): detachable ARRAYED_LIST [READABLE_STRING_32]
 			-- Decompose `a_str' which should be of the form "A, B, D [G], H [E ,F]"
 			-- into a list of strings "A", "B", "D [G]", "H [E, F]"
 			-- If decomposition is not possible, Void.
@@ -173,10 +173,9 @@ feature {NONE} -- Decompose string type
 			l_invalid: BOOLEAN
 			l_first_pos: INTEGER
 			l_nesting: INTEGER
-			r: ARRAYED_LIST [STRING_32]
 		do
 			from
-				create r.make (5)
+				create Result.make (5)
 				i := 1
 				l_first_pos := 1
 				nb := a_str.count
@@ -187,7 +186,7 @@ feature {NONE} -- Decompose string type
 					a_str.item (i)
 				when ',' then
 					if l_nesting = 0 then
-						r.extend (a_str.substring (l_first_pos, i - 1))
+						Result.extend (a_str.substring (l_first_pos, i - 1))
 						l_first_pos := i + 1
 					end
 				when '[' then
@@ -201,8 +200,9 @@ feature {NONE} -- Decompose string type
 				i := i + 1
 			end
 			if not l_invalid and then l_nesting = 0 then
-				r.extend (a_str.substring (l_first_pos, i - 1))
-				Result := r
+				Result.extend (a_str.substring (l_first_pos, i - 1))
+			else
+				Result := Void
 			end
 		end
 
