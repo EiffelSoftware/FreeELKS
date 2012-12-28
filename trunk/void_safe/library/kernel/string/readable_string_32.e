@@ -701,7 +701,7 @@ feature -- Output
 			Result.append (as_string_8)
 		ensure then
 			out_not_void: Result /= Void
-			same_items: same_type ("") implies same_string (Result)
+			same_items: same_type ("") implies same_string_general (Result)
 		end
 
 feature {NONE} -- Implementation
