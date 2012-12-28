@@ -76,10 +76,13 @@ feature -- Access
 			-- Detailed description of current exception
 		local
 			u: UTF_CONVERTER
+			l_res: STRING_32
 		do
 			if attached c_description as l_m then
 					-- Description is encoded in UTF-8 by the runtime.
-				Result := u.utf_8_0_pointer_to_escaped_string_32 (l_m.managed_data)
+				create l_res.make (l_m.count)
+				u.utf_8_0_subpointer_into_escaped_string_32 (l_m.managed_data, 0, l_m.count - 1, False, l_res)
+				Result := l_res
 			end
 		end
 
