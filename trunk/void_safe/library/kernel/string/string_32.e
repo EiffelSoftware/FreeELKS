@@ -521,10 +521,6 @@ feature -- Element change
 				count := nb
 				internal_hash_code := 0
 			end
-		ensure
-			valid_count: count <= old count
-			new_count: not is_empty implies not item (1).is_space
-			kept: elks_checking implies Current ~ ((old twin).substring (old count - count + 1, old count))
 		end
 
 	right_adjust
@@ -560,14 +556,6 @@ feature -- Element change
 				count := nb + 1 - nb_space
 				internal_hash_code := 0
 			end
-		ensure
-			valid_count: count <= old count
-			new_count: (count /= 0) implies
-				((item (count) /= ' ') and
-				 (item (count) /= '%T') and
-				 (item (count) /= '%R') and
-				 (item (count) /= '%N'))
-			kept: elks_checking implies Current ~ ((old twin).substring (1, count))
 		end
 
 	share (other: STRING_32)

@@ -172,6 +172,24 @@ feature -- Element change
 			kept: elks_checking implies Current ~ (old substring (count - n.min(count) + 1, count))
 		end
 
+	left_adjust
+			-- Remove leading whitespace.
+		deferred
+		ensure
+			valid_count: count <= old count
+			new_count: not is_empty implies not item (1).is_space
+			kept: elks_checking implies Current ~ ((old twin).substring (old count - count + 1, old count))
+		end
+
+	right_adjust
+			-- Remove trailing whitespace.
+		deferred
+		ensure
+			valid_count: count <= old count
+			new_count: not is_empty implies not item (count).is_space
+			kept: elks_checking implies Current ~ ((old twin).substring (1, count))
+		end
+
 feature -- Removal
 
 	remove (i: INTEGER)
