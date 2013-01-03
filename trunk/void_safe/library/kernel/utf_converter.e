@@ -1374,7 +1374,7 @@ feature -- UTF-16 to UTF-32
 						a_result.extend (c.to_character_32)
 					else
 							-- Supplementary Planes: surrogate pair with lead and trail surrogates.
-						if i < n then
+						if i <= n then
 							a_result.extend (((c.as_natural_32 |<< 10) + p.read_natural_16 (i) - 0x35FDC00).to_character_32)
 							i := i + 2
 						end
@@ -1440,8 +1440,8 @@ feature -- UTF-16 to UTF-32
 								-- we need to escape it.
 							a_result.extend (c1.to_character_32)
 						end
-					elseif c1 <= 0xDBFF and then i + 2 <= n then
-							-- Check if a lead surrogate is followed by a trail surrogate.
+					elseif c1 <= 0xDBFF and then i <= n then
+							-- Check if a lead surrogate (value between 0xD800 and 0xDBFF) is followed by a trail surrogate.
 						c2 := p.read_natural_16 (i)
 						if c2 >= 0xDC00 and c2 <= 0xDFFF then
 								-- Supplementary Planes: surrogate pair with lead and trail surrogates.
