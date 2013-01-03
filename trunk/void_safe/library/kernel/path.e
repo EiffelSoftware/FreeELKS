@@ -505,7 +505,7 @@ feature -- Access
 								-- directory of the "c:" drive.
 							if l_root.same_as (a_current_directory) then
 									-- Same root so we simply append.
-								Result := a_current_directory
+								Result := a_current_directory.twin
 							else
 									-- There is no way we can figure this out, so we simply append to the current root.
 								Result := l_root
@@ -519,20 +519,20 @@ feature -- Access
 						else
 								-- Case of either "abc\dev" or "\abc\def"	
 							if storage.item (1) = '\' and storage.item (2) = '%U' then
-								Result := a_current_directory
+								Result := a_current_directory.twin
 								if attached Result.root as l_root then
 									Result := l_root
 								else
 										-- The current working path has no root? It is hard to believe.
 								end
 							else
-								Result := a_current_directory
+								Result := a_current_directory.twin
 							end
 								-- Now that we have built a valid path, we just append the relative one.
 							internal_path_append_into (Result.storage, storage, directory_separator)
 						end
 					else
-						Result := a_current_directory
+						Result := a_current_directory.twin
 							-- Now that we have built a valid path, we just append the relative one.
 						internal_path_append_into (Result.storage, storage, directory_separator)
 					end
@@ -1164,10 +1164,13 @@ feature {NONE} -- Implementation
 		do
 			l_add_separator := a_separator /= '%U'
 			if l_add_separator and not a_storage.is_empty then
+					-- Only add a terminator if `a_storage' does not already have one at the end, or if `other' doest not already
+					-- have one at the beginning.
 				if {PLATFORM}.is_windows then
-					l_add_separator := not (a_storage.item (a_storage.count - 1) = a_separator and a_storage.item (a_storage.count) = '%U')
+					l_add_separator := (not (a_storage.item (a_storage.count - 1) = a_separator and a_storage.item (a_storage.count) = '%U')) and
+						(not (other.item (1) = a_separator and other.item (2) = '%U'))
 				else
-					l_add_separator := a_storage.item (a_storage.count) /= a_separator
+					l_add_separator := (a_storage.item (a_storage.count) /= a_separator) and (other.item (1) /= a_separator)
 				end
 				if l_add_separator then
 					a_storage.extend (a_separator)
