@@ -198,7 +198,7 @@ feature {NATIVE_STRING_HANDLER} -- Access
 					else
 						l_ptr.resize ((a_name.count + 1) * 2)
 					end
-					u.utf_32_substring_into_utf_16_0_pointer (a_name, 1, a_name.count, l_ptr, 0, Void)
+					u.escaped_utf_32_substring_into_utf_16_0_pointer (a_name, 1, a_name.count, l_ptr, 0, Void)
 				else
 						-- Our Windows API only handles Unicode characters, no encoding, so
 						-- we are going to convert `a_name' from the local code page encoding
@@ -219,7 +219,7 @@ feature {NATIVE_STRING_HANDLER} -- Access
 				end
 				if attached {READABLE_STRING_32} a_name then
 						-- We generate a UTF-8 encoding of the filename
-					u.utf_32_string_into_utf_8_0_pointer (a_name, l_ptr, 0, Void)
+					u.escaped_utf_32_substring_into_utf_8_0_pointer (a_name, 1, a_name.count, l_ptr, 0, Void)
 				else
 						-- We leave the sequence as is.
 					create l_c_string.make_shared_from_pointer_and_count (l_ptr.item, a_name.count)
@@ -230,29 +230,18 @@ feature {NATIVE_STRING_HANDLER} -- Access
 		end
 
 	pointer_to_file_name_32 (a_ptr: POINTER): STRING_32
-			-- Given a file system name represented by `a_ptr' provides a STRING_32 instance if possible.
-			-- Note that those file names might not roundtrip.
+			-- Given a file system name represented by `a_ptr' provides a STRING_32 instance which
+			-- could be escaped when underlying encoding is not valid.
 		local
-			l_cstring: C_STRING
-			l_str: STRING_8
 			u: UTF_CONVERTER
 			l_managed: MANAGED_POINTER
 		do
+			create l_managed.share_from_pointer (a_ptr, pointer_length_in_bytes (a_ptr))
 			if {PLATFORM}.is_windows then
-				create l_managed.share_from_pointer (a_ptr, pointer_length_in_bytes (a_ptr))
 				Result := u.utf_16_0_pointer_to_string_32 (l_managed)
+				Result := u.utf_16_0_pointer_to_escaped_string_32 (l_managed)
 			else
-				create l_cstring.make_shared_from_pointer (a_ptr)
-				l_str := l_cstring.string
-					-- If the name is not a valid UTF-8 sequence, we return nothing,
-					-- this is to guarantee that when you get a file name you can perform
-					-- a roundtrip.
-				if u.is_valid_utf_8_string_8 (l_str) then
-					Result := u.utf_8_string_8_to_string_32 (l_str)
-				else
-						-- We got a non-valid string, we return that same instance as STRING_32
-					Result := l_str
-				end
+				Result := u.utf_8_0_pointer_to_escaped_string_32 (l_managed)
 			end
 		end
 
