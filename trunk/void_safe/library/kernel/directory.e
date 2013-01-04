@@ -246,7 +246,7 @@ feature -- Access
 			eif_dir_rename (internal_name_pointer.item, l_ptr.item)
 			set_name (new_name.name)
 		ensure
-			name_changed: internal_name = new_name
+			name_changed: internal_name = new_name.name
 		end
 
 feature -- Measurement
