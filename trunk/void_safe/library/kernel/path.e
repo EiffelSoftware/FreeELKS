@@ -977,7 +977,7 @@ feature {NONE} -- Implementation
 					-- We are not past the beginning of the path.
 				if Result >= 1 then
 						-- We have a character that is not a directory separator
-					check storage.item (Result) /= directory_separator and ({PLATFORM}.is_windows implies storage.item (Result + 1) = '%U') end
+					check storage.item (Result) /= directory_separator or else ({PLATFORM}.is_windows and then storage.item (Result + 1) /= '%U') end
 						-- Search for the directory separator now.
 					from
 					until
