@@ -118,18 +118,100 @@ feature -- Status report
 			end
 		end
 
+	is_valid_utf_16_subpointer (p: MANAGED_POINTER; start_pos, end_pos: INTEGER; a_stop_at_null: BOOLEAN): BOOLEAN
+			-- Is `p' a valid UTF-16 Unicode sequence between code unit `start_pos' and `end_pos'?
+			-- If `a_stop_at_null' we stop checking after finding a null character.
+		local
+			i, n: INTEGER
+			c1, c2: NATURAL_32
+		do
+			if p.count >= 2 and then start_pos >= 0 and then start_pos <= end_pos + 1 and then end_pos < p.count // 2 then
+				from
+					i := start_pos * 2
+					n := end_pos * 2
+					Result := True
+				until
+					i > n or not Result
+				loop
+					c1 := p.read_natural_16 (i)
+					if c1 = 0 and a_stop_at_null then
+							-- We hit our null terminating character, we can stop
+						i := n + 1
+					else
+						if c1 < 0xD800 or else c1 >= 0xE000 then
+							-- Codepoint from Basic Multilingual Plane: one 16-bit code unit, this is valid Unicode.
+							i := i + 1
+						elseif c1 <= 0xDBFF then
+							i := i + 2
+							if i <= n then
+								c2 := p.read_natural_16 (i)
+								Result := 0xDC00 <= c2 and c2 <= 0xDFF
+							else
+									-- Surrogate pair is incomplete, clearly not a valid UTF-16 sequence.
+								Result := False
+							end
+						else
+								-- Invalid starting surrogate pair which should be between 0xD800 and 0xDBFF.
+							Result := False
+						end
+					end
+				end
+			end
+		end
+
+	is_valid_utf_16 (s: SPECIAL [NATURAL_16]): BOOLEAN
+			-- Is `s' a valid UTF-16 Unicode sequence?
+		local
+			i, n: INTEGER
+			c1, c2: NATURAL_32
+		do
+			from
+				i := 0
+				n := s.count
+				Result := True
+			until
+				i > n or not Result
+			loop
+				c1 := s.item (i)
+				if c1 = 0 then
+						-- We hit our null terminating character, we can stop
+					i := n + 1
+				else
+					if c1 < 0xD800 or else c1 >= 0xE000 then
+						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit, this is valid Unicode.
+					elseif c1 <= 0xDBFF then
+						i := i + 1
+						if i <= n then
+							c2 := s.item (i)
+							Result := 0xDC00 <= c2 and c2 <= 0xDFF
+						else
+								-- Surrogate pair is incomplete, clearly not a valid UTF-16 sequence.
+							Result := False
+						end
+					else
+							-- Invalid starting surrogate pair which should be between 0xD800 and 0xDBFF.
+						Result := False
+					end
+				end
+			end
+		end
+
 feature -- UTF-32 to UTF-8
 
 	string_32_to_utf_8_string_8 (s: READABLE_STRING_32): STRING_8
 			-- UTF-8 sequence corresponding to `s'.
 		do
 			Result := utf_32_string_to_utf_8_string_8 (s)
+		ensure
+			roundtrip: utf_8_string_8_to_string_32 (Result).same_string (s)
 		end
 
 	string_32_into_utf_8_string_8 (s: READABLE_STRING_32; a_result: STRING_8)
 			-- Copy the UTF-8 sequence corresponding to `s' appended into `a_result'.
 		do
 			utf_32_string_into_utf_8_string_8 (s, a_result)
+		ensure
+			roundtrip: utf_8_string_8_to_string_32 (a_result.substring (old a_result.count + 1, a_result.count)).same_string (s)
 		end
 
 	utf_32_string_to_utf_8_string_8 (s: READABLE_STRING_GENERAL): STRING_8
@@ -137,6 +219,8 @@ feature -- UTF-32 to UTF-8
 		do
 			create Result.make (s.count)
 			utf_32_string_into_utf_8_string_8 (s, Result)
+		ensure
+			roundtrip: utf_8_string_8_to_string_32 (Result).same_string_general (s)
 		end
 
 	utf_32_string_into_utf_8_string_8 (s: READABLE_STRING_GENERAL; a_result: STRING_8)
@@ -176,6 +260,8 @@ feature -- UTF-32 to UTF-8
 					a_result.extend (((c & 0x3F) | 0x80).to_character_8)
 				end
 			end
+		ensure
+			roundtrip: utf_8_string_8_to_string_32 (a_result.substring (old a_result.count + 1, a_result.count)).same_string_general (s)
 		end
 
 	escaped_utf_32_substring_into_utf_8_0_pointer (
@@ -204,13 +290,19 @@ feature -- UTF-32 to UTF-8
 			l_encoded_value: READABLE_STRING_GENERAL
 			l_decoded, l_resized: BOOLEAN
 		do
+				-- Basic assumptions that there will be only one-byte code units.
+			n := end_pos - start_pos + 1
+			l_count := p.count
+				-- Check that there is at least `n' bytes available plus the terminating null character.
+			if l_count - p_offset < (n + 1) then
+					-- Optimize resizing, once we have to resize, we actually perform the resizing
+					-- only once.
+				l_count := p_offset + utf_8_bytes_count (s, start_pos, end_pos) + 1
+				p.resize (l_count)
+				l_resized := True
+			end
+
 			from
-				n := end_pos - start_pos + 1
-				l_count := p.count
-				if l_count - p_offset < (n + 1) then
-					l_count := n + 1 + p_offset
-					p.resize (l_count)
-				end
 				m := p_offset
 				i := start_pos - 1
 			until
@@ -249,10 +341,16 @@ feature -- UTF-32 to UTF-8
 						p.put_natural_8 (c.to_natural_8, m)
 						m := m + 1
 					else
-						if l_count < m + 4 then
-								-- Additionally reserve memory for items after currently written code points
-								-- to avoid reallocation on every iteration.
-							l_count := (end_pos - i) * 2 + m + 4
+							-- Make sure there is sufficient room for all the remaining characters and
+							-- at least 5 bytes, i.e. 4 bytes for the maximum UTF-8 encoding,
+							-- and one byte for the terminating null character. Note that we do not
+							-- take into account `p_offset' because `m' already includes it.
+							-- Note that `end_pos - i' represents the number of remaining characters
+							-- to process in the current string.
+						if not l_resized and then (m + 5 + (end_pos - i) > l_count) then
+								-- Optimize resizing, once we have to resize, we actually perform the resizing
+								-- only once.
+							l_count := m + utf_8_bytes_count (s, i, end_pos) + 1
 							p.resize (l_count)
 							l_resized := True
 						end
@@ -285,13 +383,17 @@ feature -- UTF-32 to UTF-8
 				end
 			end
 			if l_resized then
-					-- We had to add a code unit. We adjust the size.
+					-- `p' was resized so we adjust it to accomodate up to the terminating null character.
 				p.resize (m + 1)
 			end
 			p.put_natural_8 (0, m)
 			if a_new_upper /= Void then
 				a_new_upper.put (m)
 			end
+		ensure
+			roundtrip: a_new_upper /= Void implies utf_8_0_subpointer_to_escaped_string_32 (p, p_offset, a_new_upper.item - 1, False).same_string_general (s.substring (start_pos, end_pos))
+			roundtrip: (a_new_upper = Void and then not s.substring (start_pos, end_pos).has ('%U')) implies
+				 utf_8_0_subpointer_to_escaped_string_32 (p, p_offset, p.count, True).same_string_general (s.substring (start_pos, end_pos))
 		end
 
 	escaped_utf_32_string_to_utf_8_string_8 (s: READABLE_STRING_GENERAL): STRING_8
@@ -304,6 +406,8 @@ feature -- UTF-32 to UTF-8
 		do
 			create Result.make (s.count)
 			escaped_utf_32_string_into_utf_8_string_8 (s, Result)
+		ensure
+			roundtrip: utf_8_string_8_to_escaped_string_32 (Result).same_string_general (s)
 		end
 
 	escaped_utf_32_string_into_utf_8_string_8 (s: READABLE_STRING_GENERAL; a_result: STRING_8)
@@ -381,6 +485,8 @@ feature -- UTF-32 to UTF-8
 					a_result.extend (c.to_character_8)
 				end
 			end
+		ensure
+			roundtrip: utf_8_string_8_to_escaped_string_32 (a_result.substring (old a_result.count + 1, a_result.count)).same_string_general (s)
 		end
 
 	string_32_into_utf_8_0_pointer (s: READABLE_STRING_32; p: MANAGED_POINTER; p_offset: INTEGER; a_new_upper: detachable CELL [INTEGER])
@@ -393,6 +499,10 @@ feature -- UTF-32 to UTF-8
 			valid_p_offset: p_offset < p.count
 		do
 			utf_32_string_into_utf_8_0_pointer (s, p, p_offset, a_new_upper)
+		ensure
+			roundtrip: a_new_upper /= Void implies utf_8_0_subpointer_to_escaped_string_32 (p, p_offset, a_new_upper.item - 1, False).same_string (s)
+			roundtrip: (a_new_upper = Void and then not s.has ('%U')) implies
+				 utf_8_0_subpointer_to_escaped_string_32 (p, p_offset, p.count, True).same_string_general (s)
 		end
 
 	utf_32_string_into_utf_8_0_pointer (s: READABLE_STRING_GENERAL; p: MANAGED_POINTER; p_offset: INTEGER; a_new_upper: detachable CELL [INTEGER])
@@ -406,43 +516,25 @@ feature -- UTF-32 to UTF-8
 			valid_p_offset: p_offset < p.count
 		local
 			m: INTEGER
-			i, n: like {STRING_32}.count
+			i, n, l_count: INTEGER
 			c: NATURAL_32
+			l_resized: BOOLEAN
 		do
+				-- Basic assumptions that there will be only one-byte code units.
 			n := s.count
-
-				-- First compute how many bytes we need to convert `s' to UTF-8.
-			from
-				i := n
-				m := 0
-			until
-				i = 0
-			loop
-				c := s.code (i)
-				if c <= 0x7F then
-						-- 0xxxxxxx.
-					m := m + 1
-				elseif c <= 0x7FF then
-						-- 110xxxxx 10xxxxxx
-					m := m + 2
-				elseif c <= 0xFFFF then
-						-- 1110xxxx 10xxxxxx 10xxxxxx
-					m := m + 3
-				else
-						-- c <= 1FFFFF - there are no higher code points
-						-- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-					m := m + 4
-				end
-				i := i - 1
+			l_count := p.count
+				-- Check that there is at least `n' bytes available plus the terminating null character.
+			if l_count - p_offset < (n + 1) then
+					-- Optimize resizing, once we have to resize, we actually perform the resizing
+					-- only once.
+				l_count := p_offset + utf_8_bytes_count (s, 1, n) + 1
+				p.resize (l_count)
+				l_resized := True
 			end
 
 				-- Fill `p' with the converted data.
 			from
 				i := 0
-				if p.count - p_offset < m then
-						-- Reserve more memory as we need more than what was given to us.
-					p.resize (m + 1 + p_offset)
-				end
 				m := p_offset
 			until
 				i >= n
@@ -453,31 +545,55 @@ feature -- UTF-32 to UTF-8
 						-- 0xxxxxxx.
 					p.put_natural_8 (c.to_natural_8, m)
 					m := m + 1
-				elseif c <= 0x7FF then
-						-- 110xxxxx 10xxxxxx.
-					p.put_natural_8 (((c |>> 6) | 0xC0).to_natural_8, m)
-					p.put_natural_8 (((c & 0x3F) | 0x80).to_natural_8, m + 1)
-					m := m + 2
-				elseif c <= 0xFFFF then
-						-- 1110xxxx 10xxxxxx 10xxxxxx
-					p.put_natural_8 (((c |>> 12) | 0xE0).to_natural_8, m)
-					p.put_natural_8 ((((c |>> 6) & 0x3F) | 0x80).to_natural_8, m + 1)
-					p.put_natural_8 (((c & 0x3F) | 0x80).to_natural_8, m + 2)
-					m := m + 3
 				else
-						-- c <= 1FFFFF - there are no higher code points
-						-- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-					p.put_natural_8 (((c |>> 18) | 0xF0).to_natural_8, m)
-					p.put_natural_8 ((((c |>> 12) & 0x3F) | 0x80).to_natural_8, m + 1)
-					p.put_natural_8 ((((c |>> 6) & 0x3F) | 0x80).to_natural_8, m + 2)
-					p.put_natural_8 (((c & 0x3F) | 0x80).to_natural_8, m + 3)
-					m := m + 4
+						-- Make sure there is sufficient room for all the remaining characters and
+						-- at least 5 bytes, i.e. 4 bytes for the maximum UTF-8 encoding,
+						-- and one byte for the terminating null character. Note that we do not
+						-- take into account `p_offset' because `m' already includes it.
+						-- Note that `n - i' represents the number of remaining characters
+						-- to process in the current string.
+					if not l_resized and then (m + 5 + (n - i) > l_count) then
+							-- Optimize resizing, once we have to resize, we actually perform the resizing
+							-- only once.
+						l_count := m + utf_8_bytes_count (s, i, n) + 1
+						p.resize (l_count)
+						l_resized := True
+					end
+
+					if c <= 0x7FF then
+							-- 110xxxxx 10xxxxxx.
+						p.put_natural_8 (((c |>> 6) | 0xC0).to_natural_8, m)
+						p.put_natural_8 (((c & 0x3F) | 0x80).to_natural_8, m + 1)
+						m := m + 2
+					elseif c <= 0xFFFF then
+							-- 1110xxxx 10xxxxxx 10xxxxxx
+						p.put_natural_8 (((c |>> 12) | 0xE0).to_natural_8, m)
+						p.put_natural_8 ((((c |>> 6) & 0x3F) | 0x80).to_natural_8, m + 1)
+						p.put_natural_8 (((c & 0x3F) | 0x80).to_natural_8, m + 2)
+						m := m + 3
+					else
+							-- c <= 1FFFFF - there are no higher code points
+							-- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+						p.put_natural_8 (((c |>> 18) | 0xF0).to_natural_8, m)
+						p.put_natural_8 ((((c |>> 12) & 0x3F) | 0x80).to_natural_8, m + 1)
+						p.put_natural_8 ((((c |>> 6) & 0x3F) | 0x80).to_natural_8, m + 2)
+						p.put_natural_8 (((c & 0x3F) | 0x80).to_natural_8, m + 3)
+						m := m + 4
+					end
 				end
+			end
+			if l_resized then
+					-- `p' was resized so we adjust it to accomodate up to the terminating null character.
+				p.resize (m + 1)
 			end
 			p.put_natural_8 (0, m)
 			if a_new_upper /= Void then
 				a_new_upper.put (m)
 			end
+		ensure
+			roundtrip: a_new_upper /= Void implies utf_8_0_subpointer_to_escaped_string_32 (p, p_offset, a_new_upper.item - 1, False).same_string_general (s)
+			roundtrip: (a_new_upper = Void and then not s.has ('%U')) implies
+				 utf_8_0_subpointer_to_escaped_string_32 (p, p_offset, p.count, True).same_string_general (s)
 		end
 
 	utf_32_string_to_utf_8 (s: READABLE_STRING_GENERAL): SPECIAL [NATURAL_8]
@@ -486,6 +602,9 @@ feature -- UTF-32 to UTF-8
 		do
 			Result := utf_32_string_to_utf_8_0 (s)
 			Result := Result.aliased_resized_area_with_default (0, Result.count - 1)
+		ensure
+			roundtrip: attached utf_32_string_to_utf_8_string_8 (s) as l_ref and then
+				across Result as l_spec all l_spec.item = l_ref.code (l_spec.cursor_index) end
 		end
 
 	utf_32_string_to_utf_8_0 (s: READABLE_STRING_GENERAL): SPECIAL [NATURAL_8]
@@ -499,29 +618,7 @@ feature -- UTF-32 to UTF-8
 			n := s.count
 
 				-- First compute how many bytes we need to convert `s' to UTF-8.
-			from
-				i := n
-				m := 0
-			until
-				i = 0
-			loop
-				c := s.code (i)
-				if c <= 0x7F then
-						-- 0xxxxxxx.
-					m := m + 1
-				elseif c <= 0x7FF then
-						-- 110xxxxx 10xxxxxx
-					m := m + 2
-				elseif c <= 0xFFFF then
-						-- 1110xxxx 10xxxxxx 10xxxxxx
-					m := m + 3
-				else
-						-- c <= 1FFFFF - there are no higher code points
-						-- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-					m := m + 4
-				end
-				i := i - 1
-			end
+			m := utf_8_bytes_count (s, 1, n)
 
 				-- Fill `Result' with the converted data.
 			from
@@ -559,6 +656,9 @@ feature -- UTF-32 to UTF-8
 				end
 			end
 			Result.put (0, m)
+		ensure
+			roundtrip: attached utf_32_string_to_utf_8_string_8 (s) as l_ref and then
+				across Result as l_spec all l_spec.item = l_ref.code (l_spec.cursor_index) end
 		end
 
 feature -- UTF-8 to UTF-32
@@ -570,6 +670,9 @@ feature -- UTF-8 to UTF-32
 				-- Allocate Result with the same number of bytes as `p'.
 			create Result.make (p.count)
 			utf_8_0_pointer_into_escaped_string_32 (p, Result)
+		ensure
+			roundtrip: attached escaped_utf_32_string_to_utf_8_string_8 (Result) as l_str and then
+				across l_str as l_char all l_char.item = p.read_natural_8 (l_char.cursor_index - 1).to_character_8 end
 		end
 
 	utf_8_0_pointer_into_escaped_string_32 (p: MANAGED_POINTER; a_result: STRING_32)
@@ -577,6 +680,26 @@ feature -- UTF-8 to UTF-32
 			-- where invalid UTF-8 sequences are escaped, appended into `a_result'.
 		do
 			utf_8_0_subpointer_into_escaped_string_32 (p, 0, p.count - 1, True, a_result)
+		ensure
+			roundtrip: attached escaped_utf_32_string_to_utf_8_string_8 (a_result.substring (old a_result.count + 1, a_result.count)) as l_str and then
+				across l_str as l_char all l_char.item = p.read_natural_8 (l_char.cursor_index - 1).to_character_8 end
+		end
+
+	utf_8_0_subpointer_to_escaped_string_32 (p: MANAGED_POINTER; start_pos, end_pos: INTEGER; a_stop_at_null: BOOLEAN): STRING_32
+			-- {STRING_32} object corresponding to UTF-8 sequence `p' between indexes `start_pos' and
+			-- `end_pos' or the first null character encountered if `a_stop_at_null', where invalid
+			-- UTF-8 sequences are escaped.
+		require
+			start_position_big_enough: start_pos >= 0
+			end_position_big_enough: start_pos <= end_pos + 1
+			end_pos_small_enough: end_pos < p.count
+		do
+				-- Allocate Result with the same number of bytes as `p'.
+			create Result.make (p.count)
+			utf_8_0_subpointer_into_escaped_string_32 (p, start_pos, end_pos, a_stop_at_null, Result)
+		ensure
+			roundtrip: attached escaped_utf_32_string_to_utf_8_string_8 (Result) as l_str and then
+				across l_str as l_char all l_char.item = p.read_natural_8 (start_pos + l_char.cursor_index - 1).to_character_8 end
 		end
 
 	utf_8_0_subpointer_into_escaped_string_32 (p: MANAGED_POINTER; start_pos, end_pos: INTEGER; a_stop_at_null: BOOLEAN; a_result: STRING_32)
@@ -695,6 +818,9 @@ feature -- UTF-8 to UTF-32
 					i := i + 1
 				end
 			end
+		ensure
+			roundtrip: attached escaped_utf_32_string_to_utf_8_string_8 (a_result.substring (old a_result.count + 1, a_result.count)) as l_str and then
+				across l_str as l_char all l_char.item = p.read_natural_8 (start_pos + l_char.cursor_index - 1).to_character_8 end
 		end
 
 	utf_8_string_8_to_string_32 (s: READABLE_STRING_8): STRING_32
@@ -702,6 +828,8 @@ feature -- UTF-8 to UTF-32
 		do
 			create Result.make (s.count)
 			utf_8_string_8_into_string_32 (s, Result)
+		ensure
+			roundtrip: is_valid_utf_8_string_8 (s) implies utf_32_string_to_utf_8_string_8 (Result).same_string (s)
 		end
 
 	utf_8_string_8_into_string_32 (s: READABLE_STRING_8; a_result: STRING_32)
@@ -754,6 +882,8 @@ feature -- UTF-8 to UTF-32
 					end
 				end
 			end
+		ensure
+			roundtrip: is_valid_utf_8_string_8 (s) implies utf_32_string_to_utf_8_string_8 (a_result.substring (old a_result.count + 1, a_result.count)).same_string (s)
 		end
 
 	utf_8_string_8_to_escaped_string_32 (s: READABLE_STRING_8): STRING_32
@@ -761,6 +891,8 @@ feature -- UTF-8 to UTF-32
 		do
 			create Result.make (s.count)
 			utf_8_string_8_into_escaped_string_32 (s, Result)
+		ensure
+			roundtrip: escaped_utf_32_string_to_utf_8_string_8 (Result).same_string (s)
 		end
 
 	utf_8_string_8_into_escaped_string_32 (s: READABLE_STRING_8; a_result: STRING_32)
@@ -865,6 +997,8 @@ feature -- UTF-8 to UTF-32
 					escape_code_into (a_result, c1)
 				end
 			end
+		ensure
+			roundtrip: escaped_utf_32_string_to_utf_8_string_8 (a_result.substring (old a_result.count + 1, a_result.count)).same_string (s)
 		end
 
 feature -- UTF-32 to UTF-16
@@ -874,6 +1008,9 @@ feature -- UTF-32 to UTF-16
 			-- The sequence is not zero-terminated.
 		do
 			Result := utf_32_string_to_utf_16 (s)
+		ensure
+			roundtrip: attached utf_32_string_to_utf_16le_string_8 (s) as l_ref and then
+				across Result as l_spec all l_spec.item = (l_ref.code (l_spec.cursor_index * 2 - 1) | (l_ref.code (l_spec.cursor_index * 2) |<< 16)) end
 		end
 
 	utf_32_string_to_utf_16 (s: READABLE_STRING_GENERAL): SPECIAL [NATURAL_16]
@@ -882,12 +1019,20 @@ feature -- UTF-32 to UTF-16
 		do
 			Result := utf_32_string_to_utf_16_0 (s)
 			Result := Result.aliased_resized_area_with_default (0, Result.count - 1)
+		ensure
+			roundtrip: attached utf_32_string_to_utf_16le_string_8 (s) as l_ref and then
+				across Result as l_spec all l_spec.item = (l_ref.code (l_spec.cursor_index * 2 - 1) | (l_ref.code (l_spec.cursor_index * 2) |<< 8)) end
 		end
 
 	string_32_to_utf_16_0 (s: READABLE_STRING_32): SPECIAL [NATURAL_16]
 			-- UTF-16 sequence corresponding to `s' with terminating zero.
 		do
 			Result := utf_32_string_to_utf_16_0 (s)
+		ensure
+			roundtrip: attached utf_32_string_to_utf_16le_string_8 (s) as l_ref and then
+				across Result.resized_area_with_default (0, Result.count - 1) as l_spec all
+					l_spec.item = (l_ref.code (l_spec.cursor_index * 2 - 1) | (l_ref.code (l_spec.cursor_index * 2) |<< 8))
+				end
 		end
 
 	utf_32_string_to_utf_16_0 (s: READABLE_STRING_GENERAL): SPECIAL [NATURAL_16]
@@ -930,6 +1075,11 @@ feature -- UTF-32 to UTF-16
 				end
 			end
 			Result.extend (0)
+		ensure
+			roundtrip: attached utf_32_string_to_utf_16le_string_8 (s) as l_ref and then
+				across Result.resized_area_with_default (0, Result.count - 1) as l_spec all
+					l_spec.item = (l_ref.code (l_spec.cursor_index * 2 - 1) | (l_ref.code (l_spec.cursor_index * 2) |<< 8))
+				end
 		end
 
 	string_32_into_utf_16_pointer (s: READABLE_STRING_32; p: MANAGED_POINTER; p_offset: INTEGER; a_new_upper: detachable CELL [INTEGER])
@@ -939,9 +1089,13 @@ feature -- UTF-32 to UTF-16
 			-- is written to `a_new_upper'.
 			-- The sequence is not zero-terminated.
 		require
+			even_p_offset: (p_offset \\ 2) = 0
 			valid_p_offset: p_offset < p.count
 		do
 			utf_32_substring_into_utf_16_pointer (s, 1, s.count, p, p_offset, a_new_upper)
+		ensure
+			roundtrip: a_new_upper /= Void implies utf_16_0_subpointer_to_string_32 (p, p_offset // 2, (a_new_upper.item // 2) - 1, False).same_string (s)
+			roundtrip: (a_new_upper = Void and then not s.has ('%U')) implies utf_16_0_subpointer_to_string_32 (p, p_offset // 2, (p.count // 2) - 1, True).same_string (s)
 		end
 
 	string_32_into_utf_16_0_pointer (s: READABLE_STRING_32; p: MANAGED_POINTER; p_offset: INTEGER; a_new_upper: detachable CELL [INTEGER])
@@ -951,9 +1105,13 @@ feature -- UTF-32 to UTF-16
 			-- is written to `a_new_upper'.
 			-- The sequence is zero-terminated.
 		require
+			even_p_offset: (p_offset \\ 2) = 0
 			valid_p_offset: p_offset < p.count
 		do
 			utf_32_substring_into_utf_16_0_pointer (s, 1, s.count, p, p_offset, a_new_upper)
+		ensure
+			roundtrip: a_new_upper /= Void implies utf_16_0_subpointer_to_string_32 (p, p_offset // 2, (a_new_upper.item // 2) - 1, False).same_string (s)
+			roundtrip: (a_new_upper = Void and then not s.has ('%U')) implies utf_16_0_subpointer_to_string_32 (p, p_offset // 2, (p.count // 2) - 1, True).same_string (s)
 		end
 
 	utf_32_substring_into_utf_16_pointer
@@ -971,6 +1129,7 @@ feature -- UTF-32 to UTF-16
 			start_position_big_enough: start_pos >= 1
 			end_position_big_enough: start_pos <= end_pos + 1
 			end_pos_small_enough: end_pos <= s.count
+			even_p_offset: (p_offset \\ 2) = 0
 			valid_p_offset: p_offset < p.count
 		local
 			m: INTEGER
@@ -986,6 +1145,8 @@ feature -- UTF-32 to UTF-16
 			end
 		ensure
 			p_count_may_increase: p.count >= old p.count
+			roundtrip: a_new_upper /= Void implies utf_16_0_subpointer_to_string_32 (p, p_offset // 2, (a_new_upper.item // 2) - 1, False).same_string_general (s)
+			roundtrip: (a_new_upper = Void and then not s.has ('%U')) implies utf_16_0_subpointer_to_string_32 (p, p_offset // 2, (p.count // 2) - 1, True).same_string_general (s)
 		end
 
 	utf_32_substring_into_utf_16_0_pointer
@@ -1003,6 +1164,7 @@ feature -- UTF-32 to UTF-16
 			start_position_big_enough: start_pos >= 1
 			end_position_big_enough: start_pos <= end_pos + 1
 			end_pos_small_enough: end_pos <= s.count
+			even_p_offset: (p_offset \\ 2) = 0
 			valid_p_offset: p_offset < p.count
 		local
 			i: like {READABLE_STRING_GENERAL}.count
@@ -1014,9 +1176,13 @@ feature -- UTF-32 to UTF-16
 			from
 				i := end_pos - start_pos + 1
 				l_count := p.count
+					-- Check that there is at least `i * 2' bytes available plus the terminating null character.
 				if l_count - p_offset < (i + 1) * 2  then
-					l_count := (i + 1) * 2 + p_offset
+						-- Optimize resizing, once we have to resize, we actually perform the resizing
+						-- only once.
+					l_count := p_offset + utf_16_bytes_count (s, start_pos, end_pos) + 2
 					p.resize (l_count)
+					l_resized := True
 				end
 				i := start_pos - 1
 				m := p_offset
@@ -1030,11 +1196,16 @@ feature -- UTF-32 to UTF-16
 					p.put_natural_16 (c.to_natural_16, m)
 					m := m + 2
 				else
-						-- Make sure there is sufficient room for at least 2 code units of 2 bytes each.
-					if l_count < m + 4 then
-							-- Additionally reserve memory for items after currently written code points
-							-- to avoid reallocation on every iteration.
-						l_count := (end_pos - i) * 2 + m + 4
+						-- Make sure there is sufficient room for all the remaining characters and
+						-- at least 3 code units of 2 bytes each, i.e. 2 code unit for the surrogate
+						-- pair, and one unit for the terminating null character. Note that we do not
+						-- take into account `p_offset' because `m' already includes it.
+						-- Note that `end_pos - i' represents the number of remaining characters
+						-- to process in the current string.
+					if not l_resized and then (m + 6 + (end_pos - i) * 2 > l_count) then
+							-- Optimize resizing, once we have to resize, we actually perform the resizing
+							-- only once.
+						l_count := m + utf_16_bytes_count (s, i, end_pos) + 2
 						p.resize (l_count)
 						l_resized := True
 					end
@@ -1056,6 +1227,8 @@ feature -- UTF-32 to UTF-16
 			end
 		ensure
 			p_count_may_increase: p.count >= old p.count
+			roundtrip: a_new_upper /= Void implies utf_16_0_subpointer_to_string_32 (p, p_offset // 2, (a_new_upper.item // 2) - 1, False).same_string_general (s)
+			roundtrip: (a_new_upper = Void and then not s.has ('%U')) implies utf_16_0_subpointer_to_string_32 (p, p_offset // 2, (p.count // 2) - 1, True).same_string_general (s)
 		end
 
 	utf_32_string_to_utf_16le_string_8 (s: READABLE_STRING_GENERAL): STRING_8
@@ -1064,6 +1237,8 @@ feature -- UTF-32 to UTF-16
 				-- We would need at least 2-bytes per characters in `s'.
 			create Result.make (s.count * 2)
 			utf_32_string_into_utf_16le_string_8 (s, Result)
+		ensure
+			roundtrip: utf_16le_string_8_to_string_32 (Result).same_string_general (s)
 		end
 
 	utf_32_string_into_utf_16le_string_8 (s: READABLE_STRING_GENERAL; a_result: STRING_8)
@@ -1100,6 +1275,8 @@ feature -- UTF-32 to UTF-16
 					a_result.extend (((l_nat16 & 0xFF00) |>> 8).to_character_8)
 				end
 			end
+		ensure
+			roundtrip: utf_16le_string_8_to_string_32 (a_result.substring (old a_result.count + 1, a_result.count)).same_string_general (s)
 		end
 
 	escaped_utf_32_substring_into_utf_16_0_pointer (
@@ -1117,6 +1294,7 @@ feature -- UTF-32 to UTF-16
 			start_position_big_enough: start_pos >= 1
 			end_position_big_enough: start_pos <= end_pos + 1
 			end_pos_small_enough: end_pos <= s.count
+			even_p_offset: (p_offset \\ 2) = 0
 			valid_p_offset: p_offset < p.count
 		local
 			i, n, m, l_count: INTEGER
@@ -1128,9 +1306,13 @@ feature -- UTF-32 to UTF-16
 			from
 				n := end_pos - start_pos + 1
 				l_count := p.count
-				if l_count - p_offset < (n + 1) * 2 then
-					l_count := (n + 1) * 2 + p_offset
+					-- Check that there is at least `i * 2' bytes available plus the terminating null character.
+				if l_count - p_offset < (n + 1) * 2  then
+						-- Optimize resizing, once we have to resize, we actually perform the resizing
+						-- only once.
+					l_count := p_offset + utf_16_bytes_count (s, start_pos, end_pos) + 2
 					p.resize (l_count)
+					l_resized := True
 				end
 				i := start_pos - 1
 				m := p_offset
@@ -1183,11 +1365,16 @@ feature -- UTF-32 to UTF-16
 						p.put_natural_16 (c.to_natural_16, m)
 						m := m + 2
 					else
-							-- Make sure there is sufficient room for at least 2 code units of 2 bytes each.
-						if l_count < m + 4 then
-								-- Additionally reserve memory for items after currently written code points
-								-- to avoid reallocation on every iteration.
-							l_count := (end_pos - i) * 2 + m + 4
+							-- Make sure there is sufficient room for all the remaining characters and
+							-- at least 3 code units of 2 bytes each, i.e. 2 code unit for the surrogate
+							-- pair, and one unit for the terminating null character. Note that we do not
+							-- take into account `p_offset' because `m' already includes it.
+							-- Note that `end_pos - i' represents the number of remaining characters
+							-- to process in the current string.
+						if not l_resized and then (m + 6 + (end_pos - i) * 2 > l_count) then
+								-- Optimize resizing, once we have to resize, we actually perform the resizing
+								-- only once.
+							l_count := m + utf_16_bytes_count (s, i, end_pos) + 2
 							p.resize (l_count)
 							l_resized := True
 						end
@@ -1217,6 +1404,9 @@ feature -- UTF-32 to UTF-16
 			end
 		ensure
 			p_count_may_increase: p.count >= old p.count
+			roundtrip: a_new_upper /= Void implies utf_16_0_subpointer_to_escaped_string_32 (p, p_offset // 2, (a_new_upper.item // 2) - 1, False).same_string_general (s.substring (start_pos, end_pos))
+			roundtrip: (a_new_upper = Void and then s.substring (start_pos, end_pos).has ('%U')) implies
+				utf_16_0_subpointer_to_escaped_string_32 (p, p_offset // 2, (p.count // 2) - 1, True).same_string_general (s.substring (start_pos, end_pos))
 		end
 
 	escaped_utf_32_string_to_utf_16le_string_8 (s: READABLE_STRING_GENERAL): STRING_8
@@ -1230,6 +1420,8 @@ feature -- UTF-32 to UTF-16
 				-- We would need at least 2-bytes per characters in `s'.
 			create Result.make (s.count * 2)
 			escaped_utf_32_string_into_utf_16le_string_8 (s, Result)
+		ensure
+			roundtrip: utf_16le_string_8_to_escaped_string_32 (Result).same_string_general (s)
 		end
 
 	escaped_utf_32_string_into_utf_16le_string_8 (s: READABLE_STRING_GENERAL; a_result: STRING_8)
@@ -1318,6 +1510,8 @@ feature -- UTF-32 to UTF-16
 					a_result.extend (((c & 0xFF00) |>> 8).to_character_8)
 				end
 			end
+		ensure
+			roundtrip: utf_16le_string_8_to_escaped_string_32 (a_result.substring (old a_result.count + 1, a_result.count)).same_string_general (s)
 		end
 
 feature -- UTF-16 to UTF-32
@@ -1331,6 +1525,9 @@ feature -- UTF-16 to UTF-32
 				-- Allocate Result with the same number of bytes as `p'.
 			create Result.make (p.count)
 			utf_16_0_pointer_into_string_32 (p, Result)
+		ensure
+			roundtrip: is_valid_utf_16_subpointer (p, 0, p.count // 2, True) implies
+				across string_32_to_utf_16 (Result) as l_spec all l_spec.item = p.read_natural_16 (l_spec.cursor_index * 2) end
 		end
 
 	utf_16_0_pointer_into_string_32 (p: MANAGED_POINTER; a_result: STRING_32)
@@ -1341,6 +1538,25 @@ feature -- UTF-16 to UTF-32
 			valid_count: p.count \\ 2 = 0
 		do
 			utf_16_0_subpointer_into_string_32 (p, 0, p.count // 2 - 1, True, a_result)
+		ensure
+			roundtrip: is_valid_utf_16_subpointer (p, 0, p.count // 2, True) implies
+				across string_32_to_utf_16 (a_result.substring (old a_result.count + 1, a_result.count)) as l_spec all l_spec.item = p.read_natural_16 (l_spec.target_index * 2) end
+		end
+
+	utf_16_0_subpointer_to_string_32 (p: MANAGED_POINTER; start_pos, end_pos: INTEGER; a_stop_at_null: BOOLEAN): STRING_32
+			-- {STRING_32} object corresponding to UTF-16 sequence `p' between code units `start_pos' and
+			-- `end_pos' or the first null character encountered if `a_stop_at_null'.
+		require
+			minimum_size: p.count >= 2
+			start_position_big_enough: start_pos >= 0
+			end_position_big_enough: start_pos <= end_pos + 1
+			end_pos_small_enough: end_pos < p.count // 2
+		do
+			create Result.make (p.count)
+			utf_16_0_subpointer_into_string_32 (p, start_pos, end_pos, a_stop_at_null, Result)
+		ensure
+			roundtrip: is_valid_utf_16_subpointer (p, start_pos, end_pos, a_stop_at_null) implies
+				across string_32_to_utf_16 (Result) as l_spec all l_spec.item = p.read_natural_16 (l_spec.target_index * 2) end
 		end
 
 	utf_16_0_subpointer_into_string_32 (p: MANAGED_POINTER; start_pos, end_pos: INTEGER; a_stop_at_null: BOOLEAN; a_result: STRING_32)
@@ -1381,6 +1597,9 @@ feature -- UTF-16 to UTF-32
 					end
 				end
 			end
+		ensure
+			roundtrip: is_valid_utf_16_subpointer (p, start_pos, end_pos, a_stop_at_null) implies
+				across string_32_to_utf_16 (a_result.substring (old a_result.count + 1, a_result.count)) as l_spec all l_spec.item = p.read_natural_16 (l_spec.target_index * 2) end
 		end
 
 	utf_16_0_pointer_to_escaped_string_32 (p: MANAGED_POINTER): STRING_32
@@ -1393,6 +1612,11 @@ feature -- UTF-16 to UTF-32
 				-- Allocate Result with the same number of bytes as `p'.
 			create Result.make (p.count)
 			utf_16_0_pointer_into_escaped_string_32 (p, Result)
+		ensure
+			roundtrip: attached escaped_utf_32_string_to_utf_16le_string_8 (Result) as l_utf and then
+				across l_utf.new_cursor.incremented (1) as l_str all
+					(l_utf.code (l_str.cursor_index) | (l_utf.code (l_str.cursor_index + 1) |<< 8)) = p.read_natural_16 (l_str.cursor_index - 1)
+				end
 		end
 
 	utf_16_0_pointer_into_escaped_string_32 (p: MANAGED_POINTER; a_result: STRING_32)
@@ -1403,6 +1627,30 @@ feature -- UTF-16 to UTF-32
 			valid_count: p.count \\ 2 = 0
 		do
 			utf_16_0_subpointer_into_escaped_string_32 (p, 0, p.count // 2 - 1, True, a_result)
+		ensure
+			roundtrip: attached escaped_utf_32_string_to_utf_16le_string_8 (a_result.substring (old a_result.count + 1, a_result.count)) as l_utf and then
+				across l_utf.new_cursor.incremented (1) as l_str all
+					(l_utf.code (l_str.cursor_index) | (l_utf.code (l_str.cursor_index + 1) |<< 8)) = p.read_natural_16 (l_str.cursor_index - 1)
+				end
+		end
+
+	utf_16_0_subpointer_to_escaped_string_32 (p: MANAGED_POINTER; start_pos, end_pos: INTEGER; a_stop_at_null: BOOLEAN): STRING_32
+			-- {STRING_32} object corresponding to UTF-16 sequence `p' between code units `start_pos' and
+			-- `end_pos' or the first null character encountered if `a_stop_at_null', where invalid
+			-- UTF-16LE sequences are escaped.
+		require
+			minimum_size: p.count >= 2
+			start_position_big_enough: start_pos >= 0
+			end_position_big_enough: start_pos <= end_pos + 1
+			end_pos_small_enough: end_pos < p.count // 2
+		do
+			create Result.make (end_pos - start_pos + 1)
+			utf_16_0_subpointer_into_escaped_string_32 (p, start_pos, end_pos, a_stop_at_null, Result)
+		ensure
+			roundtrip: attached escaped_utf_32_string_to_utf_16le_string_8 (Result) as l_utf and then
+				across l_utf.new_cursor.incremented (1) as l_str all
+					(l_utf.code (l_str.cursor_index) | (l_utf.code (l_str.cursor_index + 1) |<< 8)) = p.read_natural_16 (start_pos * 2 + l_str.cursor_index - 1)
+				end
 		end
 
 	utf_16_0_subpointer_into_escaped_string_32 (p: MANAGED_POINTER; start_pos, end_pos: INTEGER; a_stop_at_null: BOOLEAN; a_result: STRING_32)
@@ -1458,6 +1706,11 @@ feature -- UTF-16 to UTF-32
 					end
 				end
 			end
+		ensure
+			roundtrip: attached escaped_utf_32_string_to_utf_16le_string_8 (a_result.substring (old a_result.count + 1, a_result.count)) as l_utf and then
+				across l_utf.new_cursor.incremented (1) as l_str all
+					(l_utf.code (l_str.cursor_index) | (l_utf.code (l_str.cursor_index + 1) |<< 8)) = p.read_natural_16 (start_pos * 2 + l_str.cursor_index - 1)
+				end
 		end
 
 	utf_16_to_string_32 (s: SPECIAL [NATURAL_16]): STRING_32
@@ -1465,6 +1718,8 @@ feature -- UTF-16 to UTF-32
 		do
 			create Result.make (s.count)
 			utf_16_into_string_32 (s, Result)
+		ensure
+			roundtrip: is_valid_utf_16 (s) implies string_32_to_utf_16 (Result).is_equal (s)
 		end
 
 	utf_16_into_string_32 (s: SPECIAL [NATURAL_16]; a_result: STRING_32)
@@ -1494,6 +1749,8 @@ feature -- UTF-16 to UTF-32
 					end
 				end
 			end
+		ensure
+			roundtrip: is_valid_utf_16 (s) implies string_32_to_utf_16 (a_result.substring (old a_result.count + 1, a_result.count)).is_equal (s)
 		end
 
 	utf_16le_string_8_to_string_32 (s: READABLE_STRING_8): STRING_32
@@ -1502,6 +1759,8 @@ feature -- UTF-16 to UTF-32
 				-- There is at least half the characters of `s'.
 			create Result.make (s.count |>> 1)
 			utf_16le_string_8_into_string_32 (s, Result)
+		ensure
+			roundtrip: is_valid_utf_16le_string_8 (s) implies escaped_utf_32_string_to_utf_16le_string_8 (Result).same_string (s)
 		end
 
 	utf_16le_string_8_into_string_32 (s: READABLE_STRING_8; a_result: STRING_32)
@@ -1531,6 +1790,8 @@ feature -- UTF-16 to UTF-32
 					end
 				end
 			end
+		ensure
+			roundtrip: is_valid_utf_16le_string_8 (s) implies escaped_utf_32_string_to_utf_16le_string_8 (a_result.substring (old a_result.count + 1, a_result.count)).same_string (s)
 		end
 
 	utf_16le_string_8_to_escaped_string_32 (s: READABLE_STRING_8): STRING_32
@@ -1540,6 +1801,8 @@ feature -- UTF-16 to UTF-32
 				-- There is at least half the characters of `s'.
 			create Result.make (s.count |>> 1)
 			utf_16le_string_8_into_escaped_string_32 (s, Result)
+		ensure
+			roundtrip: escaped_utf_32_string_to_utf_16le_string_8 (Result).same_string (s)
 		end
 
 	utf_16le_string_8_into_escaped_string_32 (s: READABLE_STRING_8; a_result: STRING_32)
@@ -1584,6 +1847,8 @@ feature -- UTF-16 to UTF-32
 					escape_code_into (a_result, c1.as_natural_16)
 				end
 			end
+		ensure
+			roundtrip: escaped_utf_32_string_to_utf_16le_string_8 (a_result.substring (old a_result.count + 1, a_result.count)).same_string (s)
 		end
 
 feature -- UTF-16 to UTF-8
@@ -1595,6 +1860,8 @@ feature -- UTF-16 to UTF-8
 				(create {REFACTORING_HELPER}).to_implement ("Convert directly from UTF-16 to UTF-8.")
 			end
 			Result := string_32_to_utf_8_string_8 (utf_16_to_string_32 (s))
+		ensure
+			roundtrip: is_valid_utf_16 (s) implies string_32_to_utf_16 (utf_8_string_8_to_string_32 (Result)).is_equal (s)
 		end
 
 	utf_16_into_utf_8_string_8 (s: SPECIAL [NATURAL_16]; a_result: STRING_8)
@@ -1604,6 +1871,8 @@ feature -- UTF-16 to UTF-8
 				(create {REFACTORING_HELPER}).to_implement ("Convert directly from UTF-16 to UTF-8.")
 			end
 			string_32_into_utf_8_string_8 (utf_16_to_string_32 (s), a_result)
+		ensure
+			roundtrip: is_valid_utf_16 (s) implies string_32_to_utf_16 (utf_8_string_8_to_string_32 (a_result.substring (old a_result.count + 1, a_result.count))).is_equal (s)
 		end
 
 	utf_16le_string_8_to_utf_8_string_8 (s: READABLE_STRING_8): STRING_8
@@ -1611,6 +1880,8 @@ feature -- UTF-16 to UTF-8
 		do
 			create Result.make (s.count)
 			utf_16le_string_8_into_utf_8_string_8 (s, Result)
+		ensure
+			roundtrip: is_valid_utf_16le_string_8 (s) implies utf_32_string_to_utf_16le_string_8 (utf_8_string_8_to_string_32 (Result)).same_string (s)
 		end
 
 	utf_16le_string_8_into_utf_8_string_8 (s: READABLE_STRING_8; a_result: STRING_8)
@@ -1635,6 +1906,8 @@ feature -- UTF-16 to UTF-8
 				v.extend (s [i - 1].code.as_natural_16 | (s [i].code.as_natural_16 |<< 8))
 			end
 			utf_16_into_utf_8_string_8 (v, a_result)
+		ensure
+			roundtrip: is_valid_utf_16le_string_8 (s) implies utf_32_string_to_utf_16le_string_8 (utf_8_string_8_to_string_32 (a_result.substring (old a_result.count + 1, a_result.count))).same_string (s)
 		end
 
 feature -- UTF-8 to UTF-16
@@ -1646,6 +1919,8 @@ feature -- UTF-8 to UTF-16
 				(create {REFACTORING_HELPER}).to_implement ("Convert directly from UTF-8 to UTF-16.")
 			end
 			Result := string_32_to_utf_16 (utf_8_string_8_to_string_32 (s))
+		ensure
+			roundtrip: is_valid_utf_8_string_8 (s) implies utf_16_to_utf_8_string_8 (Result).same_string (s)
 		end
 
 	utf_8_string_8_to_utf_16_0 (s: READABLE_STRING_8): SPECIAL [NATURAL_16]
@@ -1653,6 +1928,8 @@ feature -- UTF-8 to UTF-16
 		do
 			Result := utf_8_string_8_to_utf_16 (s)
 			Result := Result.aliased_resized_area_with_default (0, Result.count + 1)
+		ensure
+			roundtrip: is_valid_utf_8_string_8 (s) implies utf_16_to_utf_8_string_8 (Result).same_string (s)
 		end
 
 feature -- Byte Order Mark (BOM)
@@ -1671,6 +1948,75 @@ feature -- Byte Order Mark (BOM)
 
 	utf_32le_bom_to_string_8: STRING_8 = "%/255/%/254/%U%U"
 			-- UTF-32LE BOM sequence.
+
+feature -- Helpers
+
+	utf_8_bytes_count (s: READABLE_STRING_GENERAL; start_pos, end_pos: INTEGER): INTEGER
+			-- Number of bytes necessary at the very least to encode in UTF-8 `s.substring (start_pos, end_pos)'.
+			-- Note that this feature can be used for both escaped and non-escaped string.
+			-- In the case of escaped strings, the result will be possibly higher than really needed.
+			-- It does not include the space for the terminating null character.
+		require
+			start_position_big_enough: start_pos >= 1
+			end_position_big_enough: start_pos <= end_pos + 1
+			end_pos_small_enough: end_pos <= s.count
+		local
+			i: INTEGER
+			c: NATURAL_32
+		do
+			from
+				i := start_pos
+			until
+				i > end_pos
+			loop
+				c := s.code (i)
+				if c <= 0x7F then
+						-- 0xxxxxxx.
+					Result := Result + 1
+				elseif c <= 0x7FF then
+						-- 110xxxxx 10xxxxxx
+					Result := Result + 2
+				elseif c <= 0xFFFF then
+						-- 1110xxxx 10xxxxxx 10xxxxxx
+					Result := Result + 3
+				else
+						-- c <= 1FFFFF - there are no higher code points
+						-- 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+					Result := Result + 4
+				end
+				i := i + 1
+			end
+		end
+
+	utf_16_bytes_count (s: READABLE_STRING_GENERAL; start_pos, end_pos: INTEGER): INTEGER
+			-- Number of bytes necessary at the very least to encode in UTF-16 `s.substring (start_pos, end_pos)'.
+			-- Note that this feature can be used for both escaped and non-escaped string.
+			-- In the case of escaped strings, the result will be possibly higher than really needed.
+			-- It does not include the space for the terminating null character.
+		require
+			start_position_big_enough: start_pos >= 1
+			end_position_big_enough: start_pos <= end_pos + 1
+			end_pos_small_enough: end_pos <= s.count
+		local
+			i: INTEGER
+			c: NATURAL_32
+		do
+			from
+				i := start_pos
+			until
+				i > end_pos
+			loop
+				c := s.code (i)
+				if c <= 0xFFFF then
+						-- Code point from Basic Multilingual Plane: one 16-bit code unit.
+					Result := Result + 2
+				else
+					Result := Result + 4
+				end
+				i := i + 1
+			end
+		end
+
 
 feature {NONE} -- Implementation
 
