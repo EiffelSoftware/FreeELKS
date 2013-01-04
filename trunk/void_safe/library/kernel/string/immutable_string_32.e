@@ -30,6 +30,13 @@ inherit
 			is_equal, out, copy, has, index_of, last_index_of, occurrences
 		end
 
+	MISMATCH_CORRECTOR
+		undefine
+			copy, is_equal, out
+		redefine
+			correct_mismatch
+		end
+
 create
 	make,
 	make_empty,
@@ -317,6 +324,18 @@ feature {READABLE_STRING_8, READABLE_STRING_32} -- Implementation
 
 	area_lower: INTEGER;
 			-- Index where current string starts in `area'
+
+feature -- Transformation
+
+	correct_mismatch
+			-- Attempt to correct object mismatch during retrieve using `mismatch_information'.
+		do
+				-- In .NET, we have a mismatch that is triggered due to the implementation of
+				-- SPECIAL [CHARACTER_32] as a .NET array of UInt16.
+			if area = Void and then attached {like area} mismatch_information.item ("area") as l_area then
+				area := l_area
+			end
+		end
 
 note
 	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
