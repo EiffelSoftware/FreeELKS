@@ -336,6 +336,7 @@ feature -- Conversion
 		local
 			dir_temp: DIRECTORY
 			e: like last_entry_pointer
+			l_path: PATH
 		do
 			create dir_temp.make_open_read (internal_name)
 				-- Arbitrary size for arrayed_list creation to avoid
@@ -350,7 +351,8 @@ feature -- Conversion
 			until
 				e = default_pointer
 			loop
-				Result.extend ((create {PATH}.make_from_pointer (e)).name)
+				create l_path.make_from_pointer (e)
+				Result.extend (create {STRING_32}.make_from_string (l_path.name))
 				dir_temp.readentry
 				e := dir_temp.last_entry_pointer
 			end
