@@ -192,24 +192,6 @@ feature -- Access
 			name_not_empty: not Result.is_empty
 		end
 
-	name_32: STRING_32
-			-- File name. If Current was created using a STRING_8 instance,
-			-- then `name_32' will not necessary be the same as `name'. The reason
-			-- is that on some platforms a non-unicode filename is interpreted
-			-- in a certain locale and its corresponding Unicode version is not necessary
-			-- made of the same codes.
-		obsolete
-			"Use `path' to ensure that Unicode filenames are not truncated."
-		do
-			if attached {READABLE_STRING_8} internal_name as l_name then
-				Result := buffered_file_info.pointer_to_file_name_32 (internal_name_pointer.item)
-			else
-				Result := internal_name.as_string_32
-			end
-		ensure
-			name_not_empty: not Result.is_empty
-		end
-
 	item: CHARACTER
 			-- Current item
 		do
