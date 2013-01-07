@@ -19,7 +19,7 @@ class
 inherit
 	HASH_TABLE [G, READABLE_STRING_GENERAL]
 		redefine
-			same_keys, hash_code_of, is_equal
+			same_keys, hash_code_of, empty_duplicate
 		end
 
 create
@@ -93,6 +93,18 @@ feature -- Comparison
 		do
 			if is_case_insensitive = other.is_case_insensitive then
 				Result := Precursor (other)
+			end
+		end
+
+feature {NONE} -- Duplication
+
+	empty_duplicate (n: INTEGER): like Current
+			-- Create an empty copy of Current that can accommodate `n' items
+		do
+			if is_case_insensitive then
+				create Result.make_caseless (n)
+			else
+				create Result.make (n)
 			end
 		end
 
