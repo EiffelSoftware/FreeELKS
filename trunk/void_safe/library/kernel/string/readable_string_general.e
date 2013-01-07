@@ -175,6 +175,54 @@ feature -- Access
 	true_constant: STRING_8 = "true"
 			-- Constant string "true"
 
+	hash_code: INTEGER
+			-- Hash code value
+		local
+			i, nb: INTEGER
+		do
+			Result := internal_hash_code
+			if Result = 0 then
+					-- The magic number `8388593' below is the greatest prime lower than
+					-- 2^23 so that this magic number shifted to the left does not exceed 2^31.
+				from
+					i := 1
+					nb := count
+				until
+					i > nb
+				loop
+					Result := ((Result \\ 8388593) |<< 8) + item (i).code
+					i := i + 1
+				end
+				internal_hash_code := Result
+			end
+		end
+
+	case_insensitive_hash_code: INTEGER
+			-- Hash code value of the lower case version of `Current'.
+		local
+			l_props: like character_properties
+			i, nb: INTEGER
+		do
+			Result := internal_case_insensitive_hash_code
+			if Result = 0 then
+					-- The magic number `8388593' below is the greatest prime lower than
+					-- 2^23 so that this magic number shifted to the left does not exceed 2^31.
+				from
+					i := 1
+					nb := count
+					l_props := character_properties
+				until
+					i > nb
+				loop
+					Result := ((Result \\ 8388593) |<< 8) + l_props.to_lower (item (i)).code
+					i := i + 1
+				end
+				internal_case_insensitive_hash_code := Result
+			end
+		ensure
+			consistent: Result = as_lower.hash_code
+		end
+
 feature -- Status report
 
 	is_immutable: BOOLEAN
@@ -1046,8 +1094,11 @@ feature {NONE} -- Implementation
 
 feature {READABLE_STRING_GENERAL} -- Implementation
 
-	internal_hash_code: INTEGER;
-			-- Cache for `hash_code'
+	internal_hash_code: INTEGER
+			-- Cache for `hash_code'.
+
+	internal_case_insensitive_hash_code: INTEGER;
+			-- Cash for `case_insensitive_hash_code'.
 
 note
 	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"

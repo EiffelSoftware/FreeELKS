@@ -48,23 +48,9 @@ feature -- Hash code
 
 	hash_code_of (a_key: READABLE_STRING_GENERAL): INTEGER
 			-- Hash code value
-		local
-			i, nb: INTEGER
-			l_props: like character_properties
 		do
 			if is_case_insensitive then
-					-- The magic number `8388593' below is the greatest prime lower than
-					-- 2^23 so that this magic number shifted to the left does not exceed 2^31.
-				from
-					i := 1
-					nb := a_key.count
-					l_props := character_properties
-				until
-					i > nb
-				loop
-					Result := ((Result \\ 8388593) |<< 8) + l_props.to_lower (a_key.item (i)).code
-					i := i + 1
-				end
+				Result := a_key.case_insensitive_hash_code
 			else
 				Result := a_key.hash_code
 			end

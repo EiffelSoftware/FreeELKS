@@ -157,30 +157,6 @@ feature -- Access
 		deferred
 		end
 
-	hash_code: INTEGER
-			-- Hash code value
-		local
-			i, nb: INTEGER
-			l_area: like area
-		do
-			Result := internal_hash_code
-			if Result = 0 then
-					-- The magic number `8388593' below is the greatest prime lower than
-					-- 2^23 so that this magic number shifted to the left does not exceed 2^31.
-				from
-					i := area_lower
-					nb := count + i
-					l_area := area
-				until
-					i = nb
-				loop
-					Result := ((Result \\ 8388593) |<< 8) + l_area.item (i).code
-					i := i + 1
-				end
-				internal_hash_code := Result
-			end
-		end
-
 	shared_with (other: READABLE_STRING_32): BOOLEAN
 			-- Does string share the text of `other'?
 		do
