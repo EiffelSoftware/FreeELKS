@@ -372,7 +372,7 @@ feature -- Status setting
 			l_env.append_character ('=')
 			l_env.append_string_general (value)
 			create l_c_env.make (l_env)
-			environ.force (l_c_env, key.as_string_32)
+			environ.force (l_c_env, create {IMMUTABLE_STRING_32}.make_from_string_general (key))
 			return_code := eif_putenv (l_c_env.item)
 		ensure
 			variable_set: return_code = 0 implies
@@ -424,7 +424,7 @@ feature -- Status setting
 
 feature {NONE} -- Implementation
 
-	environ: HASH_TABLE [NATIVE_STRING, STRING_32]
+	environ: HASH_TABLE [NATIVE_STRING, IMMUTABLE_STRING_32]
 			-- Environment variable memory set by current execution,
 			-- indexed by environment variable name. Needed otherwise
 			-- we would corrupt memory after freeing memory used by
