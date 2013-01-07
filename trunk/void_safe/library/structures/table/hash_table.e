@@ -456,10 +456,29 @@ feature -- Comparison
 	is_equal (other: like Current): BOOLEAN
 			-- Does table contain the same information as `other'?
 		do
-			Result :=
-				keys ~ other.keys and
-				content ~ other.content and
-				(has_default = other.has_default)
+			if
+				count = other.count and then
+				object_comparison = other.object_comparison and then
+				has_default = other.has_default
+			then
+				Result := True
+				across
+					Current as l_c
+				until
+					not Result
+				loop
+					other.search (l_c.key)
+					if other.found then
+						if object_comparison then
+							Result := l_c.item ~ other.found_item
+						else
+							Result := l_c.item = other.found_item
+						end
+					else
+						Result := False
+					end
+				end
+			end
 		end
 
 	same_keys (a_search_key, a_key: K): BOOLEAN
