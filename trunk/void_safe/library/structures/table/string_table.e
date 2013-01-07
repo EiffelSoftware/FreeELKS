@@ -19,7 +19,7 @@ class
 inherit
 	HASH_TABLE [G, READABLE_STRING_GENERAL]
 		redefine
-			same_keys, hash_code_of, empty_duplicate
+			same_keys, hash_code_of, empty_duplicate, is_equal
 		end
 
 create
