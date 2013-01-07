@@ -19,7 +19,7 @@ class
 inherit
 	HASH_TABLE [G, READABLE_STRING_GENERAL]
 		redefine
-			same_keys, hash_code_of
+			same_keys, hash_code_of, is_equal
 		end
 
 create
@@ -85,6 +85,14 @@ feature -- Comparison
 				Result := a_search_key.is_case_insensitive_equal (a_key)
 			else
 				Result := a_search_key.same_string (a_key)
+			end
+		end
+
+	is_equal (other: like Current): BOOLEAN
+			-- Does table contain the same information as `other'?
+		do
+			if is_case_insensitive = other.is_case_insensitive then
+				Result := Precursor (other)
 			end
 		end
 
