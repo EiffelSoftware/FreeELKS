@@ -101,6 +101,7 @@ feature {NONE} -- Initialization
 
 	make_from_string_32 (s: READABLE_STRING_32)
 			-- Initialize from the characters of `s'.
+			--| If `s' is already an immutable type, we reuse the same `area'.
 		require
 			s_attached: s /= Void
 		local
