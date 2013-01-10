@@ -23,7 +23,7 @@ inherit
 		end
 
 create
-	make, make_caseless
+	make, make_equal, make_caseless, make_equal_caseless
 
 feature {NONE} -- Initialization
 
@@ -42,6 +42,25 @@ feature {NONE} -- Initialization
 			more_than_minimum: capacity > Minimum_capacity
 			no_status: not special_status
 			is_case_insensitive: is_case_insensitive
+		end
+
+	make_equal_caseless (n: INTEGER)
+			-- Allocate hash table for at least `n' items.
+			-- The table will be resized automatically
+			-- if more than `n' items are inserted.
+			-- Keys will be compared caseless.
+			-- Items will be compared using `~'.
+		require
+			n_non_negative: n >= 0
+		do
+			is_case_insensitive := True
+			make_equal (n)
+		ensure
+			breathing_space: n < capacity
+			more_than_minimum: capacity > Minimum_capacity
+			no_status: not special_status
+			is_case_insensitive: is_case_insensitive
+			compare_objects: object_comparison
 		end
 
 feature -- Hash code
@@ -91,6 +110,9 @@ feature {NONE} -- Duplication
 				create Result.make_caseless (n)
 			else
 				create Result.make (n)
+			end
+			if object_comparison then
+				Result.compare_objects
 			end
 		end
 
