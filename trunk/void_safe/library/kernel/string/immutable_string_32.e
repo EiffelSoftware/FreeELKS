@@ -9,7 +9,7 @@ note
 	date: "$Date$"
 	revision: "$Revision$"
 
-class
+frozen class
 	IMMUTABLE_STRING_32
 
 inherit
