@@ -58,7 +58,8 @@ class HASH_TABLE [G, K -> detachable HASHABLE] inherit
 		end
 
 create
-	make
+	make,
+	make_equal
 
 feature -- Initialization
 
@@ -99,6 +100,23 @@ feature -- Initialization
 			breathing_space: n < capacity
 			more_than_minimum: capacity > minimum_capacity
 			no_status: not special_status
+		end
+
+	make_equal (n: INTEGER)
+			-- Allocate hash table for at least `n' items.
+			-- The table will be resized automatically
+			-- if more than `n' items are inserted.
+			-- Use `~' to compare items.
+		require
+			n_non_negative: n >= 0
+		do
+			make (n)
+			compare_objects
+		ensure
+			breathing_space: n < capacity
+			more_than_minimum: capacity > minimum_capacity
+			no_status: not special_status
+			compare_objects: object_comparison
 		end
 
 	accommodate (n: INTEGER)
@@ -1139,6 +1157,9 @@ feature {NONE} -- Duplication
 			n_non_negative: n >= 0
 		do
 			create Result.make (n)
+			if object_comparison then
+				Result.compare_objects
+			end
 		ensure
 			empty_duplicate_attached: Result /= Void
 		end
