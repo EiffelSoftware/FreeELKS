@@ -733,6 +733,18 @@ feature -- Conversion
 			identity: (conforms_to ("") and Result = Current) or (not conforms_to ("") and Result /= Current)
 		end
 
+	as_string_8_conversion: STRING_8
+			-- Equivalent to `as_string_32' with a different name.
+			-- To be used for migrating existing code to Unicode
+			-- when you get a compiler error but cannot or do not have
+			-- the time yet to address the target recipient of the string to be
+			-- a READABLE_STRING_32 or descendants.
+		obsolete
+			"Update recipient of call to use READABLE_STRING_32 and descendants instead."
+		do
+			Result := as_string_8
+		end
+
 	as_readable_string_8: READABLE_STRING_8
 			--
 		obsolete
@@ -772,6 +784,18 @@ feature -- Conversion
 		ensure
 			as_string_8_not_void: Result /= Void
 			identity: (conforms_to ("") and Result = Current) or (not conforms_to ("") and Result /= Current)
+		end
+
+	as_string_32_conversion: STRING_32
+			-- Equivalent to `as_string_32' with a different name.
+			-- To be used for migrating existing code to Unicode
+			-- when you get a compiler error but cannot or do not have
+			-- the time yet to address the source of the string to be
+			-- a READABLE_STRING_32 or descendants.
+		obsolete
+			"Update target of call to use READABLE_STRING_32 and descendants instead."
+		do
+			Result := as_string_32
 		end
 
 	as_readable_string_32: READABLE_STRING_32
