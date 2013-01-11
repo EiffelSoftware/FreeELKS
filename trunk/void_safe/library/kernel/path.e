@@ -834,9 +834,9 @@ feature -- Output
 				Result := l_name
 			else
 				if {PLATFORM}.is_windows then
-					Result := u.utf_16le_string_8_to_escaped_string_32 (storage)
+					create Result.make_from_string (u.utf_16le_string_8_to_escaped_string_32 (storage))
 				else
-					Result := u.utf_8_string_8_to_escaped_string_32 (storage)
+					create Result.make_from_string (u.utf_8_string_8_to_escaped_string_32 (storage))
 				end
 				internal_name := Result
 			end
