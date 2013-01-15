@@ -734,7 +734,7 @@ feature -- Conversion
 		end
 
 	as_string_8_conversion: STRING_8
-			-- Equivalent to `as_string_32' with a different name.
+			-- Equivalent to `as_string_8' with a different name.
 			-- To be used for migrating existing code to Unicode
 			-- when you get a compiler error but cannot or do not have
 			-- the time yet to address the target recipient of the string to be
