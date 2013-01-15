@@ -289,7 +289,7 @@ feature -- Element change
 	append (s: SEQUENCE [G])
 			-- Append a copy of `s'.
 		local
-			l: like s
+			l: SEQUENCE [G]
 			l_cursor: CURSOR
 		do
 			l := s
