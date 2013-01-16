@@ -851,8 +851,6 @@ feature -- Conversion
 			recurse: count > 1 implies Result.substring (2, count) ~ substring (2, count).as_upper
 		end
 
-feature -- Conversion
-
 	to_integer_8: INTEGER_8
 			-- 8-bit integer value
 		require
@@ -987,6 +985,54 @@ feature -- Conversion
 				(not Result = as_lower.same_string (false_constant))
 		end
 
+feature -- Conversion
+
+	split (a_separator: CHARACTER_32): LIST [like Current]
+			-- Split on `a_separator'.
+		local
+			l_list: ARRAYED_LIST [like Current]
+			part: like Current
+			i, j, c: INTEGER
+		do
+			c := count
+				-- Worse case allocation: every character is a separator
+			create l_list.make (c + 1)
+			if c > 0 then
+				from
+					i := 1
+				until
+					i > c
+				loop
+					j := index_of (a_separator, i)
+					if j = 0 then
+							-- No separator was found, we will
+							-- simply create a list with a copy of
+							-- Current in it.
+						j := c + 1
+					end
+					part := substring (i, j - 1)
+					l_list.extend (part)
+					i := j + 1
+				end
+				if j = c then
+					check
+						last_character_is_a_separator: item (j) = a_separator
+					end
+						-- A separator was found at the end of the string
+					l_list.extend (new_string (0))
+				end
+			else
+					-- Extend empty string, since Current is empty.
+				l_list.extend (new_string (0))
+			end
+			Result := l_list
+			check
+				l_list.count = occurrences (a_separator) + 1
+			end
+		ensure
+			Result /= Void
+		end
+
 feature -- Element change
 
 	plus alias "+" (s: READABLE_STRING_GENERAL): like Current
@@ -1051,6 +1097,17 @@ feature {NONE} -- Assertion helper
 			-- Are ELKS checkings verified? Must be True when changing implementation of STRING_GENERAL or descendant.
 
 feature {NONE} -- Implementation
+
+	new_string (n: INTEGER): like Current
+			-- New instance of current with space for at least `n' characters.
+		require
+			n_non_negative: n >= 0
+		deferred
+		ensure
+			new_string_not_void: Result /= Void
+			new_string_empty: Result.is_empty
+			new_string_area_big_enough: Result.capacity >= n
+		end
 
 	is_valid_integer_or_natural (type: INTEGER) : BOOLEAN
 			-- Is `Current' a valid number according to given `type'?
