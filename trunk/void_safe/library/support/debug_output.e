@@ -11,7 +11,7 @@ deferred class
 
 feature -- Status report
 
-	debug_output: STRING
+	debug_output: READABLE_STRING_GENERAL
 			-- String that should be displayed in debugger to represent `Current'.
 		deferred
 		ensure
