@@ -1052,7 +1052,7 @@ feature -- UTF-32 to UTF-16
 				create Result.make_empty (p + 1)
 			invariant
 				m = Result.count
-				p = Result.capacity
+				p + 1 = Result.capacity
 			until
 				i >= n
 			loop
