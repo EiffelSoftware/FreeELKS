@@ -180,7 +180,7 @@ feature -- Status setting
 			end
 		end
 
-	raise (name: detachable STRING)
+	raise (name: detachable READABLE_STRING_GENERAL)
 			-- Raise a developer exception of name `name'.
 		local
 			l_exception: DEVELOPER_EXCEPTION
@@ -190,7 +190,7 @@ feature -- Status setting
 			l_exception.raise
 		end
 
-	raise_retrieval_exception (name: detachable STRING)
+	raise_retrieval_exception (name: detachable READABLE_STRING_GENERAL)
 			-- Raise a retrieval exception of name `name'.
 		do
 			if attached exception_manager.exception_from_code (serialization_exception) as l_exception then
