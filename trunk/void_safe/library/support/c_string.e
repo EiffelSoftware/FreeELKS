@@ -30,6 +30,7 @@ feature {NONE} -- Initialization
 			-- Make a C string from `a_string'.
 		require
 			a_string_not_void: a_string /= Void
+			a_string_is_valid_as_string_8: a_string.is_valid_as_string_8
 		do
 			make_empty (a_string.count)
 			set_string (a_string)
