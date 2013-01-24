@@ -1,6 +1,6 @@
 note
 	description: "[
-		Hash tables, used to store items identified by string keys that are compared with our without case sensitivity.
+		Hash tables, used to store items identified by string keys that are compared with or without case sensitivity.
 		]"
 	legal: "See notice at end of class."
 	status: "See notice at end of class."
