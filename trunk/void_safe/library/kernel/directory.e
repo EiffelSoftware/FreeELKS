@@ -513,7 +513,7 @@ feature -- Removal
 			loop
 					-- Ignore current and parent directories.
 				l_name := l_info.pointer_to_file_name_8 (l_last_entry_pointer)
-				if (not l_name.same_string (current_directory_string) and not l_name.same_string (parent_directory_string)) then
+				if not l_name.same_string (current_directory_string) and not l_name.same_string (parent_directory_string) then
 						-- Avoid creating too many objects.
 					l_file_name := path.extended (l_name)
 					l_info.update (l_file_name.name)
