@@ -194,7 +194,7 @@ feature -- Access
 	item_code (i: INTEGER): INTEGER
 			-- Numeric code of character at position `i'.
 		obsolete
-			"For concistency with Unicode string handling, use `code (i)' instead."
+			"For consistency with Unicode string handling, use `code (i)' instead."
 		do
 			Result := area.item (i - 1).natural_32_code.as_integer_32
 		end
