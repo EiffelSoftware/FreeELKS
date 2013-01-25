@@ -285,7 +285,7 @@ feature -- Status report
 		end
 
 	filled_with (v: G): BOOLEAN
-			-- Are all itms set to `v'?
+			-- Are all items set to `v'?
 		do
 			Result := area.filled_with (v, 0, upper - lower)
 		ensure
