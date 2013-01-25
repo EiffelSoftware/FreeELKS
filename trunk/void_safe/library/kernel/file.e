@@ -33,7 +33,7 @@ feature -- Initialization
 	make (fn: STRING_8)
 			-- Create file object with `fn' as file name.
 		obsolete
-			"Use `make_with_path' instead."
+			"Use any of the `make_...' routines instead to benefit from Unicode file names."
 		require
 			string_exists: fn /= Void
 			string_not_empty: not fn.is_empty
