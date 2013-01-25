@@ -383,7 +383,7 @@ feature -- UTF-32 to UTF-8
 				end
 			end
 			if l_resized then
-					-- `p' was resized so we adjust it to accomodate up to the terminating null character.
+					-- `p' was resized so we adjust it to accommodate up to the terminating null character.
 				p.resize (m + 1)
 			end
 			p.put_natural_8 (0, m)
@@ -583,7 +583,7 @@ feature -- UTF-32 to UTF-8
 				end
 			end
 			if l_resized then
-					-- `p' was resized so we adjust it to accomodate up to the terminating null character.
+					-- `p' was resized so we adjust it to accommodate up to the terminating null character.
 				p.resize (m + 1)
 			end
 			p.put_natural_8 (0, m)

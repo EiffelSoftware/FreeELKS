@@ -49,7 +49,7 @@ feature {NONE} -- Initialization
 		end
 
 	make_empty (a_length: INTEGER)
-			-- Initialize an empty instance of Current that will accomodate `a_length' code units.
+			-- Initialize an empty instance of Current that will accommodate `a_length' code units.
 			-- The memory area is not initialized.
 		require
 			a_length_positive: a_length >= 0
