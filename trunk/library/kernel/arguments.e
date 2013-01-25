@@ -285,7 +285,7 @@ feature -- Status report
 
 	option_sign: CHARACTER_REF
 			-- The character used to signal options on the command line.
-			-- This can be '%U' if no sign is necesary for the argument
+			-- This can be '%U' if no sign is necessary for the argument
 			-- to be an option
 			-- Default is '-'
 		once
@@ -297,7 +297,7 @@ feature -- Status setting
 
 	set_option_sign (c: CHARACTER)
 			-- Make `c' the option sign.
-			-- Use'%U' if no sign is necesary for the argument to
+			-- Use'%U' if no sign is necessary for the argument to
 			-- be an option
 		do
 			option_sign.set_item (c)

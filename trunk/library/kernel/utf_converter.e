@@ -21,10 +21,10 @@ note
 			To provide an example (assuming that the Unicode character U+FFFD is represented as
 			? textually):
 			1 - on UNIX, any invalid UTF-8 byte sequence such as 0x8F 0x8F is encoded as the
-			following Unicode sequence: U+FFFD U+0038 U+0046 U+FFFF U+0038 U+0046, and textually
+			following Unicode sequence: U+FFFD U+0038 U+0046 U+FFFD U+0038 U+0046, and textually
 			it looks like "?8F?8F".
 			2 - on Windows, any invalid UTF-16 2-byte sequence such as 0xD800 0x0054 is encoded as the
-			following Unicode sequence: U+FFFD U+0075 U+0044 U+0038 U+0030 U+0030 U+FFFD U+0035 U+0033,
+			following Unicode sequence: U+FFFD U+0075 U+0044 U+0038 U+0030 U+0030 U+FFFD U+0035 U+0034,
 			and textually it looks like "?uD800?54". The rule is that if the 2-byte sequence does not fit
 			into 1 byte, it uses the letter `u' followed by the hexadecimal value of the 2-byte sequence,
 			otherwise it simply uses the 1-byte hexadecimal representation.
