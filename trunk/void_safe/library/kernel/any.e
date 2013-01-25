@@ -150,7 +150,7 @@ feature -- Duplication
 
 	frozen twin: like Current
 			-- New object equal to `Current'
-			-- `twin' calls `copy'; to change copying/twining semantics, redefine `copy'.
+			-- `twin' calls `copy'; to change copying/twinning semantics, redefine `copy'.
 		external
 			"built_in"
 		ensure
