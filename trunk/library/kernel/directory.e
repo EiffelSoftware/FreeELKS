@@ -158,7 +158,7 @@ feature -- Access
 				Result or e = default_pointer
 			loop
 				if attached {READABLE_STRING_8} entry_name then
-						-- We were given a STRING_8 instance, we lookup the name uing the old way
+						-- We were given a STRING_8 instance, we lookup the name using the old way
 					Result := entry_name.same_string (file_info.pointer_to_file_name_8 (e))
 				elseif attached file_info.pointer_to_file_name_32 (e) as l_str then
 					Result := entry_name.same_string (l_str)
@@ -270,7 +270,7 @@ feature -- Status report
 	last_entry_8: detachable STRING_8
 			-- Raw byte sequence of the last found entry if this entry cannot be
 			-- expressed with Unicode characters. This is useful
-			-- when handeling a file that is not a valid UTF-8 sequence on Unix.
+			-- when handling a file that is not a valid UTF-8 sequence on Unix.
 		do
 			if last_entry_pointer /= default_pointer then
 				Result := file_info.pointer_to_file_name_8 (last_entry_pointer)
