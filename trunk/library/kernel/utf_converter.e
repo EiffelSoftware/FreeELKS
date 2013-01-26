@@ -294,7 +294,7 @@ feature -- UTF-32 to UTF-8
 		end
 
 	escaped_utf_32_string_to_utf_8_string_8 (s: READABLE_STRING_GENERAL): STRING_8
-			-- UTF-8 sequence corresponding to `s' interpreted as an UTF-32 sequence that could be escaped.
+			-- UTF-8 sequence corresponding to `s' interpreted as a UTF-32 sequence that could be escaped.
 			-- If `s' contains the `escape_character' followed by either "HH" or "uHHHH" where H stands
 			-- for an hexadecimal digit, then `s' has been escaped and will be converted to what is
 			-- expected by the current platform.
@@ -306,7 +306,7 @@ feature -- UTF-32 to UTF-8
 		end
 
 	escaped_utf_32_string_into_utf_8_string_8 (s: READABLE_STRING_GENERAL; a_result: STRING_8)
-			-- Copy the UTF-8 sequence corresponding to `s' interpreted as an UTF-32 sequence that could
+			-- Copy the UTF-8 sequence corresponding to `s' interpreted as a UTF-32 sequence that could
 			-- be escaped appended into `a_result'.
 			-- If `s' contains the `escape_character' followed by either "HH" or "uHHHH" where H stands
 			-- for an hexadecimal digit, then `s' has been escaped and will be converted to what is
@@ -1067,7 +1067,7 @@ feature -- UTF-32 to UTF-16
 		end
 
 	escaped_utf_32_string_to_utf_16le_string_8 (s: READABLE_STRING_GENERAL): STRING_8
-			-- UTF-16LE sequence corresponding to `s' interpreted as an UTF-32 sequence that could be escaped.
+			-- UTF-16LE sequence corresponding to `s' interpreted as a UTF-32 sequence that could be escaped.
 			-- If `s' contains the `escape_character' followed by either "HH" or "uHHHH" where H stands
 			-- for an hexadecimal digit, then `s' has been escaped and will be converted to what is
 			-- expected by the current platform.
@@ -1080,7 +1080,7 @@ feature -- UTF-32 to UTF-16
 		end
 
 	escaped_utf_32_string_into_utf_16le_string_8 (s: READABLE_STRING_GENERAL; a_result: STRING_8)
-			-- Copy UTF-16LE sequence corresponding to `s' interpreted as an UTF-32 sequence that could be
+			-- Copy UTF-16LE sequence corresponding to `s' interpreted as a UTF-32 sequence that could be
 			-- escaped appended into `a_result'.
 			-- If `s' contains the `escape_character' followed by either "HH" or "uHHHH" where H stands
 			-- for an hexadecimal digit, then `s' has been escaped and will be converted to what is
