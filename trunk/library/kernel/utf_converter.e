@@ -1297,7 +1297,7 @@ feature -- UTF-16 to UTF-32
 									-- code unit to form a Unicode character.
 								a_result.extend (((c1 |<< 10) + c2 - 0x35FDC00).to_character_32)
 							else
-									-- This is an invalid unicode code unit, we escape the leading code unit.
+									-- This is an invalid Unicode code unit, we escape the leading code unit.
 								escape_code_into (a_result, c1.as_natural_16)
 									-- However we reset, decrement `i' so that if `c2' is a valid
 									-- character we simply encode it as is, or if it is a leading code
@@ -1394,7 +1394,7 @@ feature -- UTF-16 to UTF-32
 								-- code unit to form a Unicode character.
 							a_result.extend (((c1 |<< 10) + c2 - 0x35FDC00).to_character_32)
 						else
-								-- This is an invalid unicode code unit, we escape the leading code unit.
+								-- This is an invalid Unicode code unit, we escape the leading code unit.
 							escape_code_into (a_result, c1.as_natural_16)
 								-- However we reset, decrement `i' so that if `c2' is a valid
 								-- character we simply encode it as is, or if it is a leading code
