@@ -61,16 +61,16 @@ feature -- Status report
 				c := s.code (i)
 				if c <= 127 then
 						-- Form 0xxxxxxx.
-				elseif (c & 0xE0) = 0xC0 and then i < nb then
+				elseif (c & 0xE0) = 0xC0 and i < nb then
 						-- Form 110xxxxx 10xxxxxx.
 					Result := (s.code (i + 1) & 0xC0) = 0x80
 					i := i + 1
-				elseif (c & 0xF0) = 0xE0 and then i + 1 < nb then
+				elseif (c & 0xF0) = 0xE0 and i + 1 < nb then
 					-- Form 1110xxxx 10xxxxxx 10xxxxxx.
 					Result := (s.code (i + 1) & 0xC0) = 0x80 and
 						(s.code (i + 2) & 0xC0) = 0x80
 					i := i + 2
-				elseif (c & 0xF8) = 0xF0 and then i + 2 < nb then
+				elseif (c & 0xF8) = 0xF0 and i + 2 < nb then
 					-- Form 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx.
 					Result := (s.code (i + 1) & 0xC0) = 0x80 and
 						(s.code (i + 2) & 0xC0) = 0x80 and
@@ -99,7 +99,7 @@ feature -- Status report
 				loop
 					i := i + 2
 					c1 := s.code (i - 1) | (s.code (i) |<< 8)
-					if c1 < 0xD800 or else c1 >= 0xE000 then
+					if c1 < 0xD800 or c1 >= 0xE000 then
 						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit, this is valid Unicode.
 					elseif c1 <= 0xDBFF then
 						i := i + 2
@@ -125,7 +125,7 @@ feature -- Status report
 			i, n: INTEGER
 			c1, c2: NATURAL_32
 		do
-			if p.count >= 2 and then start_pos >= 0 and then start_pos <= end_pos + 1 and then end_pos < p.count // 2 then
+			if p.count >= 2 and start_pos >= 0 and start_pos <= end_pos + 1 and end_pos < (p.count // 2) then
 				from
 					i := start_pos * 2
 					n := end_pos * 2
@@ -138,7 +138,7 @@ feature -- Status report
 							-- We hit our null terminating character, we can stop
 						i := n + 1
 					else
-						if c1 < 0xD800 or else c1 >= 0xE000 then
+						if c1 < 0xD800 or c1 >= 0xE000 then
 							-- Codepoint from Basic Multilingual Plane: one 16-bit code unit, this is valid Unicode.
 							i := i + 1
 						elseif c1 <= 0xDBFF then
@@ -177,7 +177,7 @@ feature -- Status report
 						-- We hit our null terminating character, we can stop
 					i := n + 1
 				else
-					if c1 < 0xD800 or else c1 >= 0xE000 then
+					if c1 < 0xD800 or c1 >= 0xE000 then
 						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit, this is valid Unicode.
 					elseif c1 <= 0xDBFF then
 						i := i + 1
@@ -1585,7 +1585,7 @@ feature -- UTF-16 to UTF-32
 					i := n + 1
 				else
 					i := i + 2
-					if c < 0xD800 or else c >= 0xE000 then
+					if c < 0xD800 or c >= 0xE000 then
 							-- Codepoint from Basic Multilingual Plane: one 16-bit code unit.
 						a_result.extend (c.to_character_32)
 					else
@@ -1680,7 +1680,7 @@ feature -- UTF-16 to UTF-32
 					i := n + 1
 				else
 					i := i + 2
-					if c1 < 0xD800 or else c1 >= 0xE000 then
+					if c1 < 0xD800 or c1 >= 0xE000 then
 							-- Codepoint from Basic Multilingual Plane: one 16-bit code unit.
 						a_result.extend (c1.to_character_32)
 						if c1.to_character_32 = escape_character then
@@ -1738,7 +1738,7 @@ feature -- UTF-16 to UTF-32
 			loop
 				c := s [i]
 				i := i + 1
-				if c < 0xD800 or else c >= 0xE000 then
+				if c < 0xD800 or c >= 0xE000 then
 						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit.
 					a_result.extend (c.to_character_32)
 				else
@@ -1779,7 +1779,7 @@ feature -- UTF-16 to UTF-32
 				i := i + 2
 					-- Extract the first 2-bytes
 				c1 := s.code (i - 1) | (s.code (i) |<< 8)
-				if c1 < 0xD800 or else c1 >= 0xE000 then
+				if c1 < 0xD800 or c1 >= 0xE000 then
 						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit, this is valid Unicode.						
 					a_result.extend (c1.to_character_32)
 				else
@@ -1822,7 +1822,7 @@ feature -- UTF-16 to UTF-32
 				i := i + 2
 					-- Extract the first 2-bytes
 				c1 := s.code (i - 1) | (s.code (i) |<< 8)
-				if c1 < 0xD800 or else c1 >= 0xE000 then
+				if c1 < 0xD800 or c1 >= 0xE000 then
 						-- Codepoint from Basic Multilingual Plane: one 16-bit code unit.
 					a_result.extend (c1.to_character_32)
 					if c1.to_character_32 = escape_character then
@@ -1830,7 +1830,7 @@ feature -- UTF-16 to UTF-32
 							-- we need to escape it.
 						a_result.extend (c1.to_character_32)
 					end
-				elseif c1 <= 0xDBFF and then i + 2 <= nb then
+				elseif c1 <= 0xDBFF and i + 2 <= nb then
 						-- Check if a lead surrogate is followed by a trail surrogate.
 					c2 := s.code (i + 1) | (s.code (i + 2) |<< 8)
 					if c2 >= 0xDC00 and c2 <= 0xDFFF then
