@@ -87,7 +87,7 @@ feature -- Basic routines
 		end
 
 	minus alias "-" (decr: NATURAL_32): CHARACTER_32
-			-- Subtract `decr' to the code of `item'.
+			-- Subtract `decr' from the code of `item'.
 		require
 			valid_decrement: (item.natural_32_code.to_integer_64 - decr).is_valid_character_32_code
 		do

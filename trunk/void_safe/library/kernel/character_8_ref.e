@@ -84,7 +84,7 @@ feature -- Basic routines
 		end
 
 	minus alias "-" (decr: INTEGER): CHARACTER_8
-			-- Subtract `decr' to the code of `item'
+			-- Subtract `decr' from the code of `item'
 		require
 			valid_decrement: (item.code - decr).is_valid_character_8_code
 		do
