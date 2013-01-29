@@ -502,8 +502,10 @@ feature -- Access
 						if attached root as l_root then
 								-- Path is not absolute but has a root, it can only be a drive letter.
 								-- Now we have to resolve "c:something\file.txt" using the current working
-								-- directory of the "c:" drive.
-							if l_root.same_as (a_current_directory) then
+								-- directory of the "c:" drive. If `l_root' and `a_current_directory' do
+								-- not points to the same drive, we assume that "c:" means "c:\" as we do
+								-- not know what is the current drive's current working directory.
+							if l_root.same_as (a_current_directory.root) then
 									-- Same root so we simply append.
 								Result := a_current_directory.twin
 							else
