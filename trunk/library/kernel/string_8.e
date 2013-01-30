@@ -604,6 +604,44 @@ feature -- Element change
 			inserted: elks_checking implies string ~ (old (s.twin.as_string_8) + old substring (1, count))
 		end
 
+	prepend_substring (s: READABLE_STRING_8; start_index, end_index: INTEGER)
+			-- Prepend characters of `s.substring (start_index, end_index)' at front.
+		require
+			argument_not_void: s /= Void
+			start_index_valid: start_index >= 1
+			end_index_valid: end_index <= s.count
+			valid_bounds: start_index <= end_index + 1
+		local
+			new_size: INTEGER
+			l_s_count: INTEGER
+			l_area: like area
+		do
+				-- Insert `s' if `s' is not empty, otherwise is useless.
+			l_s_count := end_index - start_index + 1
+			if l_s_count > 0 then
+					-- Resize Current if necessary.
+				new_size := l_s_count + count
+				if new_size > capacity then
+					resize (new_size + additional_space)
+				end
+
+					-- Perform all operations using a zero based arrays.
+				l_area := area
+
+					-- First shift from `s.count' position all characters of current.
+				l_area.overlapping_move (0, l_s_count, count)
+
+					-- Copy string `s' at beginning.
+				l_area.copy_data (s.area, s.area_lower + start_index - 1, 0, l_s_count)
+
+				count := new_size
+				internal_hash_code := 0
+			end
+		ensure
+			new_count: count = old count + end_index - start_index + 1
+			inserted: elks_checking implies same_string (old (s.substring (start_index, end_index) + Current))
+		end
+
 	prepend_boolean (b: BOOLEAN)
 			-- Prepend the string representation of `b' at front.
 		do
@@ -667,6 +705,32 @@ feature -- Element change
 		ensure
 			new_count: count = old count + old s.count
 			appended: elks_checking implies Current ~ (old twin + old s.twin)
+		end
+
+	append_substring (s: READABLE_STRING_8; start_index, end_index: INTEGER)
+			-- Append characters of `s.substring (start_index, end_index)' at end.
+		require
+			argument_not_void: s /= Void
+			start_index_valid: start_index >= 1
+			end_index_valid: end_index <= s.count
+			valid_bounds: start_index <= end_index + 1
+		local
+			l_count, l_s_count, l_new_size: INTEGER
+		do
+			l_s_count := end_index - start_index + 1
+			if l_s_count > 0 then
+				l_count := count
+				l_new_size := l_s_count + l_count
+				if l_new_size > capacity then
+					resize (l_new_size + additional_space)
+				end
+				area.copy_data (s.area, s.area_lower + start_index - 1, l_count, l_s_count)
+				count := l_new_size
+				internal_hash_code := 0
+			end
+		ensure
+			new_count: count = old count + (end_index - start_index + 1)
+			appended: elks_checking implies same_string (old (Current + s.substring (start_index, end_index)))
 		end
 
 	plus alias "+" (s: READABLE_STRING_8): like Current
