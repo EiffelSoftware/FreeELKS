@@ -77,7 +77,7 @@ feature -- Element change
 		end
 
 	append (s: READABLE_STRING_GENERAL)
-			-- Append a copy of `s' at end.
+			-- Append characters of `s' at end.
 		require
 			argument_not_void: s /= Void
 			compatible_strings: is_string_8 implies s.is_valid_as_string_8
@@ -105,11 +105,46 @@ feature -- Element change
 			end
 		ensure
 			new_count: count = old count + old s.count
-			appended: elks_checking implies to_string_32 ~ (old to_string_32.twin + old s.to_string_32.twin)
+			appended: elks_checking implies same_string (old (to_string_32 + s))
+		end
+
+	append_substring (s: READABLE_STRING_GENERAL; start_index, end_index: INTEGER)
+			-- Append characters of `s.substring (start_index, end_index)' at end.
+		require
+			argument_not_void: s /= Void
+			compatible_strings: is_string_8 implies s.is_valid_as_string_8
+			start_index_valid: start_index >= 1
+			end_index_valid: end_index <= s.count
+			valid_bounds: start_index <= end_index + 1
+		local
+			l_count, l_s_count, l_new_size: INTEGER
+			i: INTEGER
+		do
+			l_s_count := end_index - start_index + 1
+			if l_s_count > 0 then
+				l_count := count
+				l_new_size := l_s_count + l_count
+				if l_new_size > capacity then
+					resize (l_new_size)
+				end
+				from
+					i := start_index
+				until
+					i > end_index
+				loop
+					append_code (s.code (i))
+					i := i + 1
+				end
+				set_count (l_new_size)
+				internal_hash_code := 0
+			end
+		ensure
+			new_count: count = old count + end_index - start_index + 1
+			appended: elks_checking implies same_string (old (to_string_32 + s.substring (start_index, end_index)))
 		end
 
 	prepend (s: READABLE_STRING_GENERAL)
-			-- Append a copy of `s' at end.
+			-- Prepend characters of `s' at front.
 		require
 			argument_not_void: s /= Void
 			compatible_strings: is_string_8 implies s.is_valid_as_string_8
@@ -147,7 +182,54 @@ feature -- Element change
 			end
 		ensure
 			new_count: count = old (count + s.count)
-			inserted: elks_checking implies to_string_32 ~ (old s.to_string_32.twin + old to_string_32.twin)
+			inserted: elks_checking implies same_string (old (s.to_string_32 + Current))
+		end
+
+	prepend_substring (s: READABLE_STRING_GENERAL; start_index, end_index: INTEGER)
+			-- Prepend characters of `s.substring (start_index, end_index)' at front.
+		require
+			argument_not_void: s /= Void
+			compatible_strings: is_string_8 implies s.is_valid_as_string_8
+			start_index_valid: start_index >= 1
+			end_index_valid: end_index <= s.count
+			valid_bounds: start_index <= end_index + 1
+		local
+			l_count, l_s_count, l_new_size: INTEGER
+			i, j: INTEGER
+		do
+			l_s_count := end_index - start_index + 1
+			if l_s_count > 0 then
+				l_count := count
+				l_new_size := l_s_count + l_count
+				if l_new_size > capacity then
+					resize (l_new_size)
+				end
+					-- Copy `Current' at the end starting from the end since it will probably overlap.
+				set_count (l_new_size)
+				from
+					i := l_count
+				until
+					i = 0
+				loop
+					put_code (code (i), i + l_s_count)
+					i := i - 1
+				end
+					-- Copy `s' at the beginning of Current.
+				from
+					i := start_index
+					j := 1
+				until
+					i > end_index
+				loop
+					put_code (s.code (i), j)
+					i := i + 1
+					j := j + 1
+				end
+				internal_hash_code := 0
+			end
+		ensure
+			new_count: count = old count + end_index - start_index + 1
+			inserted: elks_checking implies same_string (old (s.substring (start_index, end_index).to_string_32 + Current))
 		end
 
 	keep_head (n: INTEGER)
@@ -222,7 +304,7 @@ invariant
 	mutable: not is_immutable
 
 note
-	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2013, Eiffel Software and others"
 	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software

@@ -23,7 +23,9 @@ inherit
 	STRING_GENERAL
 		rename
 			append as append_string_general,
+			append_substring as append_substring_general,
 			prepend as prepend_string_general,
+			prepend_substring as prepend_substring_general,
 			same_string as same_string_general,
 			starts_with as starts_with_general,
 			ends_with as ends_with_general,
@@ -592,7 +594,7 @@ feature -- Element change
 		end
 
 	prepend_string_general (s: READABLE_STRING_GENERAL)
-			-- Add `s' at front.
+			-- Prepend characters of `s' at front.
 		do
 			if attached {READABLE_STRING_32} s as l_s32 then
 				prepend (l_s32)
@@ -619,14 +621,52 @@ feature -- Element change
 		end
 
 	prepend (s: READABLE_STRING_32)
-			-- Prepend a copy of `s' at front.
+			-- Prepend characters of `s' at front.
 		require
 			argument_not_void: s /= Void
 		do
 			insert_string (s, 1)
 		ensure
 			new_count: count = old (count + s.count)
-			inserted: elks_checking implies string.same_string (old (s.twin) + old substring (1, count))
+			inserted: elks_checking implies same_string (old (s + Current))
+		end
+
+	prepend_substring (s: READABLE_STRING_32; start_index, end_index: INTEGER)
+			-- Prepend characters of `s.substring (start_index, end_index)' at front.
+		require
+			argument_not_void: s /= Void
+			start_index_valid: start_index >= 1
+			end_index_valid: end_index <= s.count
+			valid_bounds: start_index <= end_index + 1
+		local
+			new_size: INTEGER
+			l_s_count: INTEGER
+			l_area: like area
+		do
+				-- Insert `s' if `s' is not empty, otherwise is useless.
+			l_s_count := end_index - start_index + 1
+			if l_s_count > 0 then
+					-- Resize Current if necessary.
+				new_size := l_s_count + count
+				if new_size > capacity then
+					resize (new_size + additional_space)
+				end
+
+					-- Perform all operations using a zero based arrays.
+				l_area := area
+
+					-- First shift from `s.count' position all characters of current.
+				l_area.overlapping_move (0, l_s_count, count)
+
+					-- Copy string `s' at beginning.
+				l_area.copy_data (s.area, s.area_lower + start_index - 1, 0, l_s_count)
+
+				count := new_size
+				internal_hash_code := 0
+			end
+		ensure
+			new_count: count = old count + end_index - start_index + 1
+			inserted: elks_checking implies same_string (old (s.substring (start_index, end_index) + Current))
 		end
 
 	prepend_boolean (b: BOOLEAN)
@@ -654,7 +694,7 @@ feature -- Element change
 		end
 
 	prepend_string (s: detachable READABLE_STRING_32)
-			-- Prepend a copy of `s', if not void, at front.
+			-- Prepend characters of `s', if not void, at front.
 		do
 			if s /= Void then
 				prepend (s)
@@ -662,7 +702,7 @@ feature -- Element change
 		end
 
 	append_string_general (s: READABLE_STRING_GENERAL)
-			-- Append a copy of `s' at end.
+			-- Append characters of `s' at end.
 		do
 			if attached {READABLE_STRING_32} s as l_s32 then
 				append (l_s32)
@@ -672,7 +712,7 @@ feature -- Element change
 		end
 
 	append (s: READABLE_STRING_32)
-			-- Append a copy of `s' at end.
+			-- Append characters of `s' at end.
 		require
 			argument_not_void: s /= Void
 		local
@@ -691,7 +731,33 @@ feature -- Element change
 			end
 		ensure
 			new_count: count = old count + old s.count
-			appended: elks_checking implies Current ~ (old twin + old s.twin)
+			appended: elks_checking implies same_string (old (Current + s))
+		end
+
+	append_substring (s: READABLE_STRING_32; start_index, end_index: INTEGER)
+			-- Append characters of `s.substring (start_index, end_index)' at end.
+		require
+			argument_not_void: s /= Void
+			start_index_valid: start_index >= 1
+			end_index_valid: end_index <= s.count
+			valid_bounds: start_index <= end_index + 1
+		local
+			l_count, l_s_count, l_new_size: INTEGER
+		do
+			l_s_count := end_index - start_index + 1
+			if l_s_count > 0 then
+				l_count := count
+				l_new_size := l_s_count + l_count
+				if l_new_size > capacity then
+					resize (l_new_size + additional_space)
+				end
+				area.copy_data (s.area, s.area_lower + start_index - 1, l_count, l_s_count)
+				count := l_new_size
+				internal_hash_code := 0
+			end
+		ensure
+			new_count: count = old count + (end_index - start_index + 1)
+			appended: elks_checking implies same_string (old (Current + s.substring (start_index, end_index)))
 		end
 
 	plus alias "+" (s: READABLE_STRING_GENERAL): like Current
@@ -1734,7 +1800,7 @@ invariant
 	compare_character: not object_comparison
 
 note
-	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2013, Eiffel Software and others"
 	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
