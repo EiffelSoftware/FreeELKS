@@ -120,6 +120,8 @@ feature {NONE} -- Initialization
 
 	make_from_separate (other: separate READABLE_STRING_32)
 			-- Initialize current string from `other'.
+		require
+			other_not_void: other /= Void
 		local
 			i, nb: INTEGER
 			l_area: like area
