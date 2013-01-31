@@ -14,12 +14,23 @@ inherit
 	NATIVE_STRING_HANDLER
 
 create
-	make, make_with_path,
+	make, make_with_path, make_with_name,
 	make_open_read
 
 feature -- Initialization
 
 	make (dn: READABLE_STRING_GENERAL)
+			-- Create directory object for directory
+			-- of name `dn'.
+		require
+			string_exists: dn /= Void
+		do
+			make_with_name (dn)
+		ensure
+			name_set: internal_name = dn
+		end
+
+	make_with_name (dn: READABLE_STRING_GENERAL)
 			-- Create directory object for directory
 			-- of name `dn'.
 		require
@@ -36,7 +47,6 @@ feature -- Initialization
 		require
 			a_path_attached: a_path /= Void
 		do
-			-- NOTE: this is a temporary implementation
 			make (a_path.name)
 		end
 
@@ -72,51 +82,48 @@ feature -- Creation
 			l_directory: DIRECTORY
 			l_directories_to_build: ARRAYED_LIST [PATH]
 			l_path: PATH
-			l_parent, l_entry: detachable PATH
+			l_entry: detachable PATH
 			l_io_exception: IO_FAILURE
 		do
-
-				-- Find the first existing directory in the path name
-			from
-				create l_directories_to_build.make (10)
-				l_path := path
-				create l_directory.make_with_path (l_path)
-			until
-				l_directory.exists or l_path = Void
-			loop
-				l_parent := l_path.parent
-				l_entry := l_path.entry
-				if l_parent = Void or l_entry = Void then
-					create l_io_exception
-					l_io_exception.set_description ({STRING_32} "Invalid directory: " + l_path.name)
-					l_io_exception.raise
-				else
-					l_directories_to_build.extend (l_entry)
-					create l_directory.make_with_path (l_parent)
-					l_path := l_parent
+				-- First ensure the path is fully resolved.
+			l_path := path.canonical_path
+			create l_directory.make_with_path (l_path)
+			if not l_directory.exists then
+					-- Directory does not exist, we need to create it.
+					-- Find the first existing directory in `l_path'
+				from
+					create l_directories_to_build.make (10)
+					l_entry := l_path.entry
+				until
+					l_directory.exists or l_entry = Void
+				loop
+					l_directories_to_build.extend (l_path)
+					l_path := l_path.parent
+					l_entry := l_path.entry
+					l_directory.make_with_path (l_path)
 				end
-			end
 
-				-- Recursively create the directory.
-			l_directories_to_build.finish
-			from
-					-- Make sure we start from somewhere. If `l_path' is Void,
-					-- it means we were trying to create a path without a root such as "abc/def".
-				if l_path = Void then
-					create l_path.make_empty
-				end
-			until
-				l_directories_to_build.before
-			loop
-				l_path := l_path.extended_path (l_directories_to_build.item)
-				l_directories_to_build.back
+					-- Recursively create the directory.
+				l_directories_to_build.finish
+				from
+						-- Make sure we start from somewhere. If `l_path' is Void,
+						-- it means we were trying to create a path without a root such as "abc/def".
+					if l_path = Void then
+						create l_path.make_empty
+					end
+				until
+					l_directories_to_build.before
+				loop
+					l_path := l_directories_to_build.item
+					l_directories_to_build.back
 
-				create l_directory.make_with_path (l_path)
-				l_directory.create_dir
-				if not l_directory.exists then
-					create l_io_exception
-					l_io_exception.set_description ({STRING_32} "Cannot create: " + l_path.name)
-					l_io_exception.raise
+					l_directory.make_with_path (l_path)
+					l_directory.create_dir
+					if not l_directory.exists then
+						create l_io_exception
+						l_io_exception.set_description ({STRING_32} "Cannot create: " + l_path.name)
+						l_io_exception.raise
+					end
 				end
 			end
 		ensure
@@ -745,7 +752,7 @@ invariant
 	name_attached: attached internal_name
 
 note
-	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2013, Eiffel Software and others"
 	license: "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
