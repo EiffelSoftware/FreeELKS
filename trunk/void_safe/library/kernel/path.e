@@ -468,12 +468,13 @@ feature -- Access
 					l_pos = 0
 				loop
 					create l_storage.make (l_pos - l_previous_pos)
-					l_storage.append_substring (storage, l_previous_pos, l_pos - unit_size + 1)
+					l_storage.append_substring (storage, l_previous_pos, l_pos - 1)
 					Result.extend (create {PATH}.make_from_normalized_storage (l_storage))
+						-- We skip the directory separator
 					l_previous_pos := l_pos + unit_size
 					l_pos := next_directory_separator (l_previous_pos)
 				end
-				if l_previous_pos < storage.count then
+				if l_previous_pos <= storage.count then
 						-- If we have some characters left then this is our last component.
 					create l_storage.make (storage.count - l_previous_pos)
 					l_storage.append_substring (storage, l_previous_pos, storage.count )
@@ -1172,14 +1173,7 @@ feature {NONE} -- Implementation
 			if not storage.is_empty then
 					-- First ignore the trailing directory separator.
 				Result := storage.count - unit_size + 1
-				if is_character (storage, Result, directory_separator) then
-						-- We now go one character beyond to the left.
-					Result := Result - unit_size
-				end
-					-- We are not past the beginning of the path.
 				if Result >= 1 then
-						-- We have a character that is not a directory separator
-					check not is_character (storage, Result, directory_separator) end
 						-- Search for the directory separator now.
 					from
 					until
