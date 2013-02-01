@@ -185,7 +185,7 @@ feature -- Access
 			-- File name as a STRING_8 instance. The value might be truncated
 			-- from the original name used to create the current FILE instance.
 		obsolete
-			"Use `path' to ensure that Unicode filenames are not truncated."
+			"Use `path.name' to ensure that Unicode filenames are not truncated."
 		do
 			Result := internal_name.as_string_8
 		ensure then
@@ -1631,7 +1631,7 @@ feature {NONE} -- Implementation
 			a_path_not_void: a_path /= Void
 		do
 				-- In the case of `a_path' being a mixed-encoding, `internal_name' holds
-				-- a value close to the actual path but not equal.
+				-- an encoded value of the actual path but not equal.
 			internal_name := a_path.name
 				-- Create a matching path.
 			internal_detachable_name_pointer := a_path.to_pointer
@@ -2146,7 +2146,7 @@ invariant
 	name_not_empty: not internal_name.is_empty
 
 note
-	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2013, Eiffel Software and others"
 	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
