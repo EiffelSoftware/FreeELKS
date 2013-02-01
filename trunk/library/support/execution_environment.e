@@ -24,8 +24,6 @@ feature -- Access
 			-- Directory of current execution.
 			-- Execution of this query on concurrent threads will result in
 			-- an unspecified behavior.
-		obsolete
-			"Use `current_working_path' instead to support Unicode path."
 		local
 			l_count, l_nbytes: INTEGER
 			l_managed: MANAGED_POINTER
