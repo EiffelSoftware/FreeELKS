@@ -197,7 +197,7 @@ feature -- Conversion
 			identity: (conforms_to ("") and Result = Current) or (not conforms_to ("") and Result /= Current)
 		end
 
-	as_string_8: STRING_8
+	as_string_8_conversion, as_string_8: STRING_8
 			-- Convert `Current' as a STRING_8. If a code of `Current' is
 			-- node a valid code for a STRING_8 it is replaced with the null
 			-- character.
@@ -230,7 +230,7 @@ feature -- Conversion
 			identity: (conforms_to ("") and Result = Current) or (not conforms_to ("") and Result /= Current)
 		end
 
-	as_string_32, to_string_32: STRING_32
+	as_string_32_conversion, as_string_32, to_string_32: STRING_32
 			-- Convert `Current' as a STRING_32.
 		local
 			i, nb: INTEGER
