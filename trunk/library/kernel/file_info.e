@@ -16,6 +16,11 @@ class FILE_INFO inherit
 			copy, is_equal
 		end
 
+	NATIVE_STRING_HANDLER
+		redefine
+			copy, is_equal
+		end
+
 create
 	make
 
@@ -162,7 +167,15 @@ feature -- Access
 			end
 		end
 
-feature {FILE, DIRECTORY, EXECUTION_ENVIRONMENT} -- Access
+	file_entry: detachable PATH
+			-- Associated entry for Current.
+		do
+			if attached internal_name_pointer as l_ptr then
+				create Result.make_from_pointer (l_ptr.item)
+			end
+		end
+
+feature {NATIVE_STRING_HANDLER} -- Access
 
 	file_name_to_pointer (a_name: READABLE_STRING_GENERAL; a_ptr: detachable MANAGED_POINTER): MANAGED_POINTER
 			-- File system specific encoding of `a_name' that will be stored in `a_ptr' if provided
@@ -185,7 +198,7 @@ feature {FILE, DIRECTORY, EXECUTION_ENVIRONMENT} -- Access
 					else
 						l_ptr.resize ((a_name.count + 1) * 2)
 					end
-					u.utf_32_substring_into_utf_16_0_pointer (a_name, 1, a_name.count, l_ptr, 0, Void)
+					u.escaped_utf_32_substring_into_utf_16_0_pointer (a_name, 1, a_name.count, l_ptr, 0, Void)
 				else
 						-- Our Windows API only handles Unicode characters, no encoding, so
 						-- we are going to convert `a_name' from the local code page encoding
@@ -206,7 +219,7 @@ feature {FILE, DIRECTORY, EXECUTION_ENVIRONMENT} -- Access
 				end
 				if attached {READABLE_STRING_32} a_name then
 						-- We generate a UTF-8 encoding of the filename
-					u.utf_32_string_into_utf_8_0_pointer (a_name, l_ptr, 0, Void)
+					u.escaped_utf_32_substring_into_utf_8_0_pointer (a_name, 1, a_name.count, l_ptr, 0, Void)
 				else
 						-- We leave the sequence as is.
 					create l_c_string.make_shared_from_pointer_and_count (l_ptr.item, a_name.count)
@@ -217,29 +230,18 @@ feature {FILE, DIRECTORY, EXECUTION_ENVIRONMENT} -- Access
 		end
 
 	pointer_to_file_name_32 (a_ptr: POINTER): STRING_32
-			-- Given a file system name represented by `a_ptr' provides a STRING_32 instance if possible.
-			-- Note that those file names might not roundtrip.
+			-- Given a file system name represented by `a_ptr' provides a STRING_32 instance which
+			-- could be escaped when underlying encoding is not valid.
 		local
-			l_cstring: C_STRING
-			l_str: STRING_8
 			u: UTF_CONVERTER
 			l_managed: MANAGED_POINTER
 		do
+			create l_managed.share_from_pointer (a_ptr, pointer_length_in_bytes (a_ptr))
 			if {PLATFORM}.is_windows then
-				create l_managed.share_from_pointer (a_ptr, pointer_length_in_bytes (a_ptr))
 				Result := u.utf_16_0_pointer_to_string_32 (l_managed)
+				Result := u.utf_16_0_pointer_to_escaped_string_32 (l_managed)
 			else
-				create l_cstring.make_shared_from_pointer (a_ptr)
-				l_str := l_cstring.string
-					-- If the name is not a valid UTF-8 sequence, we return nothing,
-					-- this is to guarantee that when you get a file name you can perform
-					-- a roundtrip.
-				if u.is_valid_utf_8_string_8 (l_str) then
-					Result := u.utf_8_string_8_to_string_32 (l_str)
-				else
-						-- We got a non-valid string, we return that same instance as STRING_32
-					Result := l_str
-				end
+				Result := u.utf_8_0_pointer_to_escaped_string_32 (l_managed)
 			end
 		end
 
@@ -265,20 +267,7 @@ feature {FILE, DIRECTORY, EXECUTION_ENVIRONMENT} -- Access
 			end
 		end
 
-	pointer_length_in_bytes (a_ptr: POINTER): INTEGER
-			-- Length in bytes of a platform specific file name pointer, not
-			-- including the null-terminating character.
-		external
-			"C inline use %"eif_eiffel.h%""
-		alias
-			"{
-			#ifdef EIF_WINDOWS
-				return (EIF_INTEGER) wcslen($a_ptr) * sizeof(wchar_t);
-			#else
-				return (EIF_INTEGER) strlen($a_ptr) * sizeof(char);
-			#endif
-			}"
-		end
+
 
 feature -- Status report
 
@@ -472,6 +461,12 @@ feature -- Duplication
 			if other /= Current then
 				standard_copy (other)
 				set_area (other.buffered_file_info.twin)
+				if attached other.internal_name_pointer as l_pointer then
+					internal_name_pointer := l_pointer.twin
+				end
+				if attached other.internal_file_name as l_file_name then
+					internal_file_name := l_file_name.twin
+				end
 			end
 		ensure then
 			not_shared_if_different: other /= Current implies buffered_file_info /= other.buffered_file_info
@@ -518,7 +513,6 @@ feature {FILE, DIRECTORY} -- Element change
 		require
 			f_name_not_empty: not f_name.is_empty
 			a_ptr_not_empty: a_ptr.count > 0
-			consistent_ptr_with_name: a_ptr.count > f_name.count
 		do
 				-- Do not duplicate the file name. That way, if the file is
 				-- renamed, the name here will change accordingly and access()
