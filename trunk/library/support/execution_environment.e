@@ -12,6 +12,9 @@ note
 
 class EXECUTION_ENVIRONMENT
 
+inherit
+	NATIVE_STRING_HANDLER
+
 feature -- Access
 
 	command_line: ARGUMENTS
