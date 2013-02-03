@@ -1,5 +1,5 @@
 note
-	description: "Obsolete internal file information, use FILE_IFO directly."
+	description: "Obsolete internal file information, use FILE_INFO directly."
 	library: "Free implementation of ELKS library"
 	status: "See notice at end of class."
 	legal: "See notice at end of class."
