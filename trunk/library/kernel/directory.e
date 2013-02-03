@@ -11,6 +11,8 @@ class DIRECTORY
 inherit
 	DISPOSABLE
 
+	NATIVE_STRING_HANDLER
+
 create
 	make, make_open_read
 

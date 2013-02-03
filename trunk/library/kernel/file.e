@@ -27,6 +27,8 @@ deferred class FILE inherit
 			read_line_thread_aware
 		end
 
+	NATIVE_STRING_HANDLER
+
 feature -- Initialization
 
 	make (fn: STRING)
