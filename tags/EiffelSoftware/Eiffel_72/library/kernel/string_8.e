@@ -25,7 +25,8 @@ inherit
 			append as append_string_general,
 			prepend as prepend_string_general,
 			same_string as same_string_general,
-			plus as plus_string_general
+			plus as plus_string_general,
+			item as character_32_item
 		undefine
 			copy, is_equal, out
 		redefine

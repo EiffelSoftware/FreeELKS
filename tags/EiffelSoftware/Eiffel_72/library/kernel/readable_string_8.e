@@ -16,7 +16,8 @@ inherit
 	READABLE_STRING_GENERAL
 		rename
 			same_string as same_string_general,
-			plus as plus_string_general
+			plus as plus_string_general,
+			item as character_32_item
 		redefine
 			copy, is_equal, out
 		end
@@ -120,6 +121,12 @@ feature -- Access
 			-- Character at position `i'
 		do
 			Result := area.item (i - 1)
+		end
+
+	character_32_item (i: INTEGER): CHARACTER_32
+			-- Character at position `i'
+		do
+			Result := code (i).to_character_32
 		end
 
 	code (i: INTEGER): NATURAL_32
