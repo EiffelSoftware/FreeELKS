@@ -1127,20 +1127,20 @@ feature -- Element change
 			name_changed: internal_name = new_name
 		end
 
-	rename_path (new_name: PATH)
-			-- Change file name to `new_name'
+	rename_path (new_path: PATH)
+			-- Change file name to `new_path'
 		require
-			new_name_not_void: new_name /= Void
-			new_name_not_empty: not new_name.is_empty
+			new_path_not_void: new_path /= Void
+			new_path_not_empty: not new_path.is_empty
 			file_exists: exists
 		local
 			l_ptr: MANAGED_POINTER
 		do
-			l_ptr := new_name.to_pointer
+			l_ptr := new_path.to_pointer
 			file_rename (internal_name_pointer.item, l_ptr.item)
-			set_path (new_name)
+			set_path (new_path)
 		ensure
-			name_changed: internal_name = new_name
+			name_changed: internal_name.same_string (new_path.name)
 		end
 
 	add_permission (who, what: STRING)
