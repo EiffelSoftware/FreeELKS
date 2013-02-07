@@ -23,7 +23,8 @@ inherit
 	IMMUTABLE_STRING_GENERAL
 		rename
 			same_string as same_string_general,
-			plus as plus_string_general
+			plus as plus_string_general,
+			item as character_32_item
 		undefine
 			is_equal, out, copy
 		end
