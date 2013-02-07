@@ -38,6 +38,13 @@ feature -- Access
 		deferred
 		end
 
+	item alias "[]" (i: INTEGER): CHARACTER_32
+			-- Code at position `i'
+		require
+			valid_index: valid_index (i)
+		deferred
+		end
+
 	index_of_code (c: like code; start_index: INTEGER): INTEGER
 			-- Position of first occurrence of `c' at or after `start_index';
 			-- 0 if none.
