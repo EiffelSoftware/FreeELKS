@@ -184,7 +184,13 @@ feature -- Access
 	character_32_item (i: INTEGER): CHARACTER_32
 			-- Character at position `i'.
 		do
-			Result := area.item (i - 1).to_character_32
+				-- We should be using `area.item (i - 1).to_character_32'
+				-- but some descendants of STRING that have their content encoded
+				-- in UTF-8 for example relies on `code' to get the corresponding
+				-- CHARACTER_32 by reading more than one byte. Once they have
+				-- been updated to use `character_32_item' we can revert the code
+				-- back to using `area' directly.
+			Result := code (i).to_character_32
 		end
 
 	code (i: INTEGER): NATURAL_32
