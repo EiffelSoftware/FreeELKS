@@ -38,7 +38,7 @@ feature -- Access
 	natural_32_code: NATURAL_32
 			-- Associated natural value
 		do
-			Result := code.to_natural_32
+			Result := item.code.to_natural_32
 		end
 
 	hash_code: INTEGER

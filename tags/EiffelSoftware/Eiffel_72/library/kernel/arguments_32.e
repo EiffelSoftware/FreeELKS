@@ -334,21 +334,14 @@ feature {NONE} -- Implementation
 			-- Array containing command name (position 0) and arguments.
 		local
 			i: INTEGER
-			l_str: NATIVE_STRING
-			l_ptr: POINTER
 		once
 			from
 				create Result.make_filled (create {IMMUTABLE_STRING_32}.make_empty, 0, argument_count)
 				Result.compare_objects
-				create l_str.make_empty (0)
 			until
 				i > argument_count
 			loop
-				l_ptr := i_th_argument_pointer (i)
-				if l_ptr /= default_pointer then
-					l_str.set_shared_from_pointer (l_ptr)
-					Result.put (l_str.string, i)
-				end
+				Result.put (i_th_argument_string (i), i)
 				i := i + 1
 			end
 		ensure
@@ -356,13 +349,24 @@ feature {NONE} -- Implementation
 			internal_argument_array_compare_objects: Result.object_comparison
 		end
 
-	i_th_argument_pointer (i: INTEGER): POINTER
-			-- Underlying pointer holding the arguments at position `i'.
+	i_th_argument_string (i: INTEGER): IMMUTABLE_STRING_32
+			-- Underlying string holding the argument at position `i'.
 		require
 			index_large_enough: i >= 0
 			index_small_enough: i <= argument_count
 		external
-			"built_in static"
+			"built_in"
+		end
+
+	i_th_argument_pointer (i: INTEGER): POINTER
+			-- Underlying pointer holding the argument at position `i'.
+			--| For implementers, if `i_th_argument_string' is implemented you do not need 
+			--| to implement this one.
+		require
+			index_large_enough: i >= 0
+			index_small_enough: i <= argument_count
+		external
+			"built_in"
 		end
 
 note
