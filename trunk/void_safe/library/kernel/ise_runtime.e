@@ -2,6 +2,7 @@ note
 	description: "[
 		Set of features to access ISE runtime functionality.
 		To be used at your own risk.
+		Interface may changed without notice.
 		]"
 	library: "Free implementation of ELKS library"
 	status: "See notice at end of class."
@@ -9,7 +10,7 @@ note
 	date: "$Date$"
 	revision: "$Revision$"
 
-class
+frozen class
 	ISE_RUNTIME
 
 feature -- Feature specific to ISE runtime.
@@ -156,7 +157,7 @@ feature -- Internal C routines
 			"egc_compiler_tag"
 		end
 
-feature -- Introspection routines
+feature -- Internal support
 
 	frozen reference_field_at_offset (a_enclosing: ANY; a_physical_offset: INTEGER): ANY
 			-- Retrieve the reference field of `a_enclosing' located at `a_physical_offset' bytes.
@@ -182,8 +183,6 @@ feature -- Introspection routines
 
 	frozen field_count_of_type (a_type_id: INTEGER): INTEGER
 			-- Number of logical fields in dynamic type `a_type_id'.
---		require
---			type_id_nonnegative: a_type_id >= 0
 		external
 			"C macro signature (EIF_INTEGER): EIF_INTEGER use %"eif_internal.h%""
 		alias
@@ -192,9 +191,6 @@ feature -- Introspection routines
 
 	frozen field_offset_of_type (i: INTEGER; a_type: INTEGER): INTEGER
 			-- Physical offset of the `i'-th field for an object of dynamic type `a_type'.
---		require
---			i_large_enough: i >= 0
---			i_small_enough: i < field_count_of_type (a_type)
 		external
 			"C macro use %"eif_eiffel.h%""
 		alias
