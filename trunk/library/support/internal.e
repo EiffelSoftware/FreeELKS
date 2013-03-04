@@ -332,8 +332,37 @@ feature -- Access
 			index_small_enough: i <= field_count (object)
 			not_special: not is_special (object)
 		do
-			Result := c_field (i - 1, object)
+			inspect field_type (i, object)
+			when character_8_type then Result := character_8_field (i, object)
+			when character_32_type then Result := character_32_field (i, object)
+			when boolean_type then Result := boolean_field (i, object)
+			when integer_8_type then Result := integer_8_field (i, object)
+			when integer_16_type then Result := integer_16_field (i, object)
+			when integer_32_type then Result := integer_32_field (i, object)
+			when integer_64_type then Result := integer_64_field (i, object)
+			when natural_8_type then Result := natural_8_field (i, object)
+			when natural_16_type then Result := natural_16_field (i, object)
+			when natural_32_type then Result := natural_32_field (i, object)
+			when natural_64_type then Result := natural_64_field (i, object)
+			when real_32_type then Result := real_32_field (i, object)
+			when real_64_type then Result := real_64_field (i, object)
+			when pointer_type then Result := pointer_field (i, object)
+			when reference_type then Result := reference_field (i, object)
+			else
+			end
 		end
+
+	reference_field (i: INTEGER; object: ANY): detachable ANY
+			-- Reference value of the `i'-th field of `object'.
+		require
+			object_not_void: object /= Void
+			index_large_enough: i >= 1
+			index_small_enough: i <= field_count (object)
+			not_special: not is_special (object)
+			valid_type: field_type (i, object) = reference_type
+		do
+			Result := {ISE_RUNTIME}.reference_field (i, object, 0)
+		end	
 
 	field_name (i: INTEGER; object: ANY): STRING
 			-- Name of `i'-th field of `object'
@@ -888,12 +917,6 @@ feature {NONE} -- Implementation
 
 	c_is_instance_of (type1: INTEGER; obj: ANY): BOOLEAN
 			-- Is `obj' an instance of `type1'?
-		external
-			"built_in static"
-		end
-
-	c_field (i: INTEGER; object: ANY): detachable ANY
-			-- Object referenced by the `i'-th field of `object'
 		external
 			"built_in static"
 		end
