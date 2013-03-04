@@ -103,6 +103,12 @@ feature -- Status report
 			"built_in"
 		end
 
+	is_attached: BOOLEAN
+			-- Is current type attached?
+		external
+			"built_in"
+		end
+
 feature -- Comparison
 
 	is_equal (other: like Current): BOOLEAN
@@ -274,7 +280,7 @@ feature {NONE} -- Implementation
 		end
 
 note
-	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2013, Eiffel Software and others"
 	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software

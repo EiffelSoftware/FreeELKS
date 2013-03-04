@@ -302,18 +302,13 @@ feature -- Status report
 		require
 			valid_index: valid_index (index)
 		local
-			l_int: INTERNAL
+			l_reflector: REFLECTOR
 		do
 			if v = Void then
 					-- A Void entry is valid only for references and as long as the expected type
 					-- is detachable.
 				if eif_item_type ($Current, index) = reference_code then
-					create l_int
-					if l_int.is_attached_type (l_int.generic_dynamic_type (Current, index)) then
-						Result := False
-					else
-						Result := True
-					end
+					Result := not generating_type.generic_parameter_type (index).is_attached
 				end
 			else
 				inspect eif_item_type ($Current, index)
@@ -334,8 +329,8 @@ feature -- Status report
 				when Reference_code then
 						-- Let's check that type of `v' conforms to specified type of `index'-th
 						-- arguments of current TUPLE.
-					create l_int
-					Result := l_int.field_conforms_to (l_int.dynamic_type (v), l_int.generic_dynamic_type (Current, index))
+					create l_reflector
+					Result := l_reflector.field_conforms_to (v.generating_type.type_id, generating_type.generic_parameter_type (index).type_id)
 				end
 			end
 		end
@@ -1437,7 +1432,7 @@ feature {NONE} -- Externals: Setting
 		end
 
 note
-	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2013, Eiffel Software and others"
 	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
