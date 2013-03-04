@@ -122,7 +122,7 @@ feature -- Status report
 		local
 			i, arg_type_code: INTEGER
 			arg: detachable ANY
-			int: INTERNAL
+			int: REFLECTOR
 			open_type_codes: STRING
 			l_type: INTEGER
 		do
@@ -131,7 +131,7 @@ feature -- Status report
 					-- Void operands are only allowed
 					-- if object has no open operands.
 				Result := (open_count = 0)
-			elseif int.generic_count (args) >= open_count then
+			elseif args.count >= open_count then
 				from
 					Result := True
 					open_type_codes := eif_gen_typecode_str ($Current)
@@ -148,10 +148,10 @@ feature -- Status report
 							-- is indeed attached.
 						if int.is_attached_type (l_type) then
 							Result := arg /= Void and then
-								int.field_conforms_to (int.dynamic_type (arg), l_type)
+								int.field_conforms_to (arg.generating_type.type_id, l_type)
 						else
 							Result := arg = Void or else
-								int.field_conforms_to (int.dynamic_type (arg), l_type)
+								int.field_conforms_to (arg.generating_type.type_id, l_type)
 						end
 					end
 					i := i + 1
@@ -367,7 +367,6 @@ feature {NONE} -- Implementation
 			positive: i >= 1
 			within_bounds: i <= open_count
 		local
-			l_internal: INTERNAL
 			o: like open_types
 		do
 			o := open_types
@@ -377,9 +376,7 @@ feature {NONE} -- Implementation
 			end
 			Result := o.item (i)
 			if Result = -1 then
-				create l_internal
-				Result := l_internal.generic_dynamic_type_of_type (
-					l_internal.generic_dynamic_type (Current, 2), i)
+				Result := ({OPEN_ARGS}).generic_parameter_type (i).type_id
 				o.put (Result, i)
 			end
 		end
@@ -416,7 +413,7 @@ feature -- Obsolete
 		end
 
 note
-	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2013, Eiffel Software and others"
 	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software

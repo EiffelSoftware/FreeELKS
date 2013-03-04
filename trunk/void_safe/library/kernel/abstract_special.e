@@ -21,6 +21,13 @@ feature -- Measurement
 			count_non_negative: Result >= 0
 		end
 
+	capacity: INTEGER
+			-- Capacity of special area		
+		deferred
+		ensure
+			count_non_negative: Result >= 0
+		end
+
 feature -- Output
 
 	debug_output: STRING
@@ -32,7 +39,7 @@ feature -- Output
 		end
 
 note
-	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2013, Eiffel Software and others"
 	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software

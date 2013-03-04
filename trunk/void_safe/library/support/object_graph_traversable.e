@@ -78,18 +78,18 @@ feature -- Basic operations
 		require
 			root_object_available: is_root_object_set
 		local
-			l_int: detachable INTERNAL
+			l_marker: detachable OBJECT_GRAPH_MARKER
 			retried, l_has_lock: BOOLEAN
 		do
-			if not retried then
-				create l_int
-				l_int.lock_marking
+			if not retried and attached root_object as l_root then
+				create l_marker
+				l_marker.lock_marking
 				l_has_lock := True
-				internal_traverse
-				l_int.unlock_marking
+				internal_traverse (l_root)
+				l_marker.unlock_marking
 			else
-				if l_has_lock and then l_int /= Void then
-					l_int.unlock_marking
+				if l_has_lock and then l_marker /= Void then
+					l_marker.unlock_marking
 				end
 			end
 		rescue
@@ -121,32 +121,27 @@ feature {NONE} -- Implementation
 	default_size: INTEGER = 200
 			-- Default size for containers used during object traversal
 
-	internal_traverse
+	internal_traverse (a_root_object: ANY)
 			-- Traverse object structure starting at 'root_object' and call object_action
 			-- on every object in the graph.
-		require
-			root_object_available: is_root_object_set
 		local
 			i, nb: INTEGER
 			l_object: ANY
 			l_field: detachable ANY
-			l_int: INTERNAL
+			l_marker: OBJECT_GRAPH_MARKER
 			l_objects_to_visit: like new_dispenser
 			l_visited: like visited_objects
 			l_action: like object_action
-			l_dtype: INTEGER
 			l_spec: SPECIAL [ANY]
-			r: like root_object
+			l_reflected_object: REFLECTED_OBJECT
 		do
 			from
-				create l_int
+				create l_marker
+				create l_reflected_object.make (a_root_object)
+				l_marker.mark (a_root_object)
 				create l_visited.make (default_size)
 				l_objects_to_visit := new_dispenser
-				r := root_object
-				if r /= Void then
-					l_objects_to_visit.put (r)
-					l_int.mark (r)
-				end
+				l_objects_to_visit.put (a_root_object)
 				l_action := object_action
 			until
 				l_objects_to_visit.is_empty
@@ -167,26 +162,27 @@ feature {NONE} -- Implementation
 					-- 1 - SPECIAL [ANY]
 					-- 2 - TUPLE containing references
 					-- 3 - Normal objects
-				l_dtype := l_int.dynamic_type (l_object)
-				if l_int.is_special_type (l_dtype) then
-					if l_int.is_special_any_type (l_dtype) then
-						if attached {SPECIAL [detachable ANY]} l_object as l_sp then
-							from
-								i := 0
-								nb := l_sp.count
-							until
-								i = nb
-							loop
-								l_field := l_sp.item (i)
-								if l_field /= Void and then not l_int.is_marked (l_field) then
-									l_int.mark (l_field)
-									l_objects_to_visit.put (l_field)
-								end
-								i := i + 1
+				l_reflected_object.set_object (l_object)
+				if l_reflected_object.is_special then
+					if
+						l_reflected_object.is_special_of_reference and then
+						attached {SPECIAL [detachable ANY]} l_object as l_sp
+					then
+						from
+							i := 0
+							nb := l_sp.count
+						until
+							i = nb
+						loop
+							l_field := l_sp.item (i)
+							if l_field /= Void and then not l_marker.is_marked (l_field) then
+								l_marker.mark (l_field)
+								l_objects_to_visit.put (l_field)
 							end
+							i := i + 1
 						end
 					end
-				elseif l_int.is_tuple (l_object) then
+				elseif l_reflected_object.is_tuple then
 					if attached {TUPLE} l_object as l_tuple_obj then
 						from
 							i := 1
@@ -196,8 +192,8 @@ feature {NONE} -- Implementation
 						loop
 							if l_tuple_obj.is_reference_item (i) then
 								l_field := l_tuple_obj.reference_item (i)
-								if l_field /= Void and then not l_int.is_marked (l_field) then
-									l_int.mark (l_field)
+								if l_field /= Void and then not l_marker.is_marked (l_field) then
+									l_marker.mark (l_field)
 									l_objects_to_visit.put (l_field)
 								end
 							end
@@ -207,15 +203,15 @@ feature {NONE} -- Implementation
 				else
 					from
 						i := 1
-						nb := l_int.field_count_of_type (l_dtype) + 1
+						nb := l_reflected_object.field_count + 1
 					until
 						i = nb
 					loop
-						if l_int.field_type_of_type (i, l_dtype) = {INTERNAL}.reference_type then
-							if not is_skip_transient or else not l_int.is_field_transient_of_type (i, l_dtype) then
-								l_field := l_int.field (i, l_object)
-								if l_field /= Void and then not l_int.is_marked (l_field) then
-									l_int.mark (l_field)
+						if l_reflected_object.field_type (i) = {REFLECTOR_CONSTANTS}.reference_type then
+							if not is_skip_transient or else not l_reflected_object.is_field_transient (i) then
+								l_field := l_reflected_object.reference_field (i)
+								if l_field /= Void and then not l_marker.is_marked (l_field) then
+									l_marker.mark (l_field)
 									l_objects_to_visit.put (l_field)
 								end
 							end
@@ -235,7 +231,7 @@ feature {NONE} -- Implementation
 			until
 				i = nb
 			loop
-				l_int.unmark (l_spec.item (i))
+				l_marker.unmark (l_spec.item (i))
 				i := i + 1
 			end
 
@@ -244,7 +240,7 @@ feature {NONE} -- Implementation
 		end
 
 note
-	copyright: "Copyright (c) 1984-2012, Eiffel Software and others"
+	copyright: "Copyright (c) 1984-2013, Eiffel Software and others"
 	license:   "Eiffel Forum License v2 (see http://www.eiffel.com/licensing/forum.txt)"
 	source: "[
 			Eiffel Software
