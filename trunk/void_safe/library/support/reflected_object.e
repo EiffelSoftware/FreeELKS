@@ -52,6 +52,8 @@ feature {NONE} -- Initialization
 
 	make_for_expanded_field_at (a_enclosing_object: ANY; a_physical_offset: INTEGER)
 			-- Setup a proxy to expanded field located at the `a_physical_offset' of `a_enclosing_object'.
+		require
+			not_dotnet: not {PLATFORM}.is_dotnet
 		do
 			enclosing_object := a_enclosing_object
 			physical_offset := a_physical_offset
