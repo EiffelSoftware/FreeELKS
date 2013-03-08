@@ -240,9 +240,11 @@ feature -- Access
 			Result := {ISE_RUNTIME}.reference_field (i, $enclosing_object, physical_offset)
 		end
 
-	meta_field (i: INTEGER): REFLECTED_OBJECT
-			-- Meta object representation of the `i'-th field of `object'
-			-- (directly or through a reference)
+	expanded_field (i: INTEGER): REFLECTED_OBJECT
+			-- Object representation of the `i'-th field of `object'
+			-- which is expanded. We provide a wrapper that enables
+			-- direct editing of the field without duplicating
+			-- the expanded object.
 		require
 			index_large_enough: i >= 1
 			index_small_enough: i <= field_count
