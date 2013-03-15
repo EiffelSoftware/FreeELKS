@@ -575,21 +575,6 @@ feature -- Measurement
 			count_positive: Result >= 0
 		end
 
-	bit_size (i: INTEGER; object: ANY): INTEGER
-			-- Size (in bit) of the `i'-th bit field of `object'
-		obsolete
-			"BIT type don't exist anymore."
-		require
-			object_not_void: object /= Void
-			index_large_enough: i >= 1
-			index_small_enough: i <= field_count (object)
-			is_bit: field_type (i, object) = Bit_type
-		do
-			Result := {ISE_RUNTIME}.field_bit_size (i, object)
-		ensure
-			positive_result: Result > 0
-		end
-
 	physical_size (object: ANY): INTEGER
 			-- Space occupied by `object' in bytes
 		require
