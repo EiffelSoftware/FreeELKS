@@ -925,9 +925,10 @@ feature {NATIVE_STRING_HANDLER} -- Access
 		local
 			l_cstr: C_STRING
 		do
-				-- A `C_STRING' instance is zeroed out, we just need to verify we have an extra `character'
-				-- that is the null character at the end, thus the `+ unit_size'.
-			create l_cstr.make_empty (storage.count + unit_size)
+				-- A `C_STRING' instance is zeroed out and a single null byte character is added.
+				-- On Windows we need 2 null characters, thus the `+ unit_size - 1' addition
+				-- to the length of the storage.
+			create l_cstr.make_empty (storage.count + unit_size - 1)
 			l_cstr.set_string (storage)
 			Result := l_cstr.managed_data
 		end
