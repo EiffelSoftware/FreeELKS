@@ -19,50 +19,54 @@ feature -- Access
 	reference_type: INTEGER = 1
 			-- Abstract type ID for a reference type.
 
-	expanded_type: INTEGER = 2
-			-- Abstract type ID for a non-predefined expanded type.
+	character_8_type, character_type: INTEGER = 2
+			-- Abstract type ID for predefined type {CHARACTER_8}.
 
 	boolean_type: INTEGER = 3
 			-- Abstract type ID for predefined type {BOOLEAN}.
 
-	character_8_type, character_type: INTEGER = 4
-			-- Abstract type ID for predefined type {CHARACTER_8}.
+	integer_32_type, integer_type: INTEGER = 4
+			-- Abstract type ID for predefined type {INTEGER_32}.
 
-	character_32_type, wide_character_type: INTEGER = 5
-			-- Abstract type ID for predefined type {CHARACTER_32}.
-
-	real_32_type, real_type: INTEGER = 6
+	real_32_type, real_type: INTEGER = 5
 			-- Abstract type ID for predefined type {REAL_32}.
 
-	real_64_type, double_type: INTEGER = 7
+	real_64_type, double_type: INTEGER = 6
 			-- Abstract type ID for predefined type {REAL_64}.
 
-	integer_8_type: INTEGER = 8
+	expanded_type: INTEGER = 7
+			-- Abstract type ID for a non-predefined expanded type.
+
+	bit_type: INTEGER = 8
+			-- This type is obsolete and is not used anymore.
+
+	integer_8_type: INTEGER = 9
 			-- Abstract type ID for predefined type {INTEGER_8}.
 
-	integer_16_type: INTEGER = 9
+	integer_16_type: INTEGER = 10
 			-- Abstract type ID for predefined type {INTEGER_16}.
-
-	integer_32_type, integer_type: INTEGER = 10
-			-- Abstract type ID for predefined type {INTEGER_32}.
 
 	integer_64_type: INTEGER = 11
 			-- Abstract type ID for predefined type {INTEGER_64}.
 
-	natural_8_type: INTEGER = 12
+	character_32_type, wide_character_type: INTEGER = 12
+			-- Abstract type ID for predefined type {CHARACTER_32}.
+
+	natural_8_type: INTEGER = 13
 			-- Abstract type ID for predefined type {NATURAL_8}.
 
-	natural_16_type: INTEGER = 13
+	natural_16_type: INTEGER = 14
 			-- Abstract type ID for predefined type {NATURAL_16}.
 
-	natural_32_type: INTEGER = 14
+	natural_32_type: INTEGER = 15
 			-- Abstract type ID for predefined type {NATURAL_32}.
 
-	natural_64_type: INTEGER = 15
+	natural_64_type: INTEGER = 16
 			-- Abstract type ID for predefined type {NATURAL_64}.
 
 	min_predefined_type: INTEGER = -2
-	max_predefined_type: INTEGER = 15
+	max_predefined_type: INTEGER = 16
+
 
 note
 	copyright: "Copyright (c) 1984-2013, Eiffel Software and others"
