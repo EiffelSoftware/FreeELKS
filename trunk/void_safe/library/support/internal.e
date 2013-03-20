@@ -582,7 +582,7 @@ feature -- Measurement
 		local
 			l_size: NATURAL_64
 		do
-			l_size := {ISE_RUNTIME}.object_size (object)
+			l_size := {ISE_RUNTIME}.object_size ($object)
 				-- Prevent overflow by giving the maximum INTEGER_32 value when it is very large.
 			Result := l_size.min ({INTEGER_32}.max_value.as_natural_64).as_integer_32
 		end
@@ -604,7 +604,7 @@ feature -- Measurement
 		require
 			object_not_void: object /= Void
 		do
-			Result := {ISE_RUNTIME}.object_size (object)
+			Result := {ISE_RUNTIME}.object_size ($object)
 		end
 
 	deep_physical_size_64 (object: ANY): NATURAL_64
