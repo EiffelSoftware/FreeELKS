@@ -1,8 +1,7 @@
 note
 	description: "[
-		Accessor to an object. Useful to manipulate fields of an object, or
+		Accessor to an object with copy semantics. Useful to manipulate fields of an object, or
 		an expanded field of an object without causing any copying.
-		If applied to an expanded type, a copy will be manipulated.
 		]"
 	implementation_details: "[
 		The GC might be moving objects, some of the routines are actually builtin.
@@ -11,57 +10,51 @@ note
 	revision: "$Revision$"
 
 class
-	REFLECTED_OBJECT
+	REFLECTED_COPY_SEMANTICS_OBJECT
 
 inherit
 	ABSTRACT_REFLECTED_OBJECT
 
 	REFLECTOR_CONSTANTS
 
-create
+create {REFLECTED_OBJECT}
 	make
 
-create {REFLECTED_OBJECT, RT_DBG_INTERNAL}
-	make_for_expanded_field, make_for_expanded_field_at
+create {REFLECTED_COPY_SEMANTICS_OBJECT}
+	make_recursive
 
 feature {NONE} -- Initialization
 
-	make (a_object: ANY)
-			-- Setup a proxy to `a_object'.
+	make (a_enclosing_object: REFLECTED_OBJECT; i: INTEGER)
+			-- Setup a proxy to copy semantics field located at the `i'-th field of `a_enclosing_object'.
 		require
-			not_expanded_object: True
+			i_th_field_is_expanded: a_enclosing_object.is_copy_semantics_field (i)
 		do
-			enclosing_object := a_object
-			dynamic_type := {ISE_RUNTIME}.dynamic_type (a_object)
+			referring_object := a_enclosing_object
+			referring_physical_offset := a_enclosing_object.field_offset (i)
 			physical_offset := 0
+			dynamic_type := {ISE_RUNTIME}.dynamic_type_at_offset (object_address, 0)
 		ensure
-			enclosing_object_set: enclosing_object = a_object
-			no_physical_offset: physical_offset = 0
+			enclosing_object_set: referring_object = a_enclosing_object
 		end
 
-	make_for_expanded_field (a_enclosing_object: REFLECTED_OBJECT; i: INTEGER)
-			-- Setup a proxy to expanded field located at the `i'-th field of `a_enclosing_object'.
+	make_recursive (a_enclosing_object: REFLECTED_COPY_SEMANTICS_OBJECT; i: INTEGER)
+			-- Setup a proxy to copy semantics field located at the `i'-th field of `a_enclosing_object'.
 		require
-			i_th_field_is_expanded: a_enclosing_object.is_field_statically_expanded (i)
+			i_th_field_is_expanded: a_enclosing_object.is_copy_semantics_field (i) or a_enclosing_object.is_field_statically_expanded (i)
 		do
-			enclosing_object := a_enclosing_object.enclosing_object
-				-- To compute the type ID of the object at the `i'-th field.
-			physical_offset := a_enclosing_object.physical_offset + a_enclosing_object.field_offset (i)
-			dynamic_type := {ISE_RUNTIME}.dynamic_type_at_offset ($enclosing_object, physical_offset)
-		ensure
-			enclosing_object_set: enclosing_object = a_enclosing_object.enclosing_object
-		end
-
-	make_for_expanded_field_at (a_enclosing_object: ANY; a_physical_offset: INTEGER)
-			-- Setup a proxy to expanded field located at the `a_physical_offset' of `a_enclosing_object'.
-		require
-			not_dotnet: not {PLATFORM}.is_dotnet
-		do
-			enclosing_object := a_enclosing_object
-			physical_offset := a_physical_offset
-			dynamic_type := {ISE_RUNTIME}.dynamic_type_at_offset ($a_enclosing_object, a_physical_offset)
-		ensure
-			enclosing_object_set: enclosing_object = a_enclosing_object
+			if a_enclosing_object.is_field_statically_expanded (i) then
+					-- Field is expanded.
+				referring_object := a_enclosing_object.referring_object
+				referring_physical_offset := a_enclosing_object.referring_physical_offset
+				physical_offset := a_enclosing_object.physical_offset + a_enclosing_object.field_offset (i)
+				dynamic_type := {ISE_RUNTIME}.dynamic_type_at_offset (object_address, 0)
+			else
+				referring_object := a_enclosing_object
+				referring_physical_offset := a_enclosing_object.field_offset (i)
+				physical_offset := 0
+				dynamic_type := {ISE_RUNTIME}.dynamic_type_at_offset (object_address, 0)
+			end
 		end
 
 feature -- Access
@@ -69,7 +62,7 @@ feature -- Access
 	object: ANY
 			-- <Precursor>
 		do
-			Result := {ISE_RUNTIME}.reference_field_at_offset ($enclosing_object, physical_offset)
+			Result := object_from_address (object_address)
 		end
 
 	object_address: POINTER
@@ -77,14 +70,19 @@ feature -- Access
 		note
 			compiler: no_gc
 		do
-			Result := {ISE_RUNTIME}.raw_reference_field_at_offset ($enclosing_object, physical_offset)
+			Result := dereference (referring_object.object_address, referring_physical_offset) + physical_offset
 		end
 
-	enclosing_object: ANY
+	physical_offset: INTEGER
+			-- Actual offset of `object' in `referring_object + referring_physical_offset'.
+
+feature {REFLECTED_COPY_SEMANTICS_OBJECT} -- Access
+
+	referring_object: ABSTRACT_REFLECTED_OBJECT
 			-- Enclosing object containing `object' or a reference to `object.
 
-	physical_offset: INTEGER
-			-- Actual offset in bytes of `object' in `enclosing_object'.
+	referring_physical_offset: INTEGER
+			-- Actual offset in bytes of `object' in `referring_object'.
 
 feature -- Status report
 
@@ -100,7 +98,7 @@ feature -- Status report
 	is_special: BOOLEAN
 			-- Is `object' special?
 		do
-			Result := {ISE_RUNTIME}.is_special ($enclosing_object)
+			Result := {ISE_RUNTIME}.is_special (object_address)
 		ensure
 			definition: physical_offset /= 0 implies not Result
 		end
@@ -108,13 +106,13 @@ feature -- Status report
 	is_special_of_reference: BOOLEAN
 			-- Is Current a SPECIAL [XX] where `XX' is a reference type?
 		do
-			Result := {ISE_RUNTIME}.is_special_of_reference ($enclosing_object)
+			Result := {ISE_RUNTIME}.is_special_of_reference (object_address)
 		end
 
 	is_tuple: BOOLEAN
 			-- Is `object' a TUPLE?
 		do
-			Result := {ISE_RUNTIME}.is_tuple ($enclosing_object)
+			Result := {ISE_RUNTIME}.is_tuple (object_address)
 		ensure
 			definition: physical_offset /= 0 implies not Result
 		end
@@ -145,7 +143,7 @@ feature -- Status report
 			index_small_enough: i <= field_count
 			is_reference_field: field_type (i) = reference_type
 		do
-			Result := {ISE_RUNTIME}.is_copy_semantics_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.is_copy_semantics_field (i, object_address, 0)
 		end
 
 	is_field_statically_attached (i: INTEGER): BOOLEAN
@@ -166,21 +164,6 @@ feature -- Status report
 			a_field_type_non_negative: a_field_type >= 0
 		do
 			Result := {ISE_RUNTIME}.type_conforms_to (a_source_type, {ISE_RUNTIME}.detachable_type (a_field_type))
-		end
-
-feature -- Settings
-
-	set_object (a_obj: ANY)
-			-- Update Current to represent a new reflected object.
-		require
-			physical_offset_not_set: physical_offset = 0
-		do
-			enclosing_object := a_obj
-			physical_offset := 0
-			dynamic_type := {ISE_RUNTIME}.dynamic_type (a_obj)
-		ensure
-			enclosing_object_set: enclosing_object = a_obj
-			no_physical_offset: physical_offset = 0
 		end
 
 feature -- Access
@@ -256,7 +239,7 @@ feature -- Access
 			not_special: not is_special
 			reference_field: field_type (i) = reference_type or field_type (i) = expanded_type
 		do
-			Result := {ISE_RUNTIME}.reference_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.reference_field (i, object_address, 0)
 		end
 
 	copy_semantics_field (i: INTEGER): REFLECTED_COPY_SEMANTICS_OBJECT
@@ -268,21 +251,19 @@ feature -- Access
 			not_special: not is_special
 			reference_field: field_type (i) = reference_type and is_copy_semantics_field (i)
 		do
-			create Result.make (Current, i)
+			create Result.make_recursive (Current, i)
 		end
 
-	expanded_field (i: INTEGER): REFLECTED_OBJECT
-			-- Object representation of the `i'-th field of `object'
-			-- which is expanded. We provide a wrapper that enables
-			-- direct editing of the field without duplicating
-			-- the expanded object.
+	expanded_field (i: INTEGER): REFLECTED_COPY_SEMANTICS_OBJECT
+			-- Meta object representation of the `i'-th field of `object'
+			-- (directly or through a reference)
 		require
 			index_large_enough: i >= 1
 			index_small_enough: i <= field_count
 			expanded_field: field_type (i) = expanded_type
 			not_special: not is_special
 		do
-			create Result.make_for_expanded_field (Current, i)
+			create Result.make_recursive (Current, i)
 		end
 
 	field_name (i: INTEGER): STRING
@@ -336,7 +317,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			character_8_field: field_type (i) = Character_8_type
 		do
-			Result := {ISE_RUNTIME}.character_8_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.character_8_field (i, object_address, 0)
 		end
 
 	character_32_field (i: INTEGER): CHARACTER_32
@@ -346,7 +327,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			character_32_field: field_type (i) = Character_32_type
 		do
-			Result := {ISE_RUNTIME}.character_32_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.character_32_field (i, object_address, 0)
 		end
 
 	boolean_field (i: INTEGER): BOOLEAN
@@ -356,7 +337,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			boolean_field: field_type (i) = Boolean_type
 		do
-			Result := {ISE_RUNTIME}.boolean_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.boolean_field (i, object_address, 0)
 		end
 
 	natural_8_field (i: INTEGER): NATURAL_8
@@ -366,7 +347,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			natural_8_field: field_type (i) = natural_8_type
 		do
-			Result := {ISE_RUNTIME}.natural_8_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.natural_8_field (i, object_address, 0)
 		end
 
 	natural_16_field (i: INTEGER): NATURAL_16
@@ -376,7 +357,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			natural_16_field: field_type (i) = natural_16_type
 		do
-			Result := {ISE_RUNTIME}.natural_16_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.natural_16_field (i, object_address, 0)
 		end
 
 	natural_32_field (i: INTEGER): NATURAL_32
@@ -386,7 +367,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			natural_32_field: field_type (i) = natural_32_type
 		do
-			Result := {ISE_RUNTIME}.natural_32_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.natural_32_field (i, object_address, 0)
 		end
 
 	natural_64_field (i: INTEGER): NATURAL_64
@@ -396,7 +377,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			natural_64_field: field_type (i) = natural_64_type
 		do
-			Result := {ISE_RUNTIME}.natural_64_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.natural_64_field (i, object_address, 0)
 		end
 
 	integer_8_field (i: INTEGER): INTEGER_8
@@ -406,7 +387,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			integer_8_field: field_type (i) = Integer_8_type
 		do
-			Result := {ISE_RUNTIME}.integer_8_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.integer_8_field (i, object_address, 0)
 		end
 
 	integer_16_field (i: INTEGER): INTEGER_16
@@ -416,7 +397,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			integer_16_field: field_type (i) = Integer_16_type
 		do
-			Result := {ISE_RUNTIME}.integer_16_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.integer_16_field (i, object_address, 0)
 		end
 
 	integer_32_field (i: INTEGER): INTEGER
@@ -426,7 +407,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			integer_32_field: field_type (i) = Integer_32_type
 		do
-			Result := {ISE_RUNTIME}.integer_32_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.integer_32_field (i, object_address, 0)
 		end
 
 	integer_64_field (i: INTEGER): INTEGER_64
@@ -436,7 +417,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			integer_64_field: field_type (i) = Integer_64_type
 		do
-			Result := {ISE_RUNTIME}.integer_64_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.integer_64_field (i, object_address, 0)
 		end
 
 	real_32_field (i: INTEGER): REAL
@@ -446,7 +427,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			real_32_field: field_type (i) = real_32_type
 		do
-			Result := {ISE_RUNTIME}.real_32_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.real_32_field (i, object_address, 0)
 		end
 
 	pointer_field (i: INTEGER): POINTER
@@ -456,7 +437,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			pointer_field: field_type (i) = Pointer_type
 		do
-			Result := {ISE_RUNTIME}.pointer_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.pointer_field (i, object_address, 0)
 		end
 
 	real_64_field (i: INTEGER): REAL_64
@@ -466,7 +447,7 @@ feature -- Access
 			index_small_enough: i <= field_count
 			real_64_field: field_type (i) = real_64_type
 		do
-			Result := {ISE_RUNTIME}.real_64_field (i, $enclosing_object, physical_offset)
+			Result := {ISE_RUNTIME}.real_64_field (i, object_address, 0)
 		end
 
 feature -- Element change
@@ -480,7 +461,7 @@ feature -- Element change
 			value_conforms_to_field_static_type:
 				value /= Void implies field_conforms_to (value.generating_type.type_id, field_static_type (i))
 		do
-			{ISE_RUNTIME}.set_reference_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_reference_field (i, object_address, 0, value)
 		end
 
 	set_real_64_field, set_double_field (i: INTEGER; value: REAL_64)
@@ -489,7 +470,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			real_64_field: field_type (i) = real_64_type
 		do
-			{ISE_RUNTIME}.set_real_64_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_real_64_field (i, object_address, 0, value)
 		end
 
 	set_character_8_field, set_character_field (i: INTEGER; value: CHARACTER_8)
@@ -499,7 +480,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			character_field: field_type (i) = Character_8_type
 		do
-			{ISE_RUNTIME}.set_character_8_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_character_8_field (i, object_address, 0, value)
 		end
 
 	set_character_32_field (i: INTEGER; value: CHARACTER_32)
@@ -509,7 +490,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			character_field: field_type (i) = Character_32_type
 		do
-			{ISE_RUNTIME}.set_character_32_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_character_32_field (i, object_address, 0, value)
 		end
 
 	set_boolean_field (i: INTEGER; value: BOOLEAN)
@@ -518,7 +499,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			boolean_field: field_type (i) = Boolean_type
 		do
-			{ISE_RUNTIME}.set_boolean_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_boolean_field (i, object_address, 0, value)
 		end
 
 	set_natural_8_field (i: INTEGER; value: NATURAL_8)
@@ -527,7 +508,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			natural_8_field: field_type (i) = natural_8_type
 		do
-			{ISE_RUNTIME}.set_natural_8_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_natural_8_field (i, object_address, 0, value)
 		end
 
 	set_natural_16_field (i: INTEGER; value: NATURAL_16)
@@ -536,7 +517,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			natural_16_field: field_type (i) = natural_16_type
 		do
-			{ISE_RUNTIME}.set_natural_16_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_natural_16_field (i, object_address, 0, value)
 		end
 
 	set_natural_32_field (i: INTEGER; value: NATURAL_32)
@@ -545,7 +526,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			natural_32_field: field_type (i) = natural_32_type
 		do
-			{ISE_RUNTIME}.set_natural_32_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_natural_32_field (i, object_address, 0, value)
 		end
 
 	set_natural_64_field (i: INTEGER; value: NATURAL_64)
@@ -554,7 +535,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			natural_64_field: field_type (i) = natural_64_type
 		do
-			{ISE_RUNTIME}.set_natural_64_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_natural_64_field (i, object_address, 0, value)
 		end
 
 	set_integer_8_field (i: INTEGER; value: INTEGER_8)
@@ -563,7 +544,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			integer_8_field: field_type (i) = Integer_8_type
 		do
-			{ISE_RUNTIME}.set_integer_8_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_integer_8_field (i, object_address, 0, value)
 		end
 
 	set_integer_16_field (i: INTEGER; value: INTEGER_16)
@@ -572,7 +553,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			integer_16_field: field_type (i) = Integer_16_type
 		do
-			{ISE_RUNTIME}.set_integer_16_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_integer_16_field (i, object_address, 0, value)
 		end
 
 	set_integer_field, set_integer_32_field (i: INTEGER; value: INTEGER)
@@ -581,7 +562,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			integer_32_field: field_type (i) = Integer_32_type
 		do
-			{ISE_RUNTIME}.set_integer_32_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_integer_32_field (i, object_address, 0, value)
 		end
 
 	set_integer_64_field (i: INTEGER; value: INTEGER_64)
@@ -590,7 +571,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			integer_64_field: field_type (i) = Integer_64_type
 		do
-			{ISE_RUNTIME}.set_integer_64_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_integer_64_field (i, object_address, 0, value)
 		end
 
 	set_real_32_field, set_real_field (i: INTEGER; value: REAL)
@@ -599,7 +580,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			real_32_field: field_type (i) = real_32_type
 		do
-			{ISE_RUNTIME}.set_real_32_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_real_32_field (i, object_address, 0, value)
 		end
 
 	set_pointer_field (i: INTEGER; value: POINTER)
@@ -608,7 +589,7 @@ feature -- Element change
 			index_small_enough: i <= field_count
 			pointer_field: field_type (i) = Pointer_type
 		do
-			{ISE_RUNTIME}.set_pointer_field (i, $enclosing_object, physical_offset, value)
+			{ISE_RUNTIME}.set_pointer_field (i, object_address, 0, value)
 		end
 
 feature -- Measurement
@@ -650,7 +631,7 @@ feature -- Measurement
 	physical_size_64: NATURAL_64
 			-- Space occupied by `object' in bytes
 		do
-			Result := {ISE_RUNTIME}.object_size ($enclosing_object)
+			Result := {ISE_RUNTIME}.object_size (object_address)
 		end
 
 	deep_physical_size_64: NATURAL_64
@@ -676,6 +657,20 @@ feature -- Measurement
 					l_objects.forth
 				end
 			end
+		end
+
+	dereference (ptr: POINTER; offset: INTEGER): POINTER
+		external
+			"C inline use %"eif_built_in.h%""
+		alias
+			"return *(EIF_REFERENCE *) eif_obj_at($ptr, $offset);"
+		end
+
+	object_from_address (ptr: POINTER): ANY
+		external
+			"C inline use %"eif_built_in.h%""
+		alias
+			"return (EIF_REFERENCE) $ptr;"
 		end
 
 note
